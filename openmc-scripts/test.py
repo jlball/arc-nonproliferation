@@ -38,12 +38,14 @@ regions = openmc.model.subdivide([pfc_polygon,
 
 plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
+doped_mat = anp.doped_flibe('U', 1e4, volume=1e6)
+
 device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
 device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')
 device.vv = openmc.Cell(region=vv, fill=anp.vcrti_VV, name='VV')
-device.channel = openmc.Cell(region=channel, fill=anp.flibe, name='channels')
+device.channel = openmc.Cell(region=channel, fill=doped_mat, name='channels')
 device.tank_inner = openmc.Cell(region=tank_inner, fill=anp.vcrti_BI, name='tank inner')
-device.blanket = openmc.Cell(region=salt, fill=anp.flibe, name='blanket')
+device.blanket = openmc.Cell(region=salt, fill=doped_mat, name='blanket')
 device.tank_outer = openmc.Cell(region=tank_outer, fill=anp.vcrti_BO, name='tank outer')
 device.domain.region = device.domain.region & outside
 
