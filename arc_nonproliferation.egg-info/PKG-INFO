@@ -1,0 +1,12 @@
+Metadata-Version: 1.0
+Name: arc-nonproliferation
+Version: 0.1.0.dev0
+Summary: OpenMC-based API for studying fissile breeding in fusion liquid immersion blankets
+Home-page: UNKNOWN
+Author: UNKNOWN
+Author-email: UNKNOWN
+License: UNKNOWN
+Description: # arc-nonproliferation
+        An OpenMC-based repo for studying proliferation issues in ARC-class fusion reactors.
+        
+Platform: UNKNOWN
