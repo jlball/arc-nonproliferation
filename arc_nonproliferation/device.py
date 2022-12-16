@@ -7,8 +7,8 @@ class Device(openmc.model.Model):
 
         super().__init__(**kwargs)
 
-        self._cells = []
-        self._components = []
+        self.cells = []
+        self.components = []
 
         self.tallies = []
 
@@ -21,9 +21,9 @@ class Device(openmc.model.Model):
     def __setattr__(self, name, value):
         # Override __setattr__ to add components to the internal list
         if isinstance(value, Component):
-            self._components.append(value)
+            self.components.append(value)
         elif isinstance(value, openmc.Cell):
-            self._cells.append(value)
+            self.cells.append(value)
         super().__setattr__(name, value)
 
     def _init_settings(self):
@@ -40,7 +40,7 @@ class Device(openmc.model.Model):
         new_domain_reg = self.domain.region & openmc.Intersection(comp_regs)
         self.domain.region = new_domain_reg
 
-        all_cells = comp_cells + self._cells
+        all_cells = comp_cells + self.cells
         self.univ = openmc.Universe(cells=all_cells)
 
         #Creates wedge model with specified azimuthal width
