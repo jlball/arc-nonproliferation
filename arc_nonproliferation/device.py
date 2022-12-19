@@ -7,10 +7,10 @@ class Device(openmc.model.Model):
 
         super().__init__(**kwargs)
 
-        self.cells = []
-        self.components = []
+        self._cells = []
+        self._components = []
 
-        self.tallies = []
+        self._tallies = []
 
         # Define simulation boundary
         self.boundary = openmc.Sphere(r=1000, boundary_type='vacuum')
@@ -21,9 +21,9 @@ class Device(openmc.model.Model):
     def __setattr__(self, name, value):
         # Override __setattr__ to add components to the internal list
         if isinstance(value, Component):
-            self.components.append(value)
+            self._components.append(value)
         elif isinstance(value, openmc.Cell):
-            self.cells.append(value)
+            self._cells.append(value)
         super().__setattr__(name, value)
 
     def _init_settings(self):
@@ -34,14 +34,14 @@ class Device(openmc.model.Model):
 
     def build(self, model_angles=[-10, 10]):
         """Builds the model geometry from specifically named components"""
-        comp_cells = [cell for comp in self.components for cell in comp.cells]
-        comp_regs = [~comp for comp in self.components if comp.exclude]
+        comp_cells = [cell for comp in self._components for cell in comp.cells]
+        comp_regs = [~comp for comp in self._components if comp.exclude]
 
         #Exclude areas which have been defined as being components from total sim domain
         new_domain_reg = self.domain.region & openmc.Intersection(comp_regs)
         self.domain.region = new_domain_reg
 
-        all_cells = comp_cells + self.cells
+        all_cells = comp_cells + self._cells
         self.univ = openmc.Universe(cells=all_cells)
 
         #Creates wedge model with specified azimuthal width
@@ -50,6 +50,8 @@ class Device(openmc.model.Model):
         wedge_cell = openmc.Cell(region=+neg_plane & -pos_plane & -self.boundary,name='wedge cell')
         wedge_cell.fill = self.univ
         self.geometry = openmc.Geometry([wedge_cell])
+
+        self.tallies = openmc.Tallies(self._tallies)
 
     def add_tally(self, name, scores, nuclides=None, filters=None):
         """Creates a tally from given kwargs and adds it to the tallies object"""
@@ -61,7 +63,8 @@ class Device(openmc.model.Model):
         tally.filters = filters
         tally.scores = scores
 
-        self.tallies.append(tally)
+        self._tallies.append(tally)
+
 
         return tally
 

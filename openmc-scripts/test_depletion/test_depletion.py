@@ -1,5 +1,6 @@
 import arc_nonproliferation as anp
 import openmc
+import openmc.deplete
 import numpy as np
 
 device = anp.Device()
@@ -86,14 +87,23 @@ device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-
 # ==============================================================================
 
 """ DEPLETION SETTINGS """
-time_steps = []
+fusion_power = 500 #MW
+
+num_steps = 10
+time_steps = [365*34*60*60 / num_steps] * num_steps
+source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
 """ Setup device model """
-device.settings.photon_transport = True
+device.settings.photon_transport = False
+device.settings.particles = int(1e3)
+device.settings.batches = 5
 
 device.build()
 device.export_to_xml(remove_surfs=True)
 
 """ Setup depletion solver """
-operator = openmc.deplete.Operator(device, 'chain_endfb71_pwr.xml', normalization_mode='source-rate')
+operator = openmc.deplete.CoupledOperator(device, 'chain_endfb71_pwr.xml', normalization_mode='source-rate')
 integrator = openmc.deplete.PredictorIntegrator(operator=operator, timesteps=time_steps, source_rates=source_rates)
+
+""" Run depletion calculation """
+integrator.integrate()

@@ -103,6 +103,7 @@ def doped_flibe(dopant, dopant_mass, Li6_enrichment=7.8, name='doped_flibe', vol
         print('tetrafluroide weight percent:', tetrafluoride_weight_percent)
 
     doped_mat = openmc.Material.mix_materials([tetrafluoride, flibe], [tetrafluoride_weight_percent, 1 - tetrafluoride_weight_percent], 'wo', name="doped flibe")
+    doped_mat.volume = volume
     return doped_mat
 
 
