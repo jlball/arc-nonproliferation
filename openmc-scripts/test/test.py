@@ -1,6 +1,7 @@
 import arc_nonproliferation as anp
 import openmc
 import numpy as np
+import os
 
 device = anp.Device()
 
@@ -90,4 +91,7 @@ device.settings.photon_transport = True
 device.build()
 device.export_to_xml(remove_surfs=True)
 
-device.run(particles=int(1e5))
+device.run(particles=int(1e4))
+
+os.mkdir('221219')
+device.move_files('221219')

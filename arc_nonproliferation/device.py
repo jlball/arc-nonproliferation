@@ -1,6 +1,7 @@
 import numpy as np
 import openmc
 from arc_nonproliferation.components import *
+import shutil
 
 class Device(openmc.model.Model):
     def __init__(self, **kwargs):
@@ -74,3 +75,12 @@ class Device(openmc.model.Model):
         self.settings.batches = batches
 
         self.statepointfile = super().run(threads=threads)
+
+    def move_files(self, directory):
+        shutil.move('geometry.xml', directory + "/geometry.xml")
+        shutil.move('materials.xml', directory + "/materialsgeometry.xml")
+        shutil.move('settings.xml', directory + "/settings.xml")
+        shutil.move('tallies.xml', directory + "/tallies.xml")
+        shutil.move('statepoint.' + str(self.settings.batches) + '.h5', directory + '/statepoint.' + str(self.settings.batches) + '.h5')
+        shutil.move('tallies.out', directory + "/tallies.out")
+        shutil.move('summary.h5', directory + "/summary.h5")
