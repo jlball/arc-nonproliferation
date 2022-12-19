@@ -43,7 +43,6 @@ def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
 
     return r_mesh, z_mesh, data
 
-
 def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma', value='mean'):
     """Plots an RZ quantity from a 2D cylindrical mesh
 
@@ -77,7 +76,24 @@ def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma
 
     return fig, ax
 
-def get_uvalue(tally, score, value='Mean', filters=None):
+def get_uvalue(tally, score, value='mean', filters=[]):
+    """Gets a value and its uncertainty from a tally (without a mesh filter)
+
+    Parameters
+    ----------
+    tally : openmc.Tally
+        the tally object loaded from a statepoint file with a cylindrical mesh
+    score : str
+        The score you want plotted
+    value : str, optional
+        The value you want extracted, defaults to mean
+    filters : list of OpenMC Filter objects
+        A list of filters from which to pull the values
+
+    Returns
+    -------
+    ufloat object, the desired value and its uncertainty
+    """
     value = tally.get_values(scores=[score], value=value, filters=filters)
     std_dev = tally.get_values(scores=[score], value='std_dev', filters=filters)
 

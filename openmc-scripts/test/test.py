@@ -79,11 +79,13 @@ device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption']
 
 """FLiBe Tally"""
 flibe_filter = openmc.MaterialFilter(doped_mat)
-device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission'], filters=[flibe_filter])
+device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
 
 # ==============================================================================
 # Run
 # ==============================================================================
+
+device.settings.photon_transport = True
 
 device.build()
 device.export_to_xml(remove_surfs=True)
