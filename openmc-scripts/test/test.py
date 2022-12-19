@@ -69,8 +69,8 @@ device.settings.source = source
 # Tallies
 # ==============================================================================
 mesh = openmc.CylindricalMesh()
-mesh.r_grid = np.linspace(25, 200, num=5)
-mesh.z_grid = np.linspace(-200, 200, num=10)
+mesh.r_grid = np.linspace(25, 200, num=25)
+mesh.z_grid = np.linspace(-200, 200, num=50)
 mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
 mesh_filter = openmc.MeshFilter(mesh)
 
@@ -83,4 +83,4 @@ device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption']
 device.build()
 device.export_to_xml(remove_surfs=True)
 
-device.run()
+device.run(particles=int(1e5))
