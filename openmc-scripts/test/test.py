@@ -2,6 +2,7 @@ import arc_nonproliferation as anp
 import openmc
 import numpy as np
 import os
+import sys
 
 device = anp.Device()
 
@@ -93,5 +94,7 @@ device.export_to_xml(remove_surfs=True)
 
 device.run(particles=int(1e4))
 
-os.mkdir('221219')
-device.move_files('221219')
+if sys.argv[1] is not None:
+    os.mkdir(str(sys.argv[1]))
+    device.move_files(str(sys.argv[1]))
+    print("OpenMC files moved to new directory:", str(sys.argv[1]))
