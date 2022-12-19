@@ -65,11 +65,11 @@ def get_tetrafluoride_mass(mass, dopant):
     """Computes mass of tetrafluroide from a given mass of pure dopant"""
 
     if dopant == 'U':
-        moles = mass / openmc.data.atomic_mass('U238') * Avogadro
+        moles = mass / openmc.data.atomic_mass('U238')
         tetrafluoride_mass = moles * UF4_molar_mass
 
     elif dopant == 'Th':
-        moles = mass / openmc.data.atomic_mass('Th232') * Avogadro
+        moles = mass / openmc.data.atomic_mass('Th232')
         tetrafluoride_mass = moles * ThF4_molar_mass
     else:
         raise ValueError("Not a valid dopant type")
@@ -90,16 +90,19 @@ def doped_flibe(dopant, dopant_mass, Li6_enrichment=7.8, name='doped_flibe', vol
     elif dopant == 'Th':
         tetrafluoride = thf4
     else:
-        raise ValueError("Non-implemented dopant passed into blanket liquid function")
+        raise ValueError("Invalid dopant passed into blanket liquid function")
 
     if volume == None:
         raise ValueError("Volume of blanket specified as None")
     else:
         flibe_mass = flibe.density * volume
+        print('FLiBe mass:', flibe_mass)
         tetrafluoride_mass = get_tetrafluoride_mass(dopant_mass, dopant)
-        tetrafluoride_weight_percent = tetrafluoride_mass / flibe_mass * 100
+        print("Tetrafluroide mass: ", tetrafluoride_mass)
+        tetrafluoride_weight_percent = tetrafluoride_mass / flibe_mass
+        print('tetrafluroide weight percent:', tetrafluoride_weight_percent)
 
-    doped_mat = openmc.Material.mix_materials([tetrafluoride, flibe], [tetrafluoride_weight_percent, 100 - tetrafluoride_weight_percent], 'wo', name="doped flibe")
+    doped_mat = openmc.Material.mix_materials([tetrafluoride, flibe], [tetrafluoride_weight_percent, 1 - tetrafluoride_weight_percent], 'wo', name="doped flibe")
     return doped_mat
 
 

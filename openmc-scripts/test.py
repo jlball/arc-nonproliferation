@@ -38,7 +38,7 @@ regions = openmc.model.subdivide([pfc_polygon,
 
 plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
-doped_mat = anp.doped_flibe('U', 1e4, volume=1e6)
+doped_mat = anp.doped_flibe('U', 1e4, volume=1e8)
 
 device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
 device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')

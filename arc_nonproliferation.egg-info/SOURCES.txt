@@ -1,11 +1,11 @@
 README.md
 setup.py
-arc-nonproliferation/__init__.py
-arc-nonproliferation/components.py
-arc-nonproliferation/constants.py
-arc-nonproliferation/device.py
-arc-nonproliferation/materials.py
-arc-nonproliferation/postprocess.py
+arc_nonproliferation/__init__.py
+arc_nonproliferation/components.py
+arc_nonproliferation/constants.py
+arc_nonproliferation/device.py
+arc_nonproliferation/materials.py
+arc_nonproliferation/postprocess.py
 arc_nonproliferation.egg-info/PKG-INFO
 arc_nonproliferation.egg-info/SOURCES.txt
 arc_nonproliferation.egg-info/dependency_links.txt

@@ -28,7 +28,8 @@ class Device(openmc.model.Model):
 
     def _init_settings(self):
         """Initializes a settings object and sets it to fixed source mode"""
-        settings = openmc.Settings(run_mode='fixed source')
+        settings = openmc.Settings()
+        settings.run_mode = 'fixed source'
         self.settings = settings
 
     def build(self, model_angles=[-10, 10]):
