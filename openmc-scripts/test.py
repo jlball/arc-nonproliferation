@@ -4,6 +4,10 @@ import numpy as np
 
 device = anp.Device()
 
+# ==============================================================================
+# Geometry
+# ==============================================================================
+
 """PFCs and Vacuum Vessel:"""
 
 vv_points = np.array([
@@ -49,6 +53,10 @@ device.blanket = openmc.Cell(region=salt, fill=doped_mat, name='blanket')
 device.tank_outer = openmc.Cell(region=tank_outer, fill=anp.vcrti_BO, name='tank outer')
 device.domain.region = device.domain.region & outside
 
+# ==============================================================================
+# Settings
+# ==============================================================================
+
 """Source Definition"""
 source = openmc.Source()
 source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(75, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
@@ -56,6 +64,21 @@ source.angles = openmc.stats.Isotropic()
 source.energy = openmc.stats.Discrete([14.1E6], [1.0])
 
 device.settings.source = source
+
+# ==============================================================================
+# Tallies
+# ==============================================================================
+mesh = openmc.CylindricalMesh()
+mesh.r_grid = np.linspace(25, 200, num=5)
+mesh.z_grid = np.linspace(-200, 200, num=10)
+mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
+mesh_filter = openmc.MeshFilter(mesh)
+
+device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
+
+# ==============================================================================
+# Run
+# ==============================================================================
 
 device.build()
 device.export_to_xml(remove_surfs=True)
