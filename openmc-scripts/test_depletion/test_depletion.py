@@ -8,7 +8,7 @@ device = anp.Device()
 # Geometry
 # ==============================================================================
 
-"""PFCs and Vacuum Vessel:"""
+""" PFCs and Vacuum Vessel """
 
 vv_points = np.array([
     [100, 100],
@@ -23,7 +23,7 @@ vv_channel_inner = vv_inner_edge.offset(1.0) #VV
 channel_outer = vv_channel_inner.offset(2.0) #FLiBe channels
 vv_channel_outer = channel_outer.offset(3.0) #Channel shell
 
-"""Blanket and Outer Blanket Tank:"""
+""" Blanket and Outer Blanket Tank """
 
 blanket_points = np.array([
     [200, 200],
@@ -57,7 +57,7 @@ device.domain.region = device.domain.region & outside
 # Settings
 # ==============================================================================
 
-"""Source Definition"""
+""" Source Definition """
 source = openmc.Source()
 source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(75, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
 source.angles = openmc.stats.Isotropic()
@@ -77,7 +77,7 @@ mesh_filter = openmc.MeshFilter(mesh)
 
 device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
 
-"""FLiBe Tally"""
+""" FLiBe Tally """
 flibe_filter = openmc.MaterialFilter(doped_mat)
 device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
 
@@ -86,6 +86,7 @@ device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-
 # ==============================================================================
 
 """ DEPLETION SETTINGS """
+time_steps = []
 
 """ Setup device model """
 device.settings.photon_transport = True
