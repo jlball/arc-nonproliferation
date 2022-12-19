@@ -11,13 +11,15 @@ mesh_tally = sp.get_tally(name='Mesh Tally')
 # =================================================================================
 # Mesh TBR
 # =================================================================================
-r_grid, z_grid, tbr = anp.get_RZ_cyl_mesh_data(mesh_tally, '(n,Xt)', volume_norm=False)
+fig, ax = anp.plot_RZ_quantity(mesh_tally, '(n,Xt)', volume_norm=False, title='Mesh TBR')
+fig.set_figwidth(5)
+fig.set_figheight(8)
+fig.savefig('figures/mesh_tbr.png')
 
-fig, ax = plt.subplots()
-ax.set_xlabel('R (cm)')
-ax.set_ylabel('Z (cm)')
-ax.set_title("TBR Mesh Plot")
-pcolormesh = ax.pcolormesh(r_grid, z_grid, tbr.T)
-fig.colorbar(pcolormesh, ax=ax, label='TBR')
-ax.set_aspect(1)
-plt.savefig('figures/mesh_tbr.png')
+# =================================================================================
+# FLiBe
+# =================================================================================
+flibe_tally = sp.get_tally(name='FLiBe Tally')
+
+print('======== FLIBE TALLY VALUES =======')
+print('Total TBR:', anp.get_uvalue(flibe_tally, '(n,Xt)'))

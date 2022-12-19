@@ -68,6 +68,7 @@ device.settings.source = source
 # ==============================================================================
 # Tallies
 # ==============================================================================
+""" Cylindrical Mesh Tally """
 mesh = openmc.CylindricalMesh()
 mesh.r_grid = np.linspace(25, 200, num=25)
 mesh.z_grid = np.linspace(-200, 200, num=50)
@@ -75,6 +76,10 @@ mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
 mesh_filter = openmc.MeshFilter(mesh)
 
 device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
+
+"""FLiBe Tally"""
+flibe_filter = openmc.MaterialFilter(doped_mat)
+device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission'], filters=[flibe_filter])
 
 # ==============================================================================
 # Run

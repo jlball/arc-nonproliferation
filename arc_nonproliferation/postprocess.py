@@ -2,6 +2,7 @@ import openmc
 import numpy as np
 import arc_nonproliferation as anp
 import matplotlib.pyplot as plt
+import uncertainties
 
 def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     """Parse out a set of 3 2D np arrays for easy plotting of 
@@ -70,7 +71,15 @@ def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma
     ax.set_xlabel('R (cm)')
     ax.set_ylabel('Z (cm)')
     ax.set_title(title)
+    ax.set_aspect(1)
     pcolormesh = ax.pcolormesh(r_grid, z_grid, tbr.T, cmap=cmap)
     fig.colorbar(pcolormesh, ax=ax, label='TBR')
 
     return fig, ax
+
+def get_uvalue(tally, score, value='Mean', filters=None):
+    value = tally.get_values(scores=[score], value=value, filters=filters)
+    std_dev = tally.get_values(scores=[score], value='std_dev', filters=filters)
+
+    u_val = uncertainties.ufloat(value, std_dev)
+    return u_val
