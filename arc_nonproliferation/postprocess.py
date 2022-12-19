@@ -1,5 +1,7 @@
 import openmc
 import numpy as np
+import arc_nonproliferation as anp
+import matplotlib.pyplot as plt
 
 def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     """Parse out a set of 3 2D np arrays for easy plotting of 
@@ -39,3 +41,36 @@ def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     r_mesh, z_mesh = np.meshgrid(mesh.r_grid, mesh.z_grid)
 
     return r_mesh, z_mesh, data
+
+
+def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma', value='mean'):
+    """Plots an RZ quantity from a 2D cylindrical mesh
+
+    Parameters
+    ----------
+    tally : openmc.Tally
+        the tally object loaded from a statepoint file with a cylindrical mesh
+    score : str
+        The score you want plotted
+    value : str, optional
+        The value you want extracted, defaults to mean
+    volume_norm : boolean, optional
+        Whether or not to divide the value of each mesh element by the element volume
+    cmap : str, optional
+        Matplotlib color map to use in the plot
+
+
+    Returns
+    -------
+    matplotlib fig and ax objects
+    """
+    r_grid, z_grid, tbr = anp.get_RZ_cyl_mesh_data(tally, score, volume_norm=volume_norm, value=value)
+
+    fig, ax = plt.subplots()
+    ax.set_xlabel('R (cm)')
+    ax.set_ylabel('Z (cm)')
+    ax.set_title(title)
+    pcolormesh = ax.pcolormesh(r_grid, z_grid, tbr.T, cmap=cmap)
+    fig.colorbar(pcolormesh, ax=ax, label='TBR')
+
+    return fig, ax
