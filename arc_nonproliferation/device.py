@@ -1,6 +1,7 @@
 import numpy as np
 import openmc
 from arc_nonproliferation.components import *
+from arc_nonproliferation.materials import *
 import shutil
 
 class Device(openmc.model.Model):
@@ -10,8 +11,12 @@ class Device(openmc.model.Model):
 
         self._cells = []
         self._components = []
-
         self._tallies = []
+
+        self.dopant = None
+        self.dopant_mass = 0
+
+        self.name = 'Untitled'
 
         # Define simulation boundary
         self.boundary = openmc.Sphere(r=1000, boundary_type='vacuum')
@@ -68,6 +73,12 @@ class Device(openmc.model.Model):
 
 
         return tally
+
+    def dope_blanket(self):
+        if self.dopant is None:
+            doped_flibe = flibe
+        else:
+            doped_flibe = doped_flibe(self.dopant, self.dopant_mass)
 
     def run(self, threads=20, batches=10, particles=1000):
         """Runs the model with specified parameters"""
