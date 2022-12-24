@@ -1,8 +1,11 @@
 import openmc
+from openmc.deplete import Results
 import numpy as np
 import arc_nonproliferation as anp
 import matplotlib.pyplot as plt
 import uncertainties
+from numpy.polynomial.polynomial import Polynomial
+import os
 
 def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     """Parse out a set of 3 2D np arrays for easy plotting of 
@@ -99,3 +102,34 @@ def get_uvalue(tally, score, value='mean', filters=[]):
 
     u_val = uncertainties.ufloat(value, std_dev)
     return u_val
+
+def get_material_by_name(materials, name):
+    for mat in materials:
+        if mat.name == name:
+            return mat
+
+def extract_time_to_sq(dopant, results):
+    time_steps = results.get_times(time_units='h')
+    fissile_masses = np.empty(len(time_steps))
+
+    """ Extract list of fissile masses for each depletion time step """
+    for i in range(0, len(time_steps)):
+        materials = results.export_to_materials(i)
+
+        doped_flibe = get_material_by_name(materials, 'doped flibe') #Something here about retriving the correct material
+
+        if dopant == "U":
+            fissile_mass = doped_flibe.get_mass(nuclide='Pu239')
+        elif dopant == "Th":
+            fissile_mass = doped_flibe.get_mass(nuclide='U233')
+        else:
+            raise ValueError("Invalid dopant type passed into extract time to SQ function")
+
+        fissile_masses[i] = fissile_mass / 1000 # Convert from grams to kg
+
+    """ Linear fit to fissile masses data to determine time to SQ """
+    fit = Polynomial.fit(time_steps, fissile_masses, 1)
+    time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
+
+    print("TIME TO SQ:", time_to_sig_quantity)
+    return time_to_sig_quantity

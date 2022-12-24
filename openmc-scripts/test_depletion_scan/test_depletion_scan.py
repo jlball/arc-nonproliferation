@@ -5,6 +5,7 @@ import numpy as np
 import os
 import sys
 
+""" Handle command line arguments and setup directory structure """
 if sys.argv[1] is not None:
     base_dir = str(sys.argv[1])
     os.mkdir(base_dir)
@@ -104,7 +105,9 @@ def generate_device(dopant, dopant_mass):
 # Depletion Scan
 # ==============================================================================
 
-masses = [1000]
+masses = np.array([1000, 1e5])
+
+np.savetxt(base_dir + '/masses.txt', masses)
 
 for mass in masses:
     """ DEPLETION SETTINGS """
@@ -113,6 +116,8 @@ for mass in masses:
     num_steps = 2
     time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+
+    chain_file = '/home/jlball/arc-nonproliferation/openmc-scripts/test_depletion_scan/chain_endfb71_pwr.xml'
 
     """ Generate blankets doped to specified mass """
     
@@ -125,10 +130,10 @@ for mass in masses:
     """ Run depletion calculation """
     U_device.deplete(time_steps, 
         source_rates=source_rates, 
-        operator_kwargs={'chain_file':'/home/jlball/arc-nonproliferation/openmc-scripts/test_depletion_scan/chain_endfb71_pwr.xml', 'normalization_mode':'source-rate'}, 
+        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
         directory=base_dir + '/Uranium/'+ str(mass))
 
     Th_device.deplete(time_steps, 
         source_rates=source_rates, 
-        operator_kwargs={'chain_file':'/home/jlball/arc-nonproliferation/openmc-scripts/test_depletion_scan/chain_endfb71_pwr.xml', 'normalization_mode':'source-rate'}, 
+        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
         directory=base_dir + '/Thorium/' + str(mass))
