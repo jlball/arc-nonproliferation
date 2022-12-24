@@ -22,10 +22,30 @@ Th_time_to_SQ = np.empty(len(masses))
 
 """ Iterate through each mass simulated and compute time to SQ"""
 for i, mass in enumerate(masses):
-    """ Load depletion results file """
+
+    """ Extract time to 1 SQ for Uranium """
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
     U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
 
     os.chdir("../../..")
+
+    """ Extract time to 1 SQ for Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_time_to_SQ[i] = extract_time_to_sq('Th', Th_results)
+
+    os.chdir("../../..")
+
+print("Uranium times to 1 SQ:", U_time_to_SQ)
+print("Thorium times to 1 SQ:", Th_time_to_SQ)
+
+# ====================================================
+# Fission Power
+# ====================================================
+
+# ====================================================
+# Decay Heat
+# ====================================================

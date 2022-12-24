@@ -116,7 +116,7 @@ def extract_time_to_sq(dopant, results):
     for i in range(0, len(time_steps)):
         materials = results.export_to_materials(i)
 
-        doped_flibe = get_material_by_name(materials, 'doped flibe') #Something here about retriving the correct material
+        doped_flibe = get_material_by_name(materials, 'doped flibe') 
 
         if dopant == "U":
             fissile_mass = doped_flibe.get_mass(nuclide='Pu239')
@@ -130,6 +130,4 @@ def extract_time_to_sq(dopant, results):
     """ Linear fit to fissile masses data to determine time to SQ """
     fit = Polynomial.fit(time_steps, fissile_masses, 1)
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
-
-    print("TIME TO SQ:", time_to_sig_quantity)
     return time_to_sig_quantity
