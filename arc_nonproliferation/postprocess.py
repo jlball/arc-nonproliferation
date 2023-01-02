@@ -108,8 +108,9 @@ def get_material_by_name(materials, name):
         if mat.name == name:
             return mat
 
-def extract_time_to_sq(dopant, results):
-    time_steps = results.get_times(time_units='h')
+def get_masses_from_mats(dopant, results):
+
+    time_steps = results.get_times()
     fissile_masses = np.empty(len(time_steps))
 
     """ Extract list of fissile masses for each depletion time step """
@@ -126,6 +127,13 @@ def extract_time_to_sq(dopant, results):
             raise ValueError("Invalid dopant type passed into extract time to SQ function")
 
         fissile_masses[i] = fissile_mass / 1000 # Convert from grams to kg
+    
+    return fissile_masses
+
+def extract_time_to_sq(dopant, results):
+    time_steps = results.get_times(time_units='h')
+    
+    fissile_masses = get_masses_from_mats(dopant, results)
 
     """ Linear fit to fissile masses data to determine time to SQ """
     fit = Polynomial.fit(time_steps, fissile_masses, 1)
