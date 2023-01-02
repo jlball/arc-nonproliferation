@@ -131,3 +131,6 @@ def extract_time_to_sq(dopant, results):
     fit = Polynomial.fit(time_steps, fissile_masses, 1)
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
     return time_to_sig_quantity
+
+def extract_fission_power(dopant, results):
+    return

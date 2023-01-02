@@ -47,7 +47,6 @@ print("Thorium times to 1 SQ:", Th_time_to_SQ)
 # ====================================================
 
 
-
 # ====================================================
 # Decay Heat
 # ====================================================
@@ -57,6 +56,7 @@ print("Thorium times to 1 SQ:", Th_time_to_SQ)
 # Plotting
 # ====================================================
 
+#Change into dedicated directory for figures or create figures directory
 try:
     os.chdir(base_dir + "/figures")
 except:

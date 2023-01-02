@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.colors as colors
 
-sp = openmc.StatePoint('221219/statepoint.10.h5')
+sp = openmc.StatePoint('run_1/statepoint.10.h5')
 mesh_tally = sp.get_tally(name='Mesh Tally')
 
 

@@ -92,7 +92,7 @@ device.settings.photon_transport = True
 device.build()
 device.export_to_xml(remove_surfs=True)
 
-device.run(particles=int(1e4))
+device.run(particles=int(1e3))
 
 if sys.argv[1] is not None:
     os.mkdir(str(sys.argv[1]))
