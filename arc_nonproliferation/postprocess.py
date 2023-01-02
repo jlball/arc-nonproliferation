@@ -109,7 +109,6 @@ def get_material_by_name(materials, name):
             return mat
 
 def get_masses_from_mats(dopant, results):
-
     time_steps = results.get_times()
     fissile_masses = np.empty(len(time_steps))
 

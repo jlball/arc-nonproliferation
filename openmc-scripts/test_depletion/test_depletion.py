@@ -2,6 +2,16 @@ import arc_nonproliferation as anp
 import openmc
 import openmc.deplete
 import numpy as np
+import sys
+import os
+
+if sys.argv[1] is not None:
+    base_dir = './' + sys.argv[1]
+else:
+    raise ValueError("No base directory specified!")
+
+os.mkdir(base_dir)
+os.chdir(base_dir)
 
 device = anp.Device()
 
@@ -102,7 +112,7 @@ device.build()
 device.export_to_xml(remove_surfs=True)
 
 """ Setup depletion solver """
-operator = openmc.deplete.CoupledOperator(device, 'chain_endfb71_pwr.xml', normalization_mode='source-rate')
+operator = openmc.deplete.CoupledOperator(device, '../chain_endfb71_pwr.xml', normalization_mode='source-rate')
 integrator = openmc.deplete.PredictorIntegrator(operator=operator, timesteps=time_steps, source_rates=source_rates)
 
 """ Run depletion calculation """
