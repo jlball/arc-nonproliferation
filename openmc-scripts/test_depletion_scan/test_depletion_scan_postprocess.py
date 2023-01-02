@@ -46,6 +46,31 @@ print("Thorium times to 1 SQ:", Th_time_to_SQ)
 # Fission Power
 # ====================================================
 
+
+
 # ====================================================
 # Decay Heat
 # ====================================================
+
+
+# ====================================================
+# Plotting
+# ====================================================
+
+try:
+    os.chdir(base_dir + "/figures")
+except:
+    os.mkdir(base_dir + "/figures")
+    os.chdir(base_dir + "/figures")
+
+""" Time to 1 Significant Quantity """
+fig, ax = plt.subplots()
+ax.scatter(masses, U_time_to_SQ, label="Uranium")
+ax.scatter(masses, Th_time_to_SQ, label="Thorium")
+ax.legend()
+
+ax.set_title("Time to 1 Significant Quantity")
+ax.set_ylabel("Time (hours)")
+ax.set_xlabel("Mass of Fertile Material (kg)")
+
+fig.savefig("time_to_sq.png")
