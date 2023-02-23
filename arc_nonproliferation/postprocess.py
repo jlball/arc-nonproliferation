@@ -139,5 +139,13 @@ def extract_time_to_sq(dopant, results):
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
     return time_to_sig_quantity
 
-def extract_fission_power(dopant, results):
-    return
+def extract_decay_heat(results):
+    time_steps = results.get_times()
+    decay_heats = np.empty(len(time_steps))
+
+    for i in range(0, len(time_steps)):
+        materials = results.export_to_materials(i)
+        doped_flibe = get_material_by_name(materials, 'doped flibe') 
+        decay_heats[i] = doped_flibe.get_decay_heat()
+
+    return decay_heats / 1e6 #Convert from watts to MW
