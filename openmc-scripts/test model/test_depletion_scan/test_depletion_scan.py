@@ -105,7 +105,7 @@ def generate_device(dopant, dopant_mass):
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([1000, 1e5])
+masses = np.array([5e3, 10e3, 20e3, 30e3, 50e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
@@ -113,11 +113,11 @@ for mass in masses:
     """ DEPLETION SETTINGS """
     fusion_power = 500 #MW
 
-    num_steps = 2
+    num_steps = 5
     time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-    chain_file = '/home/jlball/arc-nonproliferation/openmc-scripts/test_depletion_scan/chain_endfb71_pwr.xml'
+    chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
 
     """ Generate blankets doped to specified mass """
     
