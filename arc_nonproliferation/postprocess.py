@@ -36,7 +36,7 @@ def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     # Reshape the data into a 2 axis numpy array of R/Z flux values
     slice = tally.get_slice(scores=[score])
     data = slice.get_reshaped_data(value=value)
-    data = data.reshape((r_points-1, z_points-1))
+    data = data.reshape((z_points-1, r_points-1))
 
     if volume_norm:
         volumes = mesh.volumes.reshape((r_points-1, z_points-1)).T # Need to transpose matrix of volumes to get correct R/Z orientation
@@ -73,8 +73,7 @@ def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma
     ax.set_xlabel('R (cm)')
     ax.set_ylabel('Z (cm)')
     ax.set_title(title)
-    ax.set_aspect(1)
-    pcolormesh = ax.pcolormesh(r_grid, z_grid, tbr.T, cmap=cmap)
+    pcolormesh = ax.pcolormesh(r_grid, z_grid, tbr, cmap=cmap)
     fig.colorbar(pcolormesh, ax=ax, label='TBR')
 
     return fig, ax

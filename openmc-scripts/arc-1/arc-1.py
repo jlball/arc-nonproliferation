@@ -44,7 +44,7 @@ regions = openmc.model.subdivide([pfc_polygon,
 
 plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
-doped_mat = anp.doped_flibe('U', 1e4, volume=1e8)
+doped_mat = anp.doped_flibe('U', 5e4, volume=1e8)
 
 device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
 device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')
@@ -94,7 +94,11 @@ device.export_to_xml(remove_surfs=True)
 
 device.run(particles=int(1e3))
 
-if sys.argv[1] is not None:
-    os.mkdir(str(sys.argv[1]))
-    device.move_files(str(sys.argv[1]))
-    print("OpenMC files moved to new directory:", str(sys.argv[1]))
+try:
+    if sys.argv[1] is not None:
+        os.mkdir(str(sys.argv[1]))
+        device.move_files(str(sys.argv[1]))
+        print("OpenMC files moved to new directory:", str(sys.argv[1]))
+
+except:
+    print("No directory specified, using this one")

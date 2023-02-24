@@ -6,7 +6,7 @@ import matplotlib.colors as colors
 
 sp = openmc.StatePoint('run_1/statepoint.10.h5')
 mesh_tally = sp.get_tally(name='Mesh Tally')
-
+U_mesh_tally = sp.get_tally(name='Uranium Mesh Tally')
 
 fusion_power = 500 #MW
 total_source_rate = fusion_power * anp.neutrons_per_MJ # neutrons/s
@@ -15,9 +15,15 @@ total_source_rate = fusion_power * anp.neutrons_per_MJ # neutrons/s
 # Mesh TBR
 # =================================================================================
 fig, ax = anp.plot_RZ_quantity(mesh_tally, '(n,Xt)', volume_norm=False, title='Mesh TBR')
-fig.set_figwidth(5)
-fig.set_figheight(8)
+#fig.set_figwidth(5)
+#fig.set_figheight(8)
 fig.savefig('figures/mesh_tbr.png')
+
+# =================================================================================
+# Mesh Fissile Breeding
+# =================================================================================
+fig, ax = anp.plot_RZ_quantity(U_mesh_tally, 'absorption', volume_norm=True, title='Mesh Fissile Breeding')
+fig.savefig('figures/mesh_breeding.png')
 
 # =================================================================================
 # FLiBe

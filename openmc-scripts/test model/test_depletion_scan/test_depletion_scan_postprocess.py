@@ -95,3 +95,16 @@ ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
 fig.savefig("time_to_sq.png")
 
+# Fissile Proliferance
+
+fusion_power = 500 #MW
+
+U_fissile_proliferance = 1/(U_time_to_SQ * masses/1e3 * fusion_power)
+Th_fissile_proliferance = 1/(Th_time_to_SQ * masses/1e3 * fusion_power)
+
+fig, ax = plt.subplots()
+
+ax.scatter(masses, U_fissile_proliferance)
+ax.scatter(masses, Th_fissile_proliferance)
+
+fig.savefig("fissile_proliferance.png")
