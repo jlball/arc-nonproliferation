@@ -57,8 +57,8 @@ for i, mass in enumerate(masses):
     for step in range(0, num_steps):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
         print(sp.tallies)
-        tally = sp.get_tally(name = 'Mesh Tally')
-        U_fission_powers[i, j] = anp.get_uvalue(tally, 'kappa-fission') * total_source_rate * anp.MJ_per_eV
+        tally = sp.get_tally(name='Mesh Tally')
+        U_fission_powers[i, step] = anp.get_uvalue(tally, 'kappa-fission') * total_source_rate * anp.MJ_per_eV
 
 
 

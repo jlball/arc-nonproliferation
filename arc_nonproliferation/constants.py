@@ -8,4 +8,7 @@ MJ_per_eV = 1.60218e-25
 UF4_molar_mass = 314.02 #g/mol
 ThF4_molar_mass = 309.03 #g/mol
 
+Pu239_mass_in_kg = 3.9695545e-25 #kg mass of 1 Pu239 nucleus in kg, from wolfram alpha
+U233_mass_in_kg = 3.8697142e-25 #kg mass of 1 U233 nucleus in kg, from wolfram alpha
+
 sig_quantity = 8 # kg, the same for both Pu239 and U233. Defined by the IAEA

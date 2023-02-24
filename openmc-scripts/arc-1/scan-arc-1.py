@@ -78,9 +78,8 @@ def generate_device(dopant, dopant_mass):
     source.energy = openmc.stats.Discrete([14.1E6], [1.0])
 
     device.settings.source = source
-    device.settings.photon_transport = True
+    device.settings.photon_transport = False
 
-    device.settings.particles = int(1e5)
     device.settings.batches = 10
 
     # ==============================================================================
@@ -114,6 +113,8 @@ def generate_device(dopant, dopant_mass):
 masses = np.array([5e3, 10e3, 20e3, 50e3])
 np.savetxt(base_dir + '/masses.txt', masses)
 
+particles = int(1e5)
+
 for mass in masses:
     U_device = generate_device('U', mass)
     Th_device = generate_device('Th', mass)
@@ -122,13 +123,13 @@ for mass in masses:
     os.mkdir(base_dir + '/Uranium/' + str(mass))
     os.chdir(base_dir + '/Uranium/' + str(mass))
     U_device.build()
-    U_device.run()
+    U_device.run(particles=particles)
     os.chdir('../../..')
 
     os.mkdir(base_dir + '/Thorium/' + str(mass))
     os.chdir(base_dir + '/Thorium/' + str(mass))
     Th_device.build()
-    Th_device.run()
+    Th_device.run(particles=particles)
     os.chdir('../../..')
 
 
