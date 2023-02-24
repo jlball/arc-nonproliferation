@@ -105,7 +105,7 @@ def generate_device(dopant, dopant_mass):
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3, 20e3, 30e3, 50e3])
+masses = np.array([5e3, 20e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
@@ -114,7 +114,7 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 3
+    num_steps = 7
     time_steps = [100*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 

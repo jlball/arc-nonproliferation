@@ -51,8 +51,8 @@ for i, mass in enumerate(masses):
 # ====================================================
 # Fission Power
 # ====================================================
-U_fission_powers = np.empty((len(masses), num_steps))
-Th_fission_powers = np.empty((len(masses), num_steps))
+U_fission_powers = np.empty((len(masses), num_steps, 2))
+Th_fission_powers = np.empty((len(masses), num_steps, 2))
 
 for i, mass in enumerate(masses):
     """ Uranium """
@@ -62,7 +62,8 @@ for i, mass in enumerate(masses):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
         tally = sp.get_tally(name='FLiBe Tally')
 
-        U_fission_powers[i, step] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
+        U_fission_powers[i, step, 0] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
+        U_fission_powers[i, step, 1] = anp.get_uvalue(tally, 'kappa-fission').s * total_neutron_rate * MJ_per_eV
 
     os.chdir('../../..')
 
@@ -73,7 +74,8 @@ for i, mass in enumerate(masses):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
         tally = sp.get_tally(name='FLiBe Tally')
 
-        Th_fission_powers[i, step] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
+        Th_fission_powers[i, step, 0] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
+        Th_fission_powers[i, step, 1] = anp.get_uvalue(tally, 'kappa-fission').s * total_neutron_rate * MJ_per_eV
 
     os.chdir('../../..')
 
@@ -88,6 +90,8 @@ for i, mass in enumerate(masses):
 # Plotting
 # ====================================================
 
+masses = masses / 1e3 #convert from kg to metric tons
+
 #Change into dedicated directory for figures or create figures directory
 try:
     os.chdir(base_dir + "/figures")
@@ -100,8 +104,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses/1e3, U_time_to_SQ/24, label="$^{238}$U", marker='o')
-ax.scatter(masses/1e3, Th_time_to_SQ/24, label="$^{232}$Th", marker='s')
+ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker='o')
+ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker='s')
 
 # Fit data to 1/x function:
 def fit(x, A, B):
@@ -111,12 +115,12 @@ U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
 
 fit_masses = np.linspace(5, masses[-1], num=100)
-ax.plot(fit_masses/1e3, fit(fit_masses, *U_popt)/24, alpha=0.3)
-ax.plot(fit_masses/1e3, fit(fit_masses, *Th_popt)/24, alpha=0.3)
+ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3)
+ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3)
 
 ax.legend()
 
-ax.set_xlim(0, masses[-1]/1e3 + 2)
+ax.set_xlim(0, masses[-1] + 2)
 ax.set_ylim(0, np.max(Th_time_to_SQ/24) + 5)
 
 ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
@@ -129,8 +133,8 @@ fig.savefig("time_to_sq.png")
 
 fusion_power = 500 #MW
 
-U_fissile_proliferance = 1/(U_time_to_SQ * masses/1e3 * fusion_power)
-Th_fissile_proliferance = 1/(Th_time_to_SQ * masses/1e3 * fusion_power)
+U_fissile_proliferance = 1/(U_time_to_SQ * masses * fusion_power)
+Th_fissile_proliferance = 1/(Th_time_to_SQ * masses * fusion_power)
 
 fig, ax = plt.subplots()
 
@@ -144,34 +148,38 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
+U_fission_power_at_SQ = np.empty((len(masses)))
+Th_fission_power_at_SQ = np.empty((len(masses)))
 for i, mass in enumerate(masses):
     """ Uranium """
-    ax.scatter(time_steps, U_fission_powers[i], c='r', s=2)
-
-    U_res = linregress(time_steps, U_fission_powers[i])
-
-    before_sq = np.array([0, U_time_to_SQ[i]/24])
-    after_sq = np.array([U_time_to_SQ[i]/24, time_steps[-1]])
-
-    ax.plot(before_sq, U_res.intercept + U_res.slope*before_sq, c='r', alpha=0.7)
-    ax.plot(after_sq, U_res.intercept + U_res.slope*after_sq, c='r', alpha=0.3)
+    U_res = linregress(time_steps, U_fission_powers[i, :, 0])
+    U_fission_power_at_SQ[i] = U_res.intercept + U_res.slope*U_time_to_SQ[i]
 
     """ Thorium """
-    ax.scatter(time_steps, Th_fission_powers[i], c='g', s=2)
+    Th_res = linregress(time_steps, Th_fission_powers[i, :, 0])
+    Th_fission_power_at_SQ[i] = Th_res.intercept + Th_res.slope*Th_time_to_SQ[i]
 
-    Th_res = linregress(time_steps, Th_fission_powers[i])
+ax.scatter(masses, U_fission_powers[:, 0, 0], c='r', s=4, label='At t = 0')
+ax.scatter(masses, Th_fission_powers[:, 0, 0], c='g', s=4, label='At t = 0')
 
-    before_sq = np.array([0, Th_time_to_SQ[i]/24])
-    after_sq = np.array([Th_time_to_SQ[i]/24, time_steps[-1]])
+ax.scatter(masses, U_fission_power_at_SQ, c='r', s=4, label='After 1 SQ bred')
+ax.scatter(masses, Th_fission_power_at_SQ, c='g', s=4, label='After 1 SQ bred')
 
-    ax.plot(before_sq, Th_res.intercept + Th_res.slope*before_sq, c='g', alpha=0.7)
-    ax.plot(after_sq, Th_res.intercept + Th_res.slope*after_sq, c='g', alpha=0.3)
+ax.fill_between(masses, U_fission_powers[:, 0, 0], U_fission_power_at_SQ, color='r', alpha=0.3)
+ax.fill_between(masses, Th_fission_powers[:, 0, 0], Th_fission_power_at_SQ, color='g', alpha=0.3)
 
-ax.set_xlim(-5, 100)
-ax.set_ylim(0, 150)
+text_offset = 5
+ax.annotate("t = $t_{SQ}$", (masses[-1], U_fission_power_at_SQ[-1]), color='r', textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = 0", (masses[-1], U_fission_powers[-1, 0, 0]), color='r', textcoords='offset points', xytext=(text_offset, 0))
 
-ax.set_title("Fission Power", fontsize=14)
+ax.annotate("t = $t_{SQ}$", (masses[-1], Th_fission_power_at_SQ[-1]), color='g', textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0, 0]), color='g', textcoords='offset points', xytext=(text_offset, 0))
+
+ax.set_xlim(0, masses[-1] + 5)
+ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
+
+ax.set_title("Fission Power in Doped FLiBe Blanket", fontsize=14)
 ax.set_ylabel("Fission Power (MW)", fontsize=14)
-ax.set_xlabel("Time (days)", fontsize=14)
+ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("fission_power.png")
