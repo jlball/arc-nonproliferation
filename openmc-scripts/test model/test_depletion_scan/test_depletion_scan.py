@@ -124,14 +124,15 @@ for mass in masses:
     U_device = generate_device("U", mass)
     Th_device = generate_device("Th", mass)
 
-    U_device.build()
-    Th_device.build()
-
     """ Run depletion calculation """
+    U_device.build()
+
     U_device.deplete(time_steps, 
         source_rates=source_rates, 
         operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
         directory=base_dir + '/Uranium/'+ str(mass))
+
+    Th_device.build()
 
     Th_device.deplete(time_steps, 
         source_rates=source_rates, 

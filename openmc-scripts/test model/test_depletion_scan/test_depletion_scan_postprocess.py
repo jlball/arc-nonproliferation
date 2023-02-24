@@ -24,16 +24,18 @@ Th_time_to_SQ = np.empty(len(masses))
 for i, mass in enumerate(masses):
 
     """ Extract time to 1 SQ for Uranium """
-    print("============== URANIUM MASS:" + str(mass) + "kg ==============")
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
     U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
 
+    #While we're here, get the number of depletion steps:
+    time_steps = U_results.get_times()
+    num_steps = len(time_steps)
+
     os.chdir("../../..")
 
     """ Extract time to 1 SQ for Thorium """
-    print("============== THORIUM MASS:" + str(mass) + "kg ==============")
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
@@ -47,6 +49,17 @@ print("Thorium times to 1 SQ:", Th_time_to_SQ)
 # ====================================================
 # Fission Power
 # ====================================================
+U_fission_powers = np.empty((len(masses), num_steps))
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    for step in range(0, num_steps):
+        sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+        print(sp.tallies)
+        tally = sp.get_tally(name = 'Mesh Tally')
+        U_fission_powers[i, j] = anp.get_uvalue(tally, 'kappa-fission') * total_source_rate * anp.MJ_per_eV
+
 
 
 # ====================================================
