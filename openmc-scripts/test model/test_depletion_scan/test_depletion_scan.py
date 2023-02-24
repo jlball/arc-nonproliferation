@@ -105,7 +105,7 @@ def generate_device(dopant, dopant_mass):
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([1000, 1e5])
+masses = np.array([5e3, 10e3, 20e3, 30e3, 50e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
@@ -113,27 +113,51 @@ for mass in masses:
     """ DEPLETION SETTINGS """
     fusion_power = 500 #MW
 
-    num_steps = 2
+    num_steps = 5
     time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-    chain_file = '/home/jlball/arc-nonproliferation/openmc-scripts/test_depletion_scan/chain_endfb71_pwr.xml'
+    chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
 
     """ Generate blankets doped to specified mass """
     
     U_device = generate_device("U", mass)
     Th_device = generate_device("Th", mass)
 
-    U_device.build()
-    Th_device.build()
-
     """ Run depletion calculation """
-    U_device.deplete(time_steps, 
-        source_rates=source_rates, 
-        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
-        directory=base_dir + '/Uranium/'+ str(mass))
+
+    os.mkdir(base_dir + '/Uranium/'+ str(mass))
+    os.chdir(base_dir + '/Uranium/'+ str(mass))
+    U_device.build()
+
+    U_operator = openmc.deplete.CoupledOperator(
+    U_device, chain_file)
+    U_integrator = openmc.deplete.CECMIntegrator(
+    U_operator, time_steps, source_rates)
+
+    U_integrator.integrate()
+
+    # U_device.deplete(time_steps, 
+    #     source_rates=source_rates, 
+    #     operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+    #     directory=base_dir + '/Uranium/'+ str(mass))
+
+    os.chdir("../../..")
+
+    # os.mkdir(base_dir + '/Thorium/'+ str(mass))
+    # os.chdir(base_dir + '/Thorium/'+ str(mass))
+    # Th_device.build()
+
+    # Th_operator = openmc.deplete.CoupledOperator(
+    # Th_device, chain_file)
+    # Th_integrator = openmc.deplete.CECMIntegrator(
+    # Th_operator, time_steps, source_rates)
+
+    # Th_integrator.integrate()
 
     Th_device.deplete(time_steps, 
         source_rates=source_rates, 
         operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
         directory=base_dir + '/Thorium/' + str(mass))
+
+    # os.chdir("../../..")

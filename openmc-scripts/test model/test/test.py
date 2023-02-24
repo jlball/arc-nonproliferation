@@ -72,12 +72,13 @@ device.settings.source = source
 # ==============================================================================
 """ Cylindrical Mesh Tally """
 mesh = openmc.CylindricalMesh()
-mesh.r_grid = np.linspace(25, 200, num=25)
-mesh.z_grid = np.linspace(-200, 200, num=50)
+mesh.r_grid = np.linspace(25, 200, num=175)
+mesh.z_grid = np.linspace(-200, 200, num=400)
 mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
 mesh_filter = openmc.MeshFilter(mesh)
 
-device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
+device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local'], filters=[mesh_filter])
+device.add_tally('Uranium Mesh Tally', ['absorption', 'kappa-fission'], nuclides=['U238'], filters=[mesh_filter])
 
 """ FLiBe Tally """
 flibe_filter = openmc.MaterialFilter(doped_mat)
@@ -92,7 +93,7 @@ device.settings.photon_transport = True
 device.build()
 device.export_to_xml(remove_surfs=True)
 
-device.run(particles=int(1e3))
+device.run(particles=int(1e5))
 
 if sys.argv[1] is not None:
     os.mkdir(str(sys.argv[1]))

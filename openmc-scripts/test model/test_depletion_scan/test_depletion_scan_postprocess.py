@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 from arc_nonproliferation.postprocess import *
+from scipy.optimize import curve_fit
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -16,7 +17,6 @@ else:
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
-print(masses)
 U_time_to_SQ = np.empty(len(masses))
 Th_time_to_SQ = np.empty(len(masses))
 
@@ -28,6 +28,10 @@ for i, mass in enumerate(masses):
 
     U_results = Results('depletion_results.h5')
     U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
+
+    #While we're here, get the number of depletion steps:
+    time_steps = U_results.get_times()
+    num_steps = len(time_steps)
 
     os.chdir("../../..")
 
@@ -45,6 +49,17 @@ print("Thorium times to 1 SQ:", Th_time_to_SQ)
 # ====================================================
 # Fission Power
 # ====================================================
+U_fission_powers = np.empty((len(masses), num_steps))
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    for step in range(0, num_steps):
+        sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+        print(sp.tallies)
+        tally = sp.get_tally(name = 'Mesh Tally')
+        U_fission_powers[i, j] = anp.get_uvalue(tally, 'kappa-fission') * total_source_rate * anp.MJ_per_eV
+
 
 
 # ====================================================
@@ -70,10 +85,39 @@ ax.spines["right"].set_color("None")
 
 ax.scatter(masses/1e3, U_time_to_SQ/24, label="$^{238}$U", marker='o')
 ax.scatter(masses/1e3, Th_time_to_SQ/24, label="$^{232}$Th", marker='s')
+
+# Fit data to 1/x function:
+def fit(x, A, B):
+    return A/x + B
+
+U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
+Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
+
+fit_masses = np.linspace(5, masses[-1], num=100)
+ax.plot(fit_masses/1e3, fit(fit_masses, *U_popt)/24, alpha=0.3)
+ax.plot(fit_masses/1e3, fit(fit_masses, *Th_popt)/24, alpha=0.3)
+
 ax.legend()
 
-ax.set_title("Time to 1 Significant Quantity")
-ax.set_ylabel("Time (days)")
-ax.set_xlabel("Mass of Fertile Material (metric tons)")
+ax.set_xlim(0, masses[-1]/1e3 + 2)
+ax.set_ylim(0, np.max(Th_time_to_SQ/24) + 5)
+
+ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
+ax.set_ylabel("Time (days)", fontsize=14)
+ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
 fig.savefig("time_to_sq.png")
+
+# Fissile Proliferance
+
+fusion_power = 500 #MW
+
+U_fissile_proliferance = 1/(U_time_to_SQ * masses/1e3 * fusion_power)
+Th_fissile_proliferance = 1/(Th_time_to_SQ * masses/1e3 * fusion_power)
+
+fig, ax = plt.subplots()
+
+ax.scatter(masses, U_fissile_proliferance)
+ax.scatter(masses, Th_fissile_proliferance)
+
+fig.savefig("fissile_proliferance.png")
