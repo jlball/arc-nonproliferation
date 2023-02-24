@@ -57,6 +57,7 @@ class Device(openmc.model.Model):
         wedge_cell.fill = self.univ
         self.geometry = openmc.Geometry([wedge_cell])
         self.tallies = openmc.Tallies(self._tallies)
+        super().export_to_xml()
 
     def add_tally(self, name, scores, nuclides=None, filters=None):
         """Creates a tally from given kwargs and adds it to the tallies object"""

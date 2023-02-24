@@ -125,16 +125,39 @@ for mass in masses:
     Th_device = generate_device("Th", mass)
 
     """ Run depletion calculation """
+
+    os.mkdir(base_dir + '/Uranium/'+ str(mass))
+    os.chdir(base_dir + '/Uranium/'+ str(mass))
     U_device.build()
 
-    U_device.deplete(time_steps, 
-        source_rates=source_rates, 
-        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
-        directory=base_dir + '/Uranium/'+ str(mass))
+    U_operator = openmc.deplete.CoupledOperator(
+    U_device, chain_file)
+    U_integrator = openmc.deplete.CECMIntegrator(
+    U_operator, time_steps, source_rates)
 
-    Th_device.build()
+    U_integrator.integrate()
+
+    # U_device.deplete(time_steps, 
+    #     source_rates=source_rates, 
+    #     operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+    #     directory=base_dir + '/Uranium/'+ str(mass))
+
+    os.chdir("../../..")
+
+    # os.mkdir(base_dir + '/Thorium/'+ str(mass))
+    # os.chdir(base_dir + '/Thorium/'+ str(mass))
+    # Th_device.build()
+
+    # Th_operator = openmc.deplete.CoupledOperator(
+    # Th_device, chain_file)
+    # Th_integrator = openmc.deplete.CECMIntegrator(
+    # Th_operator, time_steps, source_rates)
+
+    # Th_integrator.integrate()
 
     Th_device.deplete(time_steps, 
         source_rates=source_rates, 
         operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
         directory=base_dir + '/Thorium/' + str(mass))
+
+    # os.chdir("../../..")
