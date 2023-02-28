@@ -110,7 +110,7 @@ def generate_device(dopant, dopant_mass):
 # Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3, 20e3, 50e3])
+masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3])
 np.savetxt(base_dir + '/masses.txt', masses)
 
 particles = int(1e5)

@@ -96,6 +96,9 @@ ax.spines["right"].set_color("None")
 ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker='o')
 ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker='s')
 
+np.save("U_time_to_SQ_normal", U_time_to_SQ)
+np.save("Th_time_to_SQ_normal", Th_time_to_SQ)
+
 # Fit data to 1/x function:
 def fit(x, A, B):
     return A/x + B

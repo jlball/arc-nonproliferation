@@ -24,10 +24,38 @@ def generate_device(dopant, dopant_mass):
     """ PFCs and Vacuum Vessel """
 
     vv_points = np.array([
-        [450, 100],
-        [450, -100],
-        [350, -100],
-        [350, 100]
+        [326, -33.8],
+        [375, -90.4],
+        [452, -142],
+        [495, -165],
+        [500, -176],
+        [492, -194],
+        [492, -227],
+        [501, -227],
+        [519, -185],
+        [527, -182],
+        [561, -200],
+        [570, -195],
+        [554, -166],
+        [537, -161],
+        [533, -152],
+        [587, -25.0],
+        [587,  25.0],
+        [533,  152],
+        [537,  161],
+        [554,  166],
+        [570,  195],
+        [561,  200],
+        [527,  182],
+        [519,  185],
+        [501,  227],
+        [492,  227],
+        [492,  194],
+        [500,  176],
+        [495,  165],
+        [452,  142],
+        [375,  90.4],
+        [326,  33.8]
     ])
 
     pfc_polygon = openmc.model.Polygon(vv_points, basis='rz')
@@ -39,10 +67,22 @@ def generate_device(dopant, dopant_mass):
     """ Blanket and Outer Blanket Tank """
 
     blanket_points = np.array([
-        [550, 200],
-        [550, -200],
-        [250, -200],
-        [250, 200]
+        [330, -170],
+        [415, -170],
+        [435, -240],
+        [540, -240],
+        [607, -177],
+        [607, -72],
+        [667, -72],
+        [667, 72],
+        [607, 72],
+        [607, 177],
+        [540, 240],
+        [435, 240],
+        [415, 170],
+        [330, 170],
+        [250, 80],
+        [250, -80]
     ])
 
     blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
@@ -72,7 +112,7 @@ def generate_device(dopant, dopant_mass):
 
     """ Source Definition """
     source = openmc.Source()
-    source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(400, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
+    source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(475, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
     source.angles = openmc.stats.Isotropic()
     source.energy = openmc.stats.Discrete([14.1E6], [1.0])
 
@@ -105,7 +145,7 @@ def generate_device(dopant, dopant_mass):
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([5e3, 20e3])
+masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
