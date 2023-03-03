@@ -148,3 +148,30 @@ def extract_decay_heat(results):
         decay_heats[i] = doped_flibe.get_decay_heat()
 
     return decay_heats / 1e6 #Convert from watts to MW
+
+def extract_isotopic_purity(dopant, results):
+    
+    materials = results.export_to_materials(-1)
+    doped_flibe = get_material_by_name(materials, 'doped flibe') 
+
+    """ ~~~~~~~ Uranium -> Plutonium ~~~~~~ """
+    Pu_nuclides = ["Pu238", "Pu239", "Pu240", "Pu241"]
+    if dopant == 'U':
+        atoms = {}
+        total_atoms = 0
+        for nuclide in Pu_nuclides:
+            times, num_atoms = results.get_atoms(mat=doped_flibe, nuc=nuclide)
+            atoms[nuclide] = num_atoms
+            total_atoms = total_atoms + atoms[nuclide]
+        return atoms['Pu239']/total_atoms
+    
+    """ ~~~~~~~ Thorium -> Uranium ~~~~~~ """
+    U_nuclides =["U232", "U233", "U234", "U235", "U236", "U237", "U238"]
+    if dopant == 'Th':
+        atoms = {}
+        total_atoms = 0
+        for nuclide in U_nuclides:
+            times, num_atoms = results.get_atoms(mat=doped_flibe, nuc=nuclide)
+            atoms[nuclide] = num_atoms
+            total_atoms = total_atoms + atoms[nuclide]
+        return atoms['U233']/total_atoms

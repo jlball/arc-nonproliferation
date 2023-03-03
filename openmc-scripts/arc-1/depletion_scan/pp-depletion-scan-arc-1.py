@@ -86,6 +86,29 @@ for i, mass in enumerate(masses):
 # Decay Heat
 # ====================================================
 
+# ====================================================
+# Isotopic Purity
+# ====================================================
+U_purities = np.empty(len(masses))
+Th_purities = np.empty(len(masses))
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U_purity = extract_isotopic_purity("U", U_results)
+    U_purities[i] = U_purity[-1]
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_purity = extract_isotopic_purity("Th", Th_results)
+    Th_purities[i] = Th_purity[-1]
+
+    os.chdir('../../..')
 
 # ====================================================
 # Plotting
@@ -187,3 +210,14 @@ ax.set_ylabel("Fission Power (MW)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("fission_power.png")
+
+# Isotopic Purity:
+fig, ax = plt.subplots()
+ax.scatter(masses, U_purities, label = "Pu239")
+ax.scatter(masses, Th_purities, label = "U233")
+
+ax.set_title("Isotopic Purity over Time", fontsize=14)
+ax.set_ylabel("Isotopic Purity", fontsize=14)
+ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
+
+fig.savefig("isotopic_purity.png")
