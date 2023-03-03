@@ -22,6 +22,7 @@ total_neutron_rate = fusion_power * neutrons_per_MJ
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
+print(masses)
 U_time_to_SQ = np.empty(len(masses))
 Th_time_to_SQ = np.empty(len(masses))
 

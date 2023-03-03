@@ -118,45 +118,45 @@ os.chdir("../..")
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([5e3])
+masses = np.array([5e3, 10e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
-# for mass in masses:
-#     """ DEPLETION SETTINGS """
-#     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
+for mass in masses:
+    """ DEPLETION SETTINGS """
+    print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
-#     fusion_power = 500 #MW
-#     num_steps = 2
-#     time_steps = [100*24*60*60 / num_steps] * num_steps
-#     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+    fusion_power = 500 #MW
+    num_steps = 2
+    time_steps = [100*24*60*60 / num_steps] * num_steps
+    source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-#     chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
+    chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
 
-#     """ Generate blankets doped to specified mass """
+    """ Generate blankets doped to specified mass """
     
-#     U_device = generate_device("U", mass)
-#     Th_device = generate_device("Th", mass)
+    U_device = generate_device("U", mass)
+    Th_device = generate_device("Th", mass)
 
-#     """ Run depletion calculation """
+    """ Run depletion calculation """
 
-#     # This is necessary to ensure the tally.xml file gets written into the directory where the depletion calculation will run
-#     os.mkdir(base_dir + '/Uranium/'+ str(mass))
-#     os.chdir(base_dir + '/Uranium/'+ str(mass))
-#     U_device.build()
-#     os.chdir('../../..')
+    # This is necessary to ensure the tally.xml file gets written into the directory where the depletion calculation will run
+    os.mkdir(base_dir + '/Uranium/'+ str(mass))
+    os.chdir(base_dir + '/Uranium/'+ str(mass))
+    U_device.build()
+    os.chdir('../../..')
 
-#     U_device.deplete(time_steps, 
-#         source_rates=source_rates, 
-#         operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
-#         directory=base_dir + '/Uranium/'+ str(mass))
+    U_device.deplete(time_steps, 
+        source_rates=source_rates, 
+        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+        directory=base_dir + '/Uranium/'+ str(mass))
 
-#     os.mkdir(base_dir + '/Thorium/'+ str(mass))
-#     os.chdir(base_dir + '/Thorium/'+ str(mass))
-#     Th_device.build()
-#     os.chdir('../../..')
+    os.mkdir(base_dir + '/Thorium/'+ str(mass))
+    os.chdir(base_dir + '/Thorium/'+ str(mass))
+    Th_device.build()
+    os.chdir('../../..')
 
-#     Th_device.deplete(time_steps, 
-#         source_rates=source_rates, 
-#         operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
-#         directory=base_dir + '/Thorium/' + str(mass))
+    Th_device.deplete(time_steps, 
+        source_rates=source_rates, 
+        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+        directory=base_dir + '/Thorium/' + str(mass))

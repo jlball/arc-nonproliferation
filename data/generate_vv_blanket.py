@@ -6,7 +6,7 @@ maj_raius = 400 #cm
 min_radius = 120 #cm
 
 elongation = 1.5
-triangularity = 0.6 
+triangularity = 0.5 
 
 blanket_thickness = 100 #cm
 
