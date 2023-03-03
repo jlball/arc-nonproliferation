@@ -15,7 +15,7 @@ os.mkdir(base_dir)
 os.mkdir(base_dir + '/Uranium')
 os.mkdir(base_dir + '/Thorium')
 
-def generate_device(dopant, dopant_mass, Li6_einrichment=7.5):
+def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
     device = anp.Device()
 
     # ==============================================================================
@@ -46,7 +46,7 @@ def generate_device(dopant, dopant_mass, Li6_einrichment=7.5):
 
     plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
-    doped_flibe = anp.doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_einrichment)
+    doped_flibe = anp.doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_enrichment)
 
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')
@@ -123,25 +123,26 @@ os.chdir("../..")
 # ==============================================================================
 # Scan
 # ==============================================================================
-
-masses = np.array([5e3, 10e3])
-np.savetxt(base_dir + '/masses.txt', masses)
-
 particles = int(1e3)
 
-for mass in masses:
-    U_device = generate_device('U', mass)
-    Th_device = generate_device('Th', mass)
+Li6_enrichments = np.linspace(0, 100, num=5)
+np.savetxt(base_dir + '/enrichments.txt', Li6_enrichments)
 
-    print('=================== MASS:' + str(mass) + 'kg ===================')
-    os.mkdir(base_dir + '/Uranium/' + str(mass))
-    os.chdir(base_dir + '/Uranium/' + str(mass))
+mass = 15e3
+
+for enrichment in Li6_enrichments:
+    U_device = generate_device('U', mass, Li6_enrichment=enrichment)
+    Th_device = generate_device('Th', mass, Li6_enrichment=enrichment)
+
+    print('=================== ENRICHMENT:' + str(enrichment) + ' ===================')
+    os.mkdir(base_dir + '/Uranium/' + str(enrichment))
+    os.chdir(base_dir + '/Uranium/' + str(enrichment))
     U_device.build()
     U_device.run(particles=particles)
     os.chdir('../../..')
 
-    os.mkdir(base_dir + '/Thorium/' + str(mass))
-    os.chdir(base_dir + '/Thorium/' + str(mass))
+    os.mkdir(base_dir + '/Thorium/' + str(enrichment))
+    os.chdir(base_dir + '/Thorium/' + str(enrichment))
     Th_device.build()
     Th_device.run(particles=particles)
     os.chdir('../../..')

@@ -14,7 +14,7 @@ if sys.argv[1] is not None:
     os.mkdir(base_dir + '/Uranium')
     os.mkdir(base_dir + '/Thorium')
 
-def generate_device(dopant, dopant_mass):
+def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
     device = anp.Device()
 
     # ==============================================================================
@@ -46,7 +46,7 @@ def generate_device(dopant, dopant_mass):
 
     plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
-    doped_flibe = anp.doped_flibe(dopant, dopant_mass, volume=1e8)
+    doped_flibe = anp.doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_enrichment)
 
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')
@@ -85,6 +85,7 @@ def generate_device(dopant, dopant_mass):
     mesh_filter = openmc.MeshFilter(mesh)
 
     device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
+    device.add_tally('Li Tally', ['(n,Xt)'], filters=[flibe_filter], nuclides=['Li6', 'Li7'])
 
     """ FLiBe Tally """
     flibe_filter = openmc.MaterialFilter(doped_flibe)
