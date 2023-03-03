@@ -2,13 +2,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import sys
 
-maj_raius = 4 #m
-min_radius = 1.2 #m
+maj_raius = 400 #cm
+min_radius = 120 #cm
 
-elongation = 1.5 #m
-triangularity = 0.6 #m
+elongation = 1.5
+triangularity = 0.6 
 
-blanket_thickness = 1 #m
+blanket_thickness = 100 #cm
 
 num_points = 20
 

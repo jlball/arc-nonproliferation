@@ -23,42 +23,7 @@ def generate_device(dopant, dopant_mass):
 
     """ PFCs and Vacuum Vessel """
 
-    vv_points = np.array([
-        [326, -33.8],
-        [375, -90.4],
-        [452, -142],
-        [495, -165],
-        [500, -176],
-        [492, -194],
-        [492, -227],
-        [501, -227],
-        [519, -185],
-        [527, -182],
-        [561, -200],
-        [570, -195],
-        [554, -166],
-        [537, -161],
-        [533, -152],
-        [587, -25.0],
-        [587,  25.0],
-        [533,  152],
-        [537,  161],
-        [554,  166],
-        [570,  195],
-        [561,  200],
-        [527,  182],
-        [519,  185],
-        [501,  227],
-        [492,  227],
-        [492,  194],
-        [500,  176],
-        [495,  165],
-        [452,  142],
-        [375,  90.4],
-        [326,  33.8]
-    ])
-
-    np.savetxt(base_dir + '/MANTA_vv.txt', vv_points)
+    vv_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/arc_vv.txt")
 
     pfc_polygon = openmc.model.Polygon(vv_points, basis='rz')
     vv_inner_edge = pfc_polygon.offset(0.3) #PFC
@@ -68,26 +33,7 @@ def generate_device(dopant, dopant_mass):
 
     """ Blanket and Outer Blanket Tank """
 
-    blanket_points = np.array([
-        [330, -170],
-        [415, -170],
-        [435, -240],
-        [540, -240],
-        [607, -177],
-        [607, -72],
-        [667, -72],
-        [667, 72],
-        [607, 72],
-        [607, 177],
-        [540, 240],
-        [435, 240],
-        [415, 170],
-        [330, 170],
-        [250, 80],
-        [250, -80]
-    ])
-
-    np.savetxt(base_dir + '/MANTA_blanket.txt', blanket_points)
+    blanket_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/arc_blanket.txt")
 
     blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
     gap = blanket_inner.offset(1.0)
