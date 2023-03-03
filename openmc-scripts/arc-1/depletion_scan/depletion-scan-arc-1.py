@@ -71,8 +71,8 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
 
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e3)
-    device.settings.batches = 5
+    device.settings.particles = int(1e4)
+    device.settings.batches = 10
 
     # ==============================================================================
     # Tallies
@@ -85,11 +85,11 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
     mesh_filter = openmc.MeshFilter(mesh)
 
     device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
-    device.add_tally('Li Tally', ['(n,Xt)'], filters=[flibe_filter], nuclides=['Li6', 'Li7'])
 
     """ FLiBe Tally """
     flibe_filter = openmc.MaterialFilter(doped_flibe)
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
+    device.add_tally('Li Tally', ['(n,Xt)'], filters=[flibe_filter], nuclides=['Li6', 'Li7'])
 
     return device
 
@@ -119,7 +119,7 @@ os.chdir("../..")
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3])
+masses = np.array([1e3, 5e3, 10e3, 20e3, 30e3, 40e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
