@@ -13,10 +13,38 @@ device = anp.Device()
 """ PFCs and Vacuum Vessel """
 
 vv_points = np.array([
-    [450, 100],
-    [450, -100],
-    [350, -100],
-    [350, 100]
+    [326, -33.8],
+    [375, -90.4],
+    [452, -142],
+    [495, -165],
+    [500, -176],
+    [492, -194],
+    [492, -227],
+    [501, -227],
+    [519, -185],
+    [527, -182],
+    [561, -200],
+    [570, -195],
+    [554, -166],
+    [537, -161],
+    [533, -152],
+    [587, -25.0],
+    [587,  25.0],
+    [533,  152],
+    [537,  161],
+    [554,  166],
+    [570,  195],
+    [561,  200],
+    [527,  182],
+    [519,  185],
+    [501,  227],
+    [492,  227],
+    [492,  194],
+    [500,  176],
+    [495,  165],
+    [452,  142],
+    [375,  90.4],
+    [326,  33.8]
 ])
 
 pfc_polygon = openmc.model.Polygon(vv_points, basis='rz')
@@ -28,10 +56,22 @@ vv_channel_outer = channel_outer.offset(3.0) #Channel shell
 """ Blanket and Outer Blanket Tank """
 
 blanket_points = np.array([
-    [550, 200],
-    [550, -200],
-    [250, -200],
-    [250, 200]
+    [330, -170],
+    [415, -170],
+    [435, -240],
+    [540, -240],
+    [607, -177],
+    [607, -72],
+    [667, -72],
+    [667, 72],
+    [607, 72],
+    [607, 177],
+    [540, 240],
+    [435, 240],
+    [415, 170],
+    [330, 170],
+    [250, 80],
+    [250, -80]
 ])
 
 blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
@@ -55,13 +95,26 @@ device.blanket = openmc.Cell(region=salt, fill=doped_mat, name='blanket')
 device.tank_outer = openmc.Cell(region=tank_outer, fill=anp.vcrti_BO, name='tank outer')
 device.domain.region = device.domain.region & outside
 
+# Plotting
+plot = openmc.Plot()
+plot.filename = 'geometry_plot'
+plot.basis = 'xz'
+plot.origin = (450, 0, 0)
+plot.width = (600, 600)
+plot.pixels = (2000, 2000)
+plot.color_by = 'cell'
+
+plots = openmc.Plots([plot])
+plots.export_to_xml()
+
+
 # ==============================================================================
 # Settings
 # ==============================================================================
 
 """ Source Definition """
 source = openmc.Source()
-source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(75, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
+source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(450, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
 source.angles = openmc.stats.Isotropic()
 source.energy = openmc.stats.Discrete([14.1E6], [1.0])
 
@@ -91,6 +144,7 @@ device.settings.photon_transport = True
 
 device.build()
 device.export_to_xml(remove_surfs=True)
+openmc.plot_geometry()
 
 device.run(particles=int(1e3))
 

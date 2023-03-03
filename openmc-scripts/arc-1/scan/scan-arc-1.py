@@ -106,14 +106,36 @@ def generate_device(dopant, dopant_mass):
 
     return device
 
+# Plotting
+plot = openmc.Plot()
+plot.filename = 'geometry_plot'
+plot.basis = 'xz'
+plot.origin = (450, 0, 0)
+plot.width = (600, 600)
+plot.pixels = (2000, 2000)
+plot.color_by = 'cell'
+
+plots = openmc.Plots([plot])
+
+os.mkdir(base_dir + "/geometry_plots")
+os.chdir(base_dir + "/geometry_plots")
+
+# generte arbitrary device
+device = generate_device('U', 0)
+device.build()
+plots.export_to_xml()
+openmc.plot_geometry()
+
+os.chdir("../..")
+
 # ==============================================================================
 # Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3])
+masses = np.array([5e3, 10e3])
 np.savetxt(base_dir + '/masses.txt', masses)
 
-particles = int(1e5)
+particles = int(1e3)
 
 for mass in masses:
     U_device = generate_device('U', mass)

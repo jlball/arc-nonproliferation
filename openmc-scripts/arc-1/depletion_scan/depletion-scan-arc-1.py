@@ -86,7 +86,8 @@ def generate_device(dopant, dopant_mass):
     ])
 
     blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
-    blanket_outer = blanket_inner.offset(2) #Blanket tank outer
+    gap = blanket_inner.offset(1.0)
+    blanket_outer = gap.offset(2.0) #Blanket tank outer
 
     regions = openmc.model.subdivide([pfc_polygon,
                                     vv_inner_edge, vv_channel_inner,
@@ -140,6 +141,20 @@ def generate_device(dopant, dopant_mass):
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
 
     return device
+
+# Plotting
+plot = openmc.Plot()
+plot.filename = 'geometry_plot'
+plot.basis = 'xz'
+plot.origin = (450, 0, 0)
+plot.width = (600, 600)
+plot.pixels = (2000, 2000)
+plot.color_by = 'cell'
+
+plots = openmc.Plots([plot])
+
+os.mkdir(base_dir + "/geometry_plots")
+os.chdir(base_dir + "/geometry_plots")
 
 # ==============================================================================
 # Depletion Scan
