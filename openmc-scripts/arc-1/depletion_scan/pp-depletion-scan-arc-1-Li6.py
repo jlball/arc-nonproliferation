@@ -82,9 +82,35 @@ for i, enrichment in enumerate(enrichments):
 
 
 # ====================================================
-# Decay Heat
+# Tritium Breeding
 # ====================================================
+U_TBR = np.empty((len(enrichments), 3)) #Li6, Li7, total
+Th_TBR = np.empty((len(enrichments), 3))
 
+for i, enrichment in enumerate(enrichments):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(enrichment))
+
+    sp = openmc.StatePoint('openmc_simulation_n'+str(num_steps - 1)+'.h5')
+    tally = sp.get_tally(name='Li Tally')
+
+    U_TBR[i, 0] = tally.get_values(scores=['(n,Xt)'], nuclides=['Li6']) #TBR from Li6
+    U_TBR[i, 1] = tally.get_values(scores=['(n,Xt)'], nuclides=['Li7']) #TBR from Li7
+    U_TBR[i, 2] = U_TBR[i, 0] + U_TBR[i, 1] # Total TBR
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(enrichment))
+
+    sp = openmc.StatePoint('openmc_simulation_n'+str(num_steps - 1)+'.h5')
+    tally = sp.get_tally(name='Li Tally')
+
+    Th_TBR[i, 0] = tally.get_values(scores=['(n,Xt)'], nuclides=['Li6']) #TBR from Li6
+    Th_TBR[i, 1] = tally.get_values(scores=['(n,Xt)'], nuclides=['Li7']) #TBR from Li7
+    Th_TBR[i, 2] = Th_TBR[i, 0] + Th_TBR[i, 1] # Total TBR
+
+    os.chdir('../../..')
 
 # ====================================================
 # Plotting
@@ -126,7 +152,7 @@ ax.spines["right"].set_color("None")
 
 U_fission_power_at_SQ = np.empty((len(enrichments)))
 Th_fission_power_at_SQ = np.empty((len(enrichments)))
-for i, mass in enumerate(enrichments):
+for i, enrichment in enumerate(enrichments):
     """ Uranium """
     U_res = linregress(time_steps, U_fission_powers[i, :, 0])
     U_fission_power_at_SQ[i] = U_res.intercept + U_res.slope*U_time_to_SQ[i]
@@ -159,3 +185,22 @@ ax.set_ylabel("Fission Power (MW)", fontsize=14)
 ax.set_xlabel("Li6 Enrichment", fontsize=14)
 
 fig.savefig("fission_power.png")
+
+""" Tritium Breeding """
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.scatter(enrichments, U_TBR[:, 0], label='Li6')
+ax.scatter(enrichments, U_TBR[:, 1], label='Li7')
+ax.scatter(enrichments, U_TBR[:, 2], label='Total')
+
+ax.set_title("TBR in Uranium-doped FLiBe Blanket", fontsize=14)
+ax.set_ylabel("TBR", fontsize=14)
+ax.set_xlabel("Li6 Enrichment", fontsize=14)
+
+ax.legend()
+
+ax.set_ylim(0.5, 1.2)
+
+fig.savefig("U_tbr.png")

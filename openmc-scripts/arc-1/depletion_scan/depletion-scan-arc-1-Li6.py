@@ -71,7 +71,7 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
 
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e5)
+    device.settings.particles = int(1e4)
     device.settings.batches = 10
 
     # ==============================================================================
@@ -129,7 +129,7 @@ for enrichment in enrichments:
     print("~~~~~~~~~~~~~~~~~~ ENRICHMENT: " + str(enrichment) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 8
+    num_steps = 5
     time_steps = [100*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
