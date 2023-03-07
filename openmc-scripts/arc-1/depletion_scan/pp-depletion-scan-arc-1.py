@@ -128,27 +128,31 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker='o')
-ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker='s')
+ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker='o', color='r')
+ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker='s', color='g')
 
 np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 
 # Fit data to 1/x function:
-def fit(x, A, B):
-    return A/x + B
+def fit(x, A, B, C):
+    return (A/x) -C*x + B
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
 
+print(U_popt)
+
 fit_masses = np.linspace(1, masses[-1], num=100)
-ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3)
-ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3)
+ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
+ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
 
 ax.legend()
 
 ax.set_xlim(0, masses[-1] + 2)
-ax.set_ylim(0, np.max(Th_time_to_SQ/24) + 5)
+ax.set_ylim(5, np.max(Th_time_to_SQ/24) + 50)
+
+ax.set_yscale("log")
 
 ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
 ax.set_ylabel("Time (days)", fontsize=14)
@@ -213,11 +217,16 @@ fig.savefig("fission_power.png")
 
 # Isotopic Purity:
 fig, ax = plt.subplots()
-ax.scatter(masses, U_purities, label = "Pu239")
-ax.scatter(masses, Th_purities, label = "U233")
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
 
-ax.set_title("Isotopic Purity over Time", fontsize=14)
-ax.set_ylabel("Isotopic Purity", fontsize=14)
+ax.scatter(masses, U_purities*100, label = "Pu239", color='r')
+ax.scatter(masses, Th_purities*100, label = "U233", color='g')
+
+ax.legend()
+
+ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
+ax.set_ylabel("Isotopic Purity (\% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("isotopic_purity.png")
