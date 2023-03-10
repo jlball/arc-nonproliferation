@@ -15,62 +15,10 @@ os.mkdir(base_dir)
 os.mkdir(base_dir + '/Uranium')
 os.mkdir(base_dir + '/Thorium')
 
-def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
-    device = anp.Device()
-
-    # ==============================================================================
-    # Geometry
-    # ==============================================================================
-
-    """ PFCs and Vacuum Vessel """
-
-    vv_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/arc_vv.txt")
-
-    pfc_polygon = openmc.model.Polygon(vv_points, basis='rz')
-    vv_inner_edge = pfc_polygon.offset(0.3) #PFC
-    vv_channel_inner = vv_inner_edge.offset(1.0) #VV
-    channel_outer = vv_channel_inner.offset(2.0) #FLiBe channels
-    vv_channel_outer = channel_outer.offset(3.0) #Channel shell
-
-    """ Blanket and Outer Blanket Tank """
-
-    blanket_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/arc_blanket.txt")
-
-    blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
-    blanket_outer = blanket_inner.offset(2) #Blanket tank outer
-
-    regions = openmc.model.subdivide([pfc_polygon,
-                                    vv_inner_edge, vv_channel_inner,
-                                    channel_outer, vv_channel_outer,
-                                    blanket_inner, blanket_outer])
-
-    plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
-
-    doped_flibe = anp.doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_enrichment)
-
-    device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
-    device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')
-    device.vv = openmc.Cell(region=vv, fill=anp.vcrti_VV, name='VV')
-    device.channel = openmc.Cell(region=channel, fill=doped_flibe, name='channels')
-    device.tank_inner = openmc.Cell(region=tank_inner, fill=anp.vcrti_BI, name='tank inner')
-    device.blanket = openmc.Cell(region=salt, fill=doped_flibe, name='blanket')
-    device.tank_outer = openmc.Cell(region=tank_outer, fill=anp.vcrti_BO, name='tank outer')
-    device.domain.region = device.domain.region & outside
-
-    # ==============================================================================
-    # Settings
-    # ==============================================================================
-
-    """ Source Definition """
-    source = openmc.Source()
-    source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(400, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
-    source.angles = openmc.stats.Isotropic()
-    source.energy = openmc.stats.Discrete([14.1E6], [1.0])
-
-    device.settings.source = source
+def setup_device(device):
     device.settings.photon_transport = False
-
     device.settings.batches = 10
+    device.settings.particles = int(1e5)
 
     # ==============================================================================
     # Tallies
@@ -85,16 +33,16 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
     device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
 
     """ FLiBe Tally """
-    flibe_filter = openmc.MaterialFilter(doped_flibe)
-    device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
+    device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
 
-    device.add_tally('Li Tally', ['(n,Xt)'], filters=[flibe_filter], nuclides=['Li6', 'Li7'])
+    device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
 
     """ Breeding Tally """
-    if dopant == 'U':
-        device.add_tally('Breeding Tally', ['kappa-fission', 'absorption'], nuclides=['U238'], filters=[flibe_filter])
-    if dopant == 'Th':
-        device.add_tally('Breeding Tally', ['kappa-fission', 'absorption'], nuclides=['Th232'], filters=[flibe_filter])
+    print(device.dopant)
+    if device.dopant == 'U':
+        device.add_tally('Breeding Tally', ['kappa-fission', 'absorption'], nuclides=['U238'], filters=[])
+    if device.dopant == 'Th':
+        device.add_tally('Breeding Tally', ['kappa-fission', 'absorption'], nuclides=['Th232'], filters=[])
 
     return device
 
@@ -113,7 +61,7 @@ os.mkdir(base_dir + "/geometry_plots")
 os.chdir(base_dir + "/geometry_plots")
 
 # generte arbitrary device
-device = generate_device('U', 0)
+device = anp.generate_device('U', 0)
 device.build()
 plots.export_to_xml()
 openmc.plot_geometry()
@@ -125,14 +73,16 @@ os.chdir("../..")
 # ==============================================================================
 particles = int(1e3)
 
-Li6_enrichments = np.linspace(0, 100, num=5)
+#Li6_enrichments = np.linspace(0, 100, num=5)
+Li6_enrichments = [0.0, 0.5, 1.0, 1.5, 2.0, 2.5, 3.0, 3.5, 4.0, 4.5, 5.0, 7.0, 10.0, 15.0, 20.0, 30.0, 50.0, 70.0, 100.0]
+#Li6_enrichments = [7.5, 20.0]
 np.savetxt(base_dir + '/enrichments.txt', Li6_enrichments)
 
 mass = 15e3
 
 for enrichment in Li6_enrichments:
-    U_device = generate_device('U', mass, Li6_enrichment=enrichment)
-    Th_device = generate_device('Th', mass, Li6_enrichment=enrichment)
+    U_device = setup_device(anp.generate_device('U', mass, Li6_enrichment=enrichment))
+    Th_device = setup_device(anp.generate_device('Th', mass, Li6_enrichment=enrichment))
 
     print('=================== ENRICHMENT:' + str(enrichment) + ' ===================')
     os.mkdir(base_dir + '/Uranium/' + str(enrichment))

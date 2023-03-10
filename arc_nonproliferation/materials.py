@@ -76,7 +76,7 @@ def get_tetrafluoride_mass(mass, dopant):
 
     return tetrafluoride_mass
 
-def doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None):
+def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None):
     """Return openmc material doped with specified fertile material"""
 
     dopant_mass = dopant_mass * 1000 #Dopant mass is provided in units of kg, so here convert to grams
