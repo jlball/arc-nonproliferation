@@ -35,6 +35,8 @@ def setup_device(device):
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
 
+    return device
+
 # Plotting
 plot = openmc.Plot()
 plot.filename = 'geometry_plot'
@@ -78,11 +80,8 @@ for mass in masses:
 
     """ Generate blankets doped to specified mass """
     
-    U_device = anp.generate_device("U", mass)
-    Th_device = anp.generate_device("Th", mass)
-
-    setup_device(U_device)
-    setup_device(Th_device)
+    U_device = setup_device(anp.generate_device("U", mass))
+    Th_device = setup_device(anp.generate_device("Th", mass))
 
     """ Run depletion calculation """
 
