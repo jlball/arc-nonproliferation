@@ -124,6 +124,6 @@ ax.set_ylabel("TBR", fontsize=14)
 ax.set_xlabel("Li6 Enrichment", fontsize=14)
 
 ax.set_xlim(0, enrichments[-1] + 2)
-ax.set_ylim(0.6, 1.2)
+ax.set_ylim(0.6, 1.5)
 
 fig.savefig("tbr.png")

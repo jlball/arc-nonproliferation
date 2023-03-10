@@ -97,6 +97,7 @@ class Device(openmc.model.Model):
 
 def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt', blanket_file="arc_blanket.txt"):
     device = Device()
+    device.dopant = dopant
 
     # ==============================================================================
     # Geometry
