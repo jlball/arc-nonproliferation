@@ -201,6 +201,6 @@ ax.set_xlabel("Li6 Enrichment", fontsize=14)
 
 ax.legend()
 
-ax.set_ylim(0.5, 1.2)
+ax.set_ylim(0.0, 1.2)
 
 fig.savefig("U_tbr.png")

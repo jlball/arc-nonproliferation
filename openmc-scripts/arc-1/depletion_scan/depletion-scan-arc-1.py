@@ -97,8 +97,8 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5):
 plot = openmc.Plot()
 plot.filename = 'geometry_plot'
 plot.basis = 'xz'
-plot.origin = (450, 0, 0)
-plot.width = (600, 600)
+plot.origin = (400, 0, 0)
+plot.width = (700, 700)
 plot.pixels = (2000, 2000)
 plot.color_by = 'cell'
 
