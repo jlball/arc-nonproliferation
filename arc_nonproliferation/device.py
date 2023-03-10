@@ -127,7 +127,7 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
 
     plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
-    doped_flibe = doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_enrichment)
+    doped_flibe = make_doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_enrichment)
 
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=tungsten, name='PFC')
@@ -149,3 +149,5 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
     source.energy = openmc.stats.Discrete([14.1E6], [1.0])
 
     device.settings.source = source
+
+    return device
