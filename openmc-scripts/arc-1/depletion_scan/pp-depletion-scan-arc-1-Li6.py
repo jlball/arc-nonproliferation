@@ -204,3 +204,21 @@ ax.legend()
 ax.set_ylim(0.5, 1.2)
 
 fig.savefig("U_tbr.png")
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.scatter(enrichments, U_TBR[:, 0], label='Li6')
+ax.scatter(enrichments, U_TBR[:, 1], label='Li7')
+ax.scatter(enrichments, U_TBR[:, 2], label='Total')
+
+ax.set_title("TBR in Uranium-doped FLiBe Blanket", fontsize=14)
+ax.set_ylabel("TBR", fontsize=14)
+ax.set_xlabel("Li6 Enrichment", fontsize=14)
+
+ax.legend()
+
+ax.set_ylim(0.0, 1.4)
+
+fig.savefig("U_tbr.png")
