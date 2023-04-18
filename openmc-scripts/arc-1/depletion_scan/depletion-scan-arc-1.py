@@ -19,7 +19,7 @@ def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
     device.settings.particles = int(1e3)
-    device.settings.batches = 5
+    device.settings.batches = 10
 
     """ Cylindrical Mesh Tally """
     mesh = openmc.CylindricalMesh()
@@ -30,9 +30,17 @@ def setup_device(device):
 
     device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
 
+    """ Cell Filter """
+    blanket_cell = device.get_cell(name='blanket')
+    blanket_filter = openmc.CellFilter(blanket_cell)
+
+    """ Energy Filter """
+    energy_filter = openmc.EnergyFilter.from_group_structure("CCFE-709")
+
     """ FLiBe Tally """
     #flibe_filter = openmc.MaterialFilter(anp.get_material_by_name(device.materials, "doped_flibe"))
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
+    device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
 
     return device
@@ -63,7 +71,7 @@ os.chdir("../..")
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([1e3, 5e3, 10e3, 20e3, 30e3, 40e3])
+masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3, 50e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
@@ -72,8 +80,8 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 8
-    time_steps = [100*24*60*60 / num_steps] * num_steps
+    num_steps = 10
+    time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
     chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
@@ -94,7 +102,10 @@ for mass in masses:
 
     U_device.deplete(time_steps, 
         source_rates=source_rates, 
-        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+        operator_kwargs={'chain_file':chain_file, 
+                         'normalization_mode':'source-rate', 
+                         'dilute_initial':0, 
+                         'reduce_chain':True}, 
         directory=base_dir + '/Uranium/'+ str(mass))
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -104,5 +115,8 @@ for mass in masses:
 
     Th_device.deplete(time_steps, 
         source_rates=source_rates, 
-        operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+        operator_kwargs={'chain_file':chain_file, 
+                         'normalization_mode':'source-rate',
+                         'dilute_initial':0, 
+                         'reduce_chain':True}, 
         directory=base_dir + '/Thorium/' + str(mass))
