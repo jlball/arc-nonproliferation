@@ -108,7 +108,6 @@ os.chdir(base_dir + "/Uranium/" + str(mass))
 
 for step in range(0, num_steps):
     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
     flux_tally = sp.get_tally(name='Flux Tally')
     flux_spectrum = flux_tally.get_reshaped_data()
     U_flux_spectra[step] = flux_spectrum.reshape((709,))

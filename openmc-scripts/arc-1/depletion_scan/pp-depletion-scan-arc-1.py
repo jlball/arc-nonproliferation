@@ -83,8 +83,38 @@ for i, mass in enumerate(masses):
 
 
 # ====================================================
-# Decay Heat
+# Flux Spectrum
 # ====================================================
+
+U_flux_spectra = np.empty((len(masses), num_steps, 709))
+Th_flux_spectra = np.empty((len(masses), num_steps, 709))
+
+""" Uranium """
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    for step in range(0, num_steps):
+        sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+        flux_tally = sp.get_tally(name='Flux Tally')
+        flux_spectrum = flux_tally.get_reshaped_data()
+        U_flux_spectra[i, step] = flux_spectrum.reshape((709,))
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    for step in range(0, num_steps):
+        sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+        flux_tally = sp.get_tally(name='Flux Tally')
+        flux_spectrum = flux_tally.get_reshaped_data()
+        Th_flux_spectra[i, step] = flux_spectrum.reshape((709,))
+
+    os.chdir('../../..')
+
+energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
+energies = energy_groups.group_edges
 
 # ====================================================
 # Isotopic Purity
@@ -230,3 +260,23 @@ ax.set_ylabel("Isotopic Purity (\% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("isotopic_purity.png")
+
+# Flux Spectrum
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+for i, mass in enumerate(masses):
+    ax.step(energies[1:], U_flux_spectra[i, 0, :], label=str(mass))
+
+ax.set_xlabel("Energy")
+ax.set_ylabel("Flux (arb. units)")
+
+#ax.set_ylim()
+#ax.set_xlim()
+
+ax.set_xscale('log')
+ax.set_yscale('log')
+
+fig.savefig("U_flux_spectra.png")
+
