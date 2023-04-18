@@ -55,7 +55,7 @@ class Device(openmc.model.Model):
         #pos_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[1]))
         #wedge_cell = openmc.Cell(region=+neg_plane & -pos_plane & -self.boundary,name='wedge cell')
         #wedge_cell.fill = self.univ
-        self.geometry = openmc.Geometry([self.univ])
+        self.geometry = openmc.Geometry(self.univ)
         self.tallies = openmc.Tallies(self._tallies)
         super().export_to_xml()
 
@@ -86,14 +86,16 @@ class Device(openmc.model.Model):
 
         self.statepointfile = super().run(threads=threads)
 
-    def move_files(self, directory):
-        shutil.move('geometry.xml', directory + "/geometry.xml")
-        shutil.move('materials.xml', directory + "/materialsgeometry.xml")
-        shutil.move('settings.xml', directory + "/settings.xml")
-        shutil.move('tallies.xml', directory + "/tallies.xml")
-        shutil.move('statepoint.' + str(self.settings.batches) + '.h5', directory + '/statepoint.' + str(self.settings.batches) + '.h5')
-        shutil.move('tallies.out', directory + "/tallies.out")
-        shutil.move('summary.h5', directory + "/summary.h5")
+    def get_cell(self, name):
+        comp_cells = [cell for comp in self._components for cell in comp.cells]
+        all_cells = comp_cells + self._cells
+
+        for cell in all_cells:
+            if cell.name == name:
+                return cell
+        
+        print("WARNING: Cell with name:", name, "not found. returning None.")
+        return None
 
 def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt', blanket_file="arc_blanket.txt"):
     device = Device()
