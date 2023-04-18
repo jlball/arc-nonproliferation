@@ -23,8 +23,8 @@ def setup_device(device):
 
     """ Cylindrical Mesh Tally """
     mesh = openmc.CylindricalMesh()
-    mesh.r_grid = np.linspace(25, 200, num=25)
-    mesh.z_grid = np.linspace(-200, 200, num=50)
+    mesh.r_grid = np.linspace(100, 700, num=50)
+    mesh.z_grid = np.linspace(-300, 300, num=50)
     mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
     mesh_filter = openmc.MeshFilter(mesh)
 

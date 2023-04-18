@@ -38,7 +38,7 @@ class Device(openmc.model.Model):
         settings.run_mode = 'fixed source'
         self.settings = settings
 
-    def build(self, model_angles=[-10, 10]):
+    def build(self, model_angles=[0, 360]):
         """Builds the model geometry from specifically named components"""
         comp_cells = [cell for comp in self._components for cell in comp.cells]
         comp_regs = [~comp for comp in self._components if comp.exclude]
@@ -51,11 +51,11 @@ class Device(openmc.model.Model):
         self.univ = openmc.Universe(cells=all_cells)
 
         #Creates wedge model with specified azimuthal width
-        neg_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[0]))
-        pos_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[1]))
-        wedge_cell = openmc.Cell(region=+neg_plane & -pos_plane & -self.boundary,name='wedge cell')
-        wedge_cell.fill = self.univ
-        self.geometry = openmc.Geometry([wedge_cell])
+        #neg_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[0]))
+        #pos_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[1]))
+        #wedge_cell = openmc.Cell(region=+neg_plane & -pos_plane & -self.boundary,name='wedge cell')
+        #wedge_cell.fill = self.univ
+        self.geometry = openmc.Geometry([self.univ])
         self.tallies = openmc.Tallies(self._tallies)
         super().export_to_xml()
 
