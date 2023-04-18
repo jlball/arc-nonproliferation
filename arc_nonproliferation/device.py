@@ -130,7 +130,11 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
 
     plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
 
-    doped_flibe = make_doped_flibe(dopant, dopant_mass, volume=1e8, Li6_enrichment=Li6_enrichment)
+    # Read volume calc file
+    vol_calc_load = openmc.VolumeCalculation.from_hdf5('/home/jlball/arc-nonproliferation/data/arc-1_volumes.h5')
+    flibe_volume = vol_calc_load.volumes[7].n
+
+    doped_flibe = make_doped_flibe(dopant, dopant_mass, volume=flibe_volume, Li6_enrichment=Li6_enrichment)
 
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=tungsten, name='PFC')
