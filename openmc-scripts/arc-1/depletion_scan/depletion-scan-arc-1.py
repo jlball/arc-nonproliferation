@@ -45,28 +45,6 @@ def setup_device(device):
 
     return device
 
-# Plotting
-plot = openmc.Plot()
-plot.filename = 'geometry_plot'
-plot.basis = 'xz'
-plot.origin = (400, 0, 0)
-plot.width = (700, 700)
-plot.pixels = (2000, 2000)
-plot.color_by = 'cell'
-
-plots = openmc.Plots([plot])
-
-os.mkdir(base_dir + "/geometry_plots")
-os.chdir(base_dir + "/geometry_plots")
-
-# generte arbitrary device
-device = anp.generate_device('U', 0)
-device.build()
-plots.export_to_xml()
-openmc.plot_geometry()
-
-os.chdir("../..")
-
 # ==============================================================================
 # Depletion Scan
 # ==============================================================================
