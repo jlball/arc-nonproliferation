@@ -59,7 +59,14 @@ poloidal_plot.basis = 'xz'
 poloidal_plot.origin = (400, 0, 0)
 poloidal_plot.width = (700, 700)
 poloidal_plot.pixels = (2000, 2000)
-poloidal_plot.color_by = 'cell'
+poloidal_plot.color_by = 'material'
+poloidal_plot.colors ={
+    anp.tungsten: (36, 36, 36),
+    anp.vcrti_VV: (140, 140, 140),
+    anp.vcrti_BI: (140, 140, 140),
+    anp.vcrti_BO: (140, 140, 140),
+    anp.doped_flibe: (82, 255, 209),
+}
 
 toroidal_plot = openmc.Plot()
 toroidal_plot.filename = 'toroidal_plane'

@@ -135,6 +135,7 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
     flibe_volume = vol_calc_load.volumes[7].n
 
     doped_flibe = make_doped_flibe(dopant, dopant_mass, volume=flibe_volume, Li6_enrichment=Li6_enrichment)
+    device.doped_flibe = doped_flibe
 
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=tungsten, name='PFC')
