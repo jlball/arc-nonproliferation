@@ -141,6 +141,31 @@ for i, mass in enumerate(masses):
     os.chdir('../../..')
 
 # ====================================================
+# Decay Photon Spectrum
+# ====================================================
+
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U_mats = U_results.export_to_materials(-1)
+    flibe_mat = get_material_by_name(U_mats, "doped_flibe")
+
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_purity = extract_isotopic_purity("Th", Th_results)
+    Th_purities[i] = Th_purity[-1]
+
+    os.chdir('../../..')
+
+
+# ====================================================
 # Plotting
 # ====================================================
 
