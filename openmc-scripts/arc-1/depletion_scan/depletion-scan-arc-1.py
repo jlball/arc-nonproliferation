@@ -18,7 +18,7 @@ if sys.argv[1] is not None:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e3)
+    device.settings.particles = int(1e4)
     device.settings.batches = 10
 
     """ Cylindrical Mesh Tally """
@@ -105,7 +105,8 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate', 
                          'dilute_initial':0, 
-                         'reduce_chain':True}, 
+                         'reduce_chain':False,
+                         'reduce_chain_level':3}, 
         directory=base_dir + '/Uranium/'+ str(mass))
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -118,5 +119,6 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate',
                          'dilute_initial':0, 
-                         'reduce_chain':True}, 
+                         'reduce_chain':False,
+                         'reduce_chain_level':3}, 
         directory=base_dir + '/Thorium/' + str(mass))

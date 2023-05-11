@@ -14,6 +14,12 @@ if sys.argv[1] is not None:
     os.mkdir(base_dir + '/Uranium')
     os.mkdir(base_dir + '/Thorium')
 
+if sys.argv[2] is not None:
+    mass = float(sys.argv[2]) * 1e3
+
+else:
+    raise RuntimeError("No fertile mass specified!")
+
 def setup_device(device):
 
     """ Run settings """
@@ -64,8 +70,6 @@ os.chdir("../..")
 # ==============================================================================
 # Depletion Scan
 # ==============================================================================
-
-mass = 15e3
 
 enrichments = np.linspace(0, 100, num=6)
 np.savetxt(base_dir + '/enrichments.txt', enrichments)
