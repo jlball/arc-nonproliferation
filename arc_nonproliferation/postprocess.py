@@ -175,3 +175,4 @@ def extract_isotopic_purity(dopant, results):
             atoms[nuclide] = num_atoms
             total_atoms = total_atoms + atoms[nuclide]
         return atoms['U233']/total_atoms
+    

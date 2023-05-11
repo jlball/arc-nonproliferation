@@ -18,7 +18,7 @@ if sys.argv[1] is not None:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e4)
+    device.settings.particles = int(1e3)
     device.settings.batches = 10
 
     """ Cylindrical Mesh Tally """
@@ -49,7 +49,7 @@ def setup_device(device):
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3, 50e3])
+masses = np.array([5e3, 10e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
@@ -58,7 +58,7 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 10
+    num_steps = 5
     time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
@@ -83,8 +83,8 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate', 
                          'dilute_initial':0, 
-                         'reduce_chain':False,
-                         'reduce_chain_level':3}, 
+                         'reduce_chain':True,
+                         'reduce_chain_level':None}, 
         directory=base_dir + '/Uranium/'+ str(mass))
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -97,6 +97,6 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate',
                          'dilute_initial':0, 
-                         'reduce_chain':False,
-                         'reduce_chain_level':3}, 
+                         'reduce_chain':True,
+                         'reduce_chain_level':None}, 
         directory=base_dir + '/Thorium/' + str(mass))

@@ -84,6 +84,7 @@ def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe'
     flibe = openmc.Material()
     flibe.add_elements_from_formula('F4Li2Be', enrichment_target='Li6', enrichment_type='ao', enrichment=Li6_enrichment)
     flibe.set_density('g/cm3', 1.94)
+    flibe.depletable = True
 
     if dopant == 'U':
         tetrafluoride = uf4

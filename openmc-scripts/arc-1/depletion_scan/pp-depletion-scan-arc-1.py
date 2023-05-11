@@ -16,6 +16,9 @@ else:
 fusion_power = 500 #MW
 total_neutron_rate = fusion_power * neutrons_per_MJ
 
+chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
+openmc.config['chain_file'] = chain_file
+
 # ====================================================
 # Time to a Significant Quantity
 # ====================================================
@@ -80,8 +83,6 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
-
-
 # ====================================================
 # Flux Spectrum
 # ====================================================
@@ -143,6 +144,8 @@ for i, mass in enumerate(masses):
 # ====================================================
 # Decay Photon Spectrum
 # ====================================================
+U_decay_spectra = []
+Th_decay_spectra = []
 
 for i, mass in enumerate(masses):
     """ Uranium """
@@ -150,7 +153,8 @@ for i, mass in enumerate(masses):
 
     U_results = Results('depletion_results.h5')
     U_mats = U_results.export_to_materials(-1)
-    flibe_mat = get_material_by_name(U_mats, "doped_flibe")
+    flibe_mat = get_material_by_name(U_mats, "doped flibe")
+    U_decay_spectra.append(flibe_mat.decay_photon_energy)
 
     os.chdir('../../..')
 
@@ -158,8 +162,9 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_purity = extract_isotopic_purity("Th", Th_results)
-    Th_purities[i] = Th_purity[-1]
+    Th_mats = Th_results.export_to_materials(-1)
+    flibe_mat = get_material_by_name(Th_mats, "doped flibe")
+    Th_decay_spectra.append(flibe_mat.decay_photon_energy)
 
     os.chdir('../../..')
 
@@ -177,7 +182,9 @@ except:
     os.mkdir(base_dir + "/figures")
     os.chdir(base_dir + "/figures")
 
-""" Time to 1 Significant Quantity """
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Time to 1 Significant Quantity
+
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
@@ -189,8 +196,8 @@ np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 
 # Fit data to 1/x function:
-def fit(x, A, B, C):
-    return (A/x) -C*x + B
+def fit(x, A, B):
+    return (A/x) + B
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
@@ -212,21 +219,9 @@ ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
 fig.savefig("time_to_sq.png")
 
-# Fissile Proliferance
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Fission Power
 
-fusion_power = 500 #MW
-
-U_fissile_proliferance = 1/(U_time_to_SQ * masses * fusion_power)
-Th_fissile_proliferance = 1/(Th_time_to_SQ * masses * fusion_power)
-
-fig, ax = plt.subplots()
-
-ax.scatter(masses, U_fissile_proliferance)
-ax.scatter(masses, Th_fissile_proliferance)
-
-fig.savefig("fissile_proliferance.png")
-
-# Fission Power:
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
@@ -267,7 +262,9 @@ ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("fission_power.png")
 
-# Isotopic Purity:
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Isotopic Purity
+
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
@@ -283,7 +280,9 @@ ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("isotopic_purity.png")
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
+
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
@@ -323,3 +322,30 @@ ax.set_yscale('log')
 ax.legend()
 
 fig.savefig("Th_flux_spectra.png")
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Decay Photon Spectra
+
+num_sampes = int(1e8)
+bins = np.linspace(0, 1e6, num=1000)
+
+
+fig, ax = plt.subplots()
+for i, dist in enumerate(U_decay_spectra):
+    samples = dist.sample(num_sampes)
+    ax.hist(samples, bins=bins, label = str(masses[i]))
+
+ax.set_yscale("log")
+ax.legend()
+
+fig.savefig("U_decay_spectra.png")
+
+fig, ax = plt.subplots()
+for i, dist in enumerate(Th_decay_spectra):
+    samples = dist.sample(num_sampes)
+    ax.hist(samples, bins=bins, label = str(masses[i]))
+
+ax.set_yscale("log")
+ax.legend()
+
+fig.savefig("Th_decay_spectra.png")
