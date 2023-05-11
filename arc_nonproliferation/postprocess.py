@@ -103,7 +103,6 @@ def get_uvalue(tally, score, value='mean', filters=[]):
     return u_val
 
 def get_material_by_name(materials, name):
-    print(materials)
     for mat in materials:
         if mat.name == name:
             return mat

@@ -152,7 +152,6 @@ for i, mass in enumerate(masses):
     U_mats = U_results.export_to_materials(-1)
     flibe_mat = get_material_by_name(U_mats, "doped_flibe")
 
-
     os.chdir('../../..')
 
     """ Thorium """
@@ -195,8 +194,6 @@ def fit(x, A, B, C):
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
-
-print(U_popt)
 
 fit_masses = np.linspace(1, masses[-1], num=100)
 ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
