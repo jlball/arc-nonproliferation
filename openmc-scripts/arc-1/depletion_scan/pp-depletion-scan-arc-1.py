@@ -180,7 +180,7 @@ ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
 ax.legend()
 
 ax.set_xlim(0, masses[-1] + 2)
-ax.set_ylim(5, np.max(Th_time_to_SQ/24) + 50)
+ax.set_ylim(10, np.max(Th_time_to_SQ/24) + 100)
 
 ax.set_yscale("log")
 
@@ -267,16 +267,37 @@ ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 for i, mass in enumerate(masses):
-    ax.step(energies[1:], U_flux_spectra[i, 0, :], label=str(mass))
+    ax.step(energies[1:], U_flux_spectra[i, -1, :], label=str(mass))
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Flux (arb. units)")
 
-#ax.set_ylim()
-#ax.set_xlim()
+ax.set_ylim(0.01, 10)
+ax.set_xlim(10, 10e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
 
+ax.legend()
+
 fig.savefig("U_flux_spectra.png")
 
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+for i, mass in enumerate(masses):
+    ax.step(energies[1:], Th_flux_spectra[i, -1, :], label=str(mass))
+
+ax.set_xlabel("Energy")
+ax.set_ylabel("Flux (arb. units)")
+
+ax.set_ylim(0.01, 10)
+ax.set_xlim(10, 10e8)
+
+ax.set_xscale('log')
+ax.set_yscale('log')
+
+ax.legend()
+
+fig.savefig("Th_flux_spectra.png")
