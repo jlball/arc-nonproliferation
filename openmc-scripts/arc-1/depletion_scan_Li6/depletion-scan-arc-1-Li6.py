@@ -49,7 +49,7 @@ def setup_device(device):
 # Depletion Scan
 # ==============================================================================
 
-enrichments = np.linspace(0, 100, num=6)
+enrichments = [0, 1, 2, 4, 7.5, 12, 25, 50, 100]
 np.savetxt(base_dir + '/enrichments.txt', enrichments)
 
 for enrichment in enrichments:
