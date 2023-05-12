@@ -39,6 +39,13 @@ def setup_device(device):
 
     """ FLiBe Tally """
     #flibe_filter = openmc.MaterialFilter(anp.get_material_by_name(device.materials, "doped_flibe"))
+    
+    # if device.dopant == "U":
+    #     device.add_tally('Fissile Fission Tally', ['fission'], filters=[], nuclides=["Pu239"])
+
+    # elif device.dopant == "Th":
+    #     device.add_tally('Fissile Fission Tally', ['fission'], filters=[], nuclides=["U233"])
+
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
@@ -58,7 +65,7 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 5
+    num_steps = 3
     time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
@@ -83,8 +90,8 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate', 
                          'dilute_initial':0, 
-                         'reduce_chain':True,
-                         'reduce_chain_level':None}, 
+                         'reduce_chain':False,
+                         'reduce_chain_level':3}, 
         directory=base_dir + '/Uranium/'+ str(mass))
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -97,6 +104,6 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate',
                          'dilute_initial':0, 
-                         'reduce_chain':True,
-                         'reduce_chain_level':None}, 
+                         'reduce_chain':False,
+                         'reduce_chain_level':3}, 
         directory=base_dir + '/Thorium/' + str(mass))
