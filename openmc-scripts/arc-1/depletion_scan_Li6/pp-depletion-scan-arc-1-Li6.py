@@ -128,8 +128,19 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(enrichments, U_time_to_SQ/24, label="$^{238}$U", marker='o')
-ax.scatter(enrichments, Th_time_to_SQ/24, label="$^{232}$Th", marker='s')
+ax.scatter(enrichments, U_time_to_SQ/24, label="$^{238}$U", marker='o', color='r')
+ax.scatter(enrichments, Th_time_to_SQ/24, label="$^{232}$Th", marker='s', color='g')
+
+U_res = linregress(enrichments, U_time_to_SQ/24)
+Th_res = linregress(enrichments, Th_time_to_SQ/24)
+
+fit_enrichments = np.linspace(0, 100, num = 1000)
+
+U_time_to_SQ_fit = U_res.intercept + U_res.slope*fit_enrichments
+Th_time_to_SQ_fit = Th_res.intercept + Th_res.slope*fit_enrichments
+
+ax.plot(fit_enrichments, U_time_to_SQ_fit, color='r', alpha=0.3)
+ax.plot(fit_enrichments, Th_time_to_SQ_fit, color='g', alpha=0.3)
 
 np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
@@ -137,13 +148,16 @@ np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 ax.legend()
 
 ax.set_xlim(0, enrichments[-1] + 2)
-ax.set_ylim(0, np.max(Th_time_to_SQ/24) + 5)
+ax.set_ylim(1, np.max(Th_time_to_SQ/24) + 5)
+
+ax.set_yscale('log')
+ax.vlines(7.5, 0, 500, colors='blue', linestyles='dashed', alpha=0.5)
 
 ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
 ax.set_ylabel("Time (days)", fontsize=14)
 ax.set_xlabel("Li6 Enrichment", fontsize=14)
 
-fig.savefig("time_to_sq.png")
+fig.savefig("time_to_sq_Li6.png", dpi=300)
 
 # Fission Power:
 fig, ax = plt.subplots()

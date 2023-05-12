@@ -22,7 +22,7 @@ total_neutron_rate = fusion_power * neutrons_per_MJ
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
-print(masses)
+
 U_time_to_SQ = np.empty(len(masses))
 Th_time_to_SQ = np.empty(len(masses))
 
@@ -161,6 +161,8 @@ ax.spines["right"].set_color("None")
 ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker='o', color='r')
 ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker='s', color='g')
 
+ax.set_ylim(10, 200)
+
 np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 
@@ -170,8 +172,6 @@ def fit(x, A, B, C):
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
-
-print(U_popt)
 
 fit_masses = np.linspace(1, masses[-1], num=100)
 ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')

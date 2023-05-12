@@ -83,8 +83,12 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate', 
                          'dilute_initial':0, 
+<<<<<<< HEAD
                          'reduce_chain':False,
                          'reduce_chain_level':3}, 
+=======
+                         'reduce_chain':False}, 
+>>>>>>> a5ec5b7 (tweaks)
         directory=base_dir + '/Uranium/'+ str(mass))
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -97,6 +101,10 @@ for mass in masses:
         operator_kwargs={'chain_file':chain_file, 
                          'normalization_mode':'source-rate',
                          'dilute_initial':0, 
+<<<<<<< HEAD
                          'reduce_chain':False,
                          'reduce_chain_level':3}, 
+=======
+                         'reduce_chain':False}, 
+>>>>>>> a5ec5b7 (tweaks)
         directory=base_dir + '/Thorium/' + str(mass))
