@@ -18,8 +18,8 @@ if sys.argv[1] is not None:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e3)
-    device.settings.batches = 5
+    device.settings.particles = int(1e5)
+    device.settings.batches = 10
 
     """ Cylindrical Mesh Tally """
     mesh = openmc.CylindricalMesh()
@@ -56,18 +56,18 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-mass = np.array([100e3]) #kg of fertile material
+mass = np.array([50e3]) #kg of fertile material
 np.savetxt(base_dir + '/mass.txt', mass)
 
 """ DEPLETION SETTINGS """
 print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
 fusion_power = 500 #MW
-num_steps = 4
-time_steps = [100*24*60*60 / num_steps] * num_steps
+num_steps = 50
+time_steps = [15*24*60*60 / num_steps] * num_steps
 source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
+chain_file = '/home/jlball/arc-nonproliferation/data/simple_fast_chain.xml'
 
 """ Generate blankets doped to specified mass """
 
@@ -85,7 +85,12 @@ os.chdir('../../..')
 
 U_device.deplete(time_steps, 
     source_rates=source_rates, 
-    operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+    method = 'epc_rk4',
+    operator_kwargs={'chain_file':chain_file, 
+                     'normalization_mode':'source-rate',
+                     'dilute_initial':0, 
+                     'reduce_chain':False,
+                     'reduce_chain_level':3}, 
     directory=base_dir + '/Uranium/'+ str(mass))
 
 os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -95,5 +100,10 @@ os.chdir('../../..')
 
 Th_device.deplete(time_steps, 
     source_rates=source_rates, 
-    operator_kwargs={'chain_file':chain_file, 'normalization_mode':'source-rate'}, 
+    method = 'epc_rk4',
+    operator_kwargs={'chain_file':chain_file, 
+                     'normalization_mode':'source-rate',
+                     'dilute_initial':0, 
+                     'reduce_chain':False,
+                     'reduce_chain_level':3}, 
     directory=base_dir + '/Thorium/' + str(mass))
