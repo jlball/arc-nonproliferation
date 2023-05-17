@@ -24,7 +24,7 @@ def setup_device(device):
 
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e4)
+    device.settings.particles = int(1e3)
     device.settings.batches = 10
 
     # ==============================================================================

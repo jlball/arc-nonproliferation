@@ -103,7 +103,6 @@ def get_uvalue(tally, score, value='mean', filters=[]):
     return u_val
 
 def get_material_by_name(materials, name):
-    print(materials)
     for mat in materials:
         if mat.name == name:
             return mat
@@ -176,3 +175,4 @@ def extract_isotopic_purity(dopant, results):
             atoms[nuclide] = num_atoms
             total_atoms = total_atoms + atoms[nuclide]
         return atoms['U233']/total_atoms
+    

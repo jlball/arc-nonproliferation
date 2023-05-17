@@ -18,7 +18,7 @@ if sys.argv[1] is not None:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e4)
+    device.settings.particles = int(1e3)
     device.settings.batches = 10
 
     """ Cylindrical Mesh Tally """
@@ -39,6 +39,13 @@ def setup_device(device):
 
     """ FLiBe Tally """
     #flibe_filter = openmc.MaterialFilter(anp.get_material_by_name(device.materials, "doped_flibe"))
+    
+    # if device.dopant == "U":
+    #     device.add_tally('Fissile Fission Tally', ['fission'], filters=[], nuclides=["Pu239"])
+
+    # elif device.dopant == "Th":
+    #     device.add_tally('Fissile Fission Tally', ['fission'], filters=[], nuclides=["U233"])
+
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
@@ -49,7 +56,7 @@ def setup_device(device):
 # Depletion Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3, 50e3])
+masses = np.array([5e3, 10e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
@@ -58,7 +65,7 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 10
+    num_steps = 3
     time_steps = [365*24*60*60 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
