@@ -16,6 +16,9 @@ else:
 fusion_power = 500 #MW
 total_neutron_rate = fusion_power * neutrons_per_MJ
 
+chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
+openmc.config['chain_file'] = chain_file
+
 # ====================================================
 # Time to a Significant Quantity
 # ====================================================
@@ -42,6 +45,9 @@ Th_results = Results('depletion_results.h5')
 Th_time_to_SQ = extract_time_to_sq('Th', Th_results)
 
 os.chdir("../../..")
+
+print("THORIUM TIME TO 1 SQ: " + str(Th_time_to_SQ/24) + " Days")
+print("URANIUM TIME TO 1 SQ: " + str(U_time_to_SQ/24) + " Days")
 
 # ====================================================
 # Fission Power
@@ -129,6 +135,34 @@ energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'
 energies = energy_groups.group_edges
 
 # ====================================================
+# Decay Photon Spectrum
+# ====================================================
+
+U_decay_spectra = []
+Th_decay_spectra = []
+
+for i in range(0, num_steps):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U_mats = U_results.export_to_materials(i)
+    flibe_mat = get_material_by_name(U_mats, "doped flibe")
+    U_decay_spectra.append(flibe_mat.decay_photon_energy)
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_mats = Th_results.export_to_materials(i)
+    flibe_mat = get_material_by_name(Th_mats, "doped flibe")
+    Th_decay_spectra.append(flibe_mat.decay_photon_energy)
+
+    os.chdir('../../..')
+
+# ====================================================
 # Plotting
 # ====================================================
 
@@ -162,4 +196,52 @@ ax.set_xscale('log')
 
 ax.legend()
 fig.savefig('U_flux_spectra.png')
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.step(energies[1:], (U_flux_spectra[-1] - U_flux_spectra[0])*100/U_flux_spectra[0], label="Uranium")
+ax.step(energies[1:], (Th_flux_spectra[-1] - Th_flux_spectra[0])*100/U_flux_spectra[0], label="Thorium")
+
+ax.legend()
+
+ax.set_xlabel("Energy")
+ax.set_ylabel("Relative difference (percent)")
+ax.set_ylim(0, 10)
+fig.savefig('U_flux_spectra_difference.png')
+
+# Decay Photon Spectrum
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+for i, dist in enumerate(U_decay_spectra):
+    ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+
+ax.set_yscale("linear")
+
+ax.set_ylim(0, 1e17)
+
+ax.set_title("Gamma spectrum at $t_{SQ}$ in a Uranium doped blanket")
+ax.set_xlabel("Photon Energy (eV)")
+
+fig.savefig("U_decay_spectra.png")
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+for i, dist in enumerate(Th_decay_spectra):
+    ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+
+ax.set_yscale("linear")
+
+ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
+ax.set_xlabel("Photon Energy (eV)")
+
+ax.set_ylim(0, 1e17)
+
+fig.savefig("Th_decay_spectra.png")
 
