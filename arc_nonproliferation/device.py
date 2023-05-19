@@ -79,12 +79,13 @@ class Device(openmc.model.Model):
         else:
             doped_flibe = doped_flibe(self.dopant, self.dopant_mass)
 
-    def run(self, threads=20, batches=10, particles=1000):
+    def run(self, threads=20, batches=10, particles=1000, cwd=None):
         """Runs the model with specified parameters"""
         self.settings.particles = particles
         self.settings.batches = batches
 
-        self.statepointfile = super().run(threads=threads)
+        self.statepointfile = super().run(threads=threads, cwd=cwd)
+        return self.statepointfile
 
     def get_cell(self, name):
         comp_cells = [cell for comp in self._components for cell in comp.cells]
