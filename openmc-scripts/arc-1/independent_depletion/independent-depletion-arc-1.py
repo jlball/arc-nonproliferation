@@ -84,7 +84,7 @@ U_device.build()
 
 U_micro_xs = openmc.deplete.MicroXS.from_model(U_device, 
                                                U_device.get_cell("blanket"),
-                                               dilute_initial = 0,
+                                               nuclides=U_device.materials.nuclides,
                                                run_kwargs = {"threads":20,
                                                              "particles":int(1e6)})
 
@@ -112,7 +112,6 @@ Th_device.build()
 
 Th_micro_xs = openmc.deplete.MicroXS.from_model(Th_device, 
                                                Th_device.get_cell("blanket"),
-                                               dilute_initial = 0,
                                                run_kwargs = {"threads":20,
                                                              "particles":int(1e6)})
 

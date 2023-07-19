@@ -105,5 +105,13 @@ def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe'
     doped_mat.depletable = True
     return doped_mat
 
+def get_all_nuclides(materials):
+    all_nucs = []
+    for mat in materials:
+        nucs = mat.get_nuclides()
+        all_nucs.append(nucs)
+
+    return nucs
+
 
     
