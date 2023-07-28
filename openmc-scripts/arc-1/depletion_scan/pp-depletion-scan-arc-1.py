@@ -90,7 +90,51 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
+# ====================================================
+# TBR
+# ====================================================
 
+U_TBR = np.empty((len(masses), 2, 2))
+Th_TBR = np.empty((len(masses), 2, 2))
+
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    sp = openmc.StatePoint('openmc_simulation_n0.h5')
+    tally = sp.get_tally(name='FLiBe Tally')
+
+    U_TBR[i, 0, 0] = anp.get_uvalue(tally, "(n,Xt)").n
+    U_TBR[i, 0, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    sp.close()
+
+    sp = openmc.StatePoint('openmc_simulation_n' + str(num_steps-1) + '.h5')
+    tally = sp.get_tally(name='FLiBe Tally')
+
+    U_TBR[i, 1, 0] = anp.get_uvalue(tally, "(n,Xt)").n
+    U_TBR[i, 1, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    sp.close()
+        
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    sp = openmc.StatePoint('openmc_simulation_n0.h5')
+    tally = sp.get_tally(name='FLiBe Tally')
+
+    Th_TBR[i, 0, 0] = anp.get_uvalue(tally, "(n,Xt)").n
+    Th_TBR[i, 0, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    sp.close()
+
+    sp = openmc.StatePoint('openmc_simulation_n' + str(num_steps-1) + '.h5')
+    tally = sp.get_tally(name='FLiBe Tally')
+
+    Th_TBR[i, 1, 0] = anp.get_uvalue(tally, "(n,Xt)").n
+    Th_TBR[i, 1, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    sp.close()
+
+    os.chdir('../../..')
 
 # ====================================================
 # Flux Spectrum
@@ -393,5 +437,28 @@ ax.set_xlabel("Photon Energy (MeV)")
 ax.set_ylabel("Activity (Bq)")
 
 fig.savefig("Th_decay_spectra.png", dpi=300)
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# TBR
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.errorbar(masses, U_TBR[:, 0, 0], yerr=U_TBR[:, 0, 1], color="r", label="Uranium")
+ax.errorbar(masses, Th_TBR[:, 0, 0], yerr=Th_TBR[:, 0, 1], color="g", label="Thorium")
+
+ax.errorbar(masses, U_TBR[:, 1, 0], yerr=U_TBR[:, 1, 1], color="r", label="Uranium")
+ax.errorbar(masses, Th_TBR[:, 1, 0], yerr=Th_TBR[:, 1, 1], color="g", label="Thorium")
+
+ax.fill_between(masses, U_TBR[:, 0, 0], U_TBR[:, 1, 0], color='r', alpha=0.3)
+ax.fill_between(masses, Th_TBR[:, 0, 0], Th_TBR[:, 1, 0], color='g', alpha=0.3)
+
+ax.set_ylabel("TBR")
+ax.set_xlabel("Fertile Mass (metric tons)")
+
+ax.set_title("TBR vs. Fertile Mass at $t=0$")
+
+fig.savefig("fertile_tbr.png", dpi=300)
 
 print("Completed Post Processing")
