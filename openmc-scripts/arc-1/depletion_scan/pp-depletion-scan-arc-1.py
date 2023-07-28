@@ -72,7 +72,7 @@ for i, mass in enumerate(masses):
         U_fission_powers[i, step, 0] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
         U_fission_powers[i, step, 1] = anp.get_uvalue(tally, 'kappa-fission').s * total_neutron_rate * MJ_per_eV
 
-        U_fission_rates[i, step] = tally.get_values(scores=['fission'], value='mean', nuclides=['Pu239']) * total_neutron_rate
+        #U_fission_rates[i, step] = tally.get_values(scores=['fission'], value='mean', nuclides=['Pu239']) * total_neutron_rate
         
     os.chdir('../../..')
 
@@ -86,9 +86,11 @@ for i, mass in enumerate(masses):
         Th_fission_powers[i, step, 0] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
         Th_fission_powers[i, step, 1] = anp.get_uvalue(tally, 'kappa-fission').s * total_neutron_rate * MJ_per_eV
 
-        Th_fission_rates[i, step] = tally.get_values(scores=['fission'], value='mean', nuclides=['U233']) * total_neutron_rate
+        #Th_fission_rates[i, step] = tally.get_values(scores=['fission'], value='mean', nuclides=['U233']) * total_neutron_rate
 
     os.chdir('../../..')
+
+
 
 # ====================================================
 # Flux Spectrum
@@ -279,7 +281,7 @@ ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 mass_grid, time_grid = np.meshgrid(masses, time_steps)
-ax.plot_surface(mass_grid, time_grid, U_fission_rates, vmim=U_fission_rates.min())
+#ax.plot_surface(mass_grid, time_grid, U_fission_rates, vmim=U_fission_rates.min())
 
 
 fig.savefig("U_fissile_fission_rate.png")
@@ -311,75 +313,85 @@ ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 for i, mass in enumerate(masses):
-    ax.step(energies[1:], U_flux_spectra[i, -1, :], label=str(mass))
+    ax.step(energies[1:], U_flux_spectra[i, -1, :], label=str(mass) + " kg")
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Flux (arb. units)")
 
-ax.set_ylim(0.01, 10)
-ax.set_xlim(10, 10e8)
+ax.set_title("Average Neutron Flux Spectrum in Uranium Doped Blanket After 100 Days")
+
+ax.set_ylim(0.01, 9)
+ax.set_xlim(100, 1e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
 
 ax.legend()
 
-fig.savefig("U_flux_spectra.png")
+fig.savefig("U_flux_spectra.png", dpi=300)
 
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 for i, mass in enumerate(masses):
-    ax.step(energies[1:], Th_flux_spectra[i, -1, :], label=str(mass))
+    ax.step(energies[1:], Th_flux_spectra[i, -1, :], label=str(mass) + " kg")
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Flux (arb. units)")
 
-ax.set_ylim(0.01, 10)
-ax.set_xlim(10, 10e8)
+ax.set_title("Average Neutron Flux Spectrum in Thorium Doped Blanket After 100 Days")
+
+ax.set_ylim(0.01, 9)
+ax.set_xlim(100, 1e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
 
 ax.legend()
 
-fig.savefig("Th_flux_spectra.png")
+fig.savefig("Th_flux_spectra.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectra
-
-num_sampes = int(1e6)
-bins = np.linspace(0, 1e6, num=1000)
 
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 for i, dist in enumerate(U_decay_spectra):
-    samples = dist.sample(num_sampes)
-    ax.hist(samples, bins=bins, label = str(masses[i]))
+    ax.scatter(dist.x/1e6, dist.p, label = str(masses[i]) + " kg", marker='s', s=4)
 
-ax.set_yscale("log")
+ax.set_yscale("linear")
 ax.legend()
 
-ax.set_title("Gamma spectrum at $t_{SQ}$ in a  Uranium doped blanket")
-ax.set_xlabel("Photon Energy (eV)")
+ax.set_xlim(0.5, 3)
+ax.set_ylim(0, 1.5e17)
 
-fig.savefig("U_decay_spectra.png")
+ax.set_title("Gamma spectrum after 100 days in a Uranium doped blanket", y=1.06)
+ax.set_xlabel("Photon Energy (MeV)")
+ax.set_ylabel("Activity (Bq)")
+
+fig.savefig("U_decay_spectra.png", dpi=300)
 
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 for i, dist in enumerate(Th_decay_spectra):
-    samples = dist.sample(num_sampes)
-    ax.hist(samples, bins=bins, label = str(masses[i]))
+    ax.scatter(dist.x/1e6, dist.p, label = str(masses[i]) + " kg", marker='s', s=4)
 
-ax.set_yscale("log")
+ax.set_yscale("linear")
 ax.legend()
 
-ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
-ax.set_xlabel("Photon Energy (eV)")
+ax.set_xlim(0.5, 3)
+ax.set_ylim(0, 1.5e17)
 
-fig.savefig("Th_decay_spectra.png")
+
+ax.set_title("Gamma spectrum after 100 days in a Thorium doped blanket", y=1.06)
+ax.set_xlabel("Photon Energy (MeV)")
+ax.set_ylabel("Activity (Bq)")
+
+fig.savefig("Th_decay_spectra.png", dpi=300)
+
+print("Completed Post Processing")
