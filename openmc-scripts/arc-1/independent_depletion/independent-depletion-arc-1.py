@@ -82,17 +82,16 @@ os.mkdir(base_dir + '/Uranium/'+ str(mass))
 os.chdir(base_dir + '/Uranium/'+ str(mass))
 U_device.build()
 
-U_micro_xs = openmc.deplete.MicroXS.from_model(U_device, 
-                                               U_device.get_cell("blanket"),
-                                               nuclides=U_device.materials.nuclides,
-                                               run_kwargs = {"threads":20,
-                                                             "particles":int(1e6)})
+U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
+                                                         openmc.Materials.from_xml(),
+                                                         run_kwargs = {"threads":20,
+                                                                       "particles":int(1e3)})
 
 U_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
+                                                U_flux,
                                                 U_micro_xs,
                                                 chain_file=None, 
                                                 normalization_mode='source-rate', 
-                                                dilute_initial=0, 
                                                 reduce_chain=False, 
                                                 reduce_chain_level=None, 
                                                 )
@@ -110,16 +109,16 @@ os.mkdir(base_dir + '/Thorium/'+ str(mass))
 os.chdir(base_dir + '/Thorium/'+ str(mass))
 Th_device.build()
 
-Th_micro_xs = openmc.deplete.MicroXS.from_model(Th_device, 
-                                               Th_device.get_cell("blanket"),
-                                               run_kwargs = {"threads":20,
-                                                             "particles":int(1e6)})
+Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
+                                                                   openmc.Materials.from_xml(),
+                                                                   run_kwargs = {"threads":20,
+                                                                                 "particles":int(1e3)})
 
 Th_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
+                                                Th_flux,
                                                 Th_micro_xs,
                                                 chain_file=None, 
                                                 normalization_mode='source-rate', 
-                                                dilute_initial=0, 
                                                 reduce_chain=False, 
                                                 reduce_chain_level=None, 
                                                 )
