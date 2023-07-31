@@ -1,4 +1,4 @@
-import arc_nonproliferation as anp
+import arc_nonproliferation.device as anp
 import openmc
 import openmc.deplete
 import numpy as np
