@@ -51,6 +51,7 @@ def setup_device(device):
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
+    device.add_tally("Feritle Tally", ['absorption', '(n,gamma)', 'fission'], nuclides=['U238, U235'])
 
     return device
 

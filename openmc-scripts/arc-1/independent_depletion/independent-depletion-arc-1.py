@@ -49,6 +49,7 @@ def setup_device(device):
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
+    device.add_tally("Feritle Tally", ['absorption', '(n,gamma)', 'fission'], nuclides=['U238, U235'])
 
     return device
 
@@ -56,79 +57,79 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-mass = np.array([50e3]) #kg of fertile material
-np.savetxt(base_dir + '/mass.txt', mass)
+masses = np.array([20e3]) #kg of fertile material
+np.savetxt(base_dir + '/masses.txt', masses)
 
 """ DEPLETION SETTINGS """
-print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
+for mass in masses:
+    print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
-fusion_power = 500 #MW
-num_steps = 50
-time_steps = [15*24*60*60 / num_steps] * num_steps
-source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+    fusion_power = 500 #MW
+    num_steps = 50
+    time_steps = [15*24*60*60 / num_steps] * num_steps
+    source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-chain_file = '/home/jlball/arc-nonproliferation/data/simple_fast_chain.xml'
-openmc.config['chain_file'] = chain_file
+    chain_file = '/home/jlball/arc-nonproliferation/data/simple_fast_chain.xml'
+    openmc.config['chain_file'] = chain_file
 
-""" Generate blankets doped to specified mass """
+    """ Generate blankets doped to specified mass """
 
-U_device = setup_device(anp.generate_device("U", mass[0]))
-Th_device = setup_device(anp.generate_device("Th", mass[0]))
+    U_device = setup_device(anp.generate_device("U", mass))
+    Th_device = setup_device(anp.generate_device("Th", mass))
 
-""" Run depletion calculation """
+    """ Run depletion calculation """
+    # This is necessary to ensure the tally.xml file gets written into the directory where the depletion calculation will run
+    os.mkdir(base_dir + '/Uranium/'+ str(mass))
+    os.chdir(base_dir + '/Uranium/'+ str(mass))
+    U_device.build()
 
-# This is necessary to ensure the tally.xml file gets written into the directory where the depletion calculation will run
-os.mkdir(base_dir + '/Uranium/'+ str(mass))
-os.chdir(base_dir + '/Uranium/'+ str(mass))
-U_device.build()
+    U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
+                                                            openmc.Materials.from_xml(),
+                                                            run_kwargs = {"threads":20,
+                                                                        "particles":int(1e5)})
 
-U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
-                                                         openmc.Materials.from_xml(),
-                                                         run_kwargs = {"threads":20,
-                                                                       "particles":int(1e3)})
+    U_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
+                                                    U_flux,
+                                                    U_micro_xs,
+                                                    chain_file=None, 
+                                                    normalization_mode='source-rate', 
+                                                    reduce_chain=False, 
+                                                    reduce_chain_level=None, 
+                                                    )
 
-U_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
-                                                U_flux,
-                                                U_micro_xs,
-                                                chain_file=None, 
-                                                normalization_mode='source-rate', 
-                                                reduce_chain=False, 
-                                                reduce_chain_level=None, 
-                                                )
+    U_integrator = openmc.deplete.EPCRK4Integrator(U_operator, 
+                                                    time_steps, 
+                                                    source_rates=source_rates,
+                                                    timestep_units='s')
 
-U_integrator = openmc.deplete.EPCRK4Integrator(U_operator, 
-                                                time_steps, 
-                                                source_rates=source_rates,
-                                                timestep_units='s')
+    U_integrator.integrate()
 
-U_integrator.integrate()
+    os.chdir('../../..')
 
-os.chdir('../../..')
+    # os.mkdir(base_dir + '/Thorium/'+ str(mass))
+    # os.chdir(base_dir + '/Thorium/'+ str(mass))
+    # Th_device.build()
 
-os.mkdir(base_dir + '/Thorium/'+ str(mass))
-os.chdir(base_dir + '/Thorium/'+ str(mass))
-Th_device.build()
+    # Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
+    #                                                                 openmc.Materials.from_xml(),
+    #                                                                 run_kwargs = {"threads":20,
+    #                                                                                 "particles":int(1e5)})
 
-Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
-                                                                   openmc.Materials.from_xml(),
-                                                                   run_kwargs = {"threads":20,
-                                                                                 "particles":int(1e3)})
+    # Th_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
+    #                                                 Th_flux,
+    #                                                 Th_micro_xs,
+    #                                                 chain_file=None, 
+    #                                                 normalization_mode='source-rate', 
+    #                                                 reduce_chain=False, 
+    #                                                 reduce_chain_level=None, 
+    #                                                 )
 
-Th_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
-                                                Th_flux,
-                                                Th_micro_xs,
-                                                chain_file=None, 
-                                                normalization_mode='source-rate', 
-                                                reduce_chain=False, 
-                                                reduce_chain_level=None, 
-                                                )
+    # Th_integrator = openmc.deplete.EPCRK4Integrator(Th_operator, 
+    #                                                 time_steps, 
+    #                                                 source_rates=source_rates,
+    #                                                 timestep_units='s')
 
-Th_integrator = openmc.deplete.EPCRK4Integrator(Th_operator, 
-                                                time_steps, 
-                                                source_rates=source_rates,
-                                                timestep_units='s')
+    # Th_integrator.integrate()
 
-Th_integrator.integrate()
-
-os.chdir('../../..')
+    # os.chdir('../../..')
 
