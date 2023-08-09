@@ -4,6 +4,7 @@ import openmc.deplete
 import numpy as np
 import os
 import sys
+import pickle
 
 """ Handle command line arguments and setup directory structure """
 if sys.argv[1] is not None:
@@ -87,6 +88,12 @@ for mass in masses:
                                                             openmc.Materials.from_xml(),
                                                             run_kwargs = {"threads":20,
                                                                         "particles":int(1e5)})
+
+    flux_file = open('U_flux', 'ab')
+    pickle.dump(U_flux, flux_file)
+
+    microxs_file = open("U_microxs", 'ab')
+    pickle.dump(U_micro_xs, microxs_file)
 
     U_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
                                                     U_flux,
