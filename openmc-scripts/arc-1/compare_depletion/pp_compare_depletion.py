@@ -27,6 +27,7 @@ os.chdir("INDEPENDENT")
 
 independent_results = Results("depletion_results.h5")
 independent_masses = get_masses_from_mats('U', coupled_results)
+print(independent_masses)
 
 os.chdir('..')
 
@@ -43,5 +44,7 @@ ax.scatter(time_steps, independent_masses, label = "Independent")
 ax.set_xlabel("Time (days)")
 ax.set_ylabel("Mass of Pu-239 (kg)")
 ax.set_title("Comparison of Independent and Coupled Operators")
+
+ax.legend()
 
 fig.savefig("depletion_comparison.png", dpi=300)

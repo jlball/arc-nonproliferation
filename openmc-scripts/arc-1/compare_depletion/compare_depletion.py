@@ -52,9 +52,14 @@ independent_device = setup_device(anp.generate_device("U", 20e3))
 
 
 ### COUPLED DEPLETION ###
-# Make a directory for and run the coupled depletion calculation
-os.mkdir("COUPLED")
-os.chdir("COUPLED")
+#Make a directory for and run the coupled depletion calculation
+
+try:
+    os.mkdir("COUPLED")
+    os.chdir("COUPLED")
+except:
+    os.chdir("COUPLED")
+
 coupled_device.build()
 
 os.chdir('..')
@@ -68,14 +73,19 @@ coupled_device.deplete(time_steps,
     directory="COUPLED")
 
 ### INDEPENDENT DEPLETION ###
-os.mkdir("INDEPENDENT")
-os.chdir("INDEPENDENT")
+try:
+    os.mkdir("INDEPENDENT")
+    os.chdir("INDEPENDENT")
+except:
+    os.chdir("INDEPENDENT")
+
 independent_device.build()
 
 flux, micro_xs = openmc.deplete.get_microxs_and_flux(independent_device,
                                                         openmc.Materials.from_xml(),
+                                                        chain_file=chain_file,
                                                         run_kwargs = {"threads":20,
-                                                                    "particles":int(1e5)})
+                                                                    "particles":int(1e4)})
 
 operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
                                                     flux,
