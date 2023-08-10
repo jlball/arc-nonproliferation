@@ -17,7 +17,7 @@ uf4.add_elements_from_formula('UF4')
 uf4.set_density('g/cm3', 6.7)
 uf4.depletable = True
 
-weight_percent = 0.01
+weight_percent = 0.1
 doped_flibe = openmc.Material.mix_materials([uf4, flibe], [weight_percent, 1 - weight_percent], 'wo', name="doped flibe")
 doped_flibe.volume = 4/3 * np.pi * np.power(100, 3)
 doped_flibe.depletable = True
@@ -64,20 +64,20 @@ coupled_device = openmc.model.Model(materials=materials, geometry=geometry, sett
 # DEPLETION SETTINGS
 ###
 num_steps = 10
-time_steps = [100 / num_steps] * num_steps
+time_steps = [4 / num_steps] * num_steps
 source_rates = [1e20] * num_steps
 
 chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
 
-# coupled_device.deplete(time_steps,
-#     method = 'predictor',
-#     source_rates=source_rates, 
-#     operator_kwargs={'chain_file':chain_file, 
-#                         'normalization_mode':'source-rate', 
-#                         'reduce_chain':False,
-#                         'reduce_chain_level':None}, 
-#     directory="COUPLED",
-#     timestep_units='d')
+coupled_device.deplete(time_steps,
+    method = 'predictor',
+    source_rates=source_rates, 
+    operator_kwargs={'chain_file':chain_file, 
+                        'normalization_mode':'source-rate', 
+                        'reduce_chain':False,
+                        'reduce_chain_level':None}, 
+    directory="COUPLED",
+    timestep_units='a')
 
 ### INDEPENDENT DEPLETION ###
 try:
@@ -95,18 +95,18 @@ flux, micro_xs = openmc.deplete.get_microxs_and_flux(independent_device,
                                                         run_kwargs = {"threads":20,
                                                                     "particles":int(1e4)})
 
-operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
-                                                    flux,
-                                                    micro_xs,
-                                                    chain_file=chain_file, 
-                                                    normalization_mode='source-rate', 
-                                                    reduce_chain=False, 
-                                                    reduce_chain_level=None, 
-                                                    )
+operator = openmc.deplete.IndependentOperator(materials, 
+                                                flux,
+                                                micro_xs,
+                                                chain_file=chain_file, 
+                                                normalization_mode='source-rate', 
+                                                reduce_chain=False, 
+                                                reduce_chain_level=None, 
+                                                )
 
 integrator = openmc.deplete.PredictorIntegrator(operator, 
                                                 time_steps, 
                                                 source_rates=source_rates,
-                                                timestep_units='d')
+                                                timestep_units='a')
 
 integrator.integrate()

@@ -82,7 +82,7 @@ except:
 independent_device.build()
 
 flux, micro_xs = openmc.deplete.get_microxs_and_flux(independent_device,
-                                                        openmc.Materials.from_xml(),
+                                                        materials,
                                                         chain_file=chain_file,
                                                         run_kwargs = {"threads":20,
                                                                     "particles":int(1e4)})
