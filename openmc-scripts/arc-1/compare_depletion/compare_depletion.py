@@ -96,7 +96,7 @@ operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(),
                                                     reduce_chain_level=None, 
                                                     )
 
-integrator = openmc.deplete.EPCRK4Integrator(operator, 
+integrator = openmc.deplete.PredictorIntegrator(operator, 
                                                 time_steps, 
                                                 source_rates=source_rates,
                                                 timestep_units='s')

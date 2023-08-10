@@ -14,6 +14,7 @@ os.chdir("COUPLED")
 
 coupled_results = Results("depletion_results.h5")
 coupled_masses = get_masses_from_mats("U", coupled_results)
+print(coupled_masses)
 
 time_steps = coupled_results.get_times()
 
