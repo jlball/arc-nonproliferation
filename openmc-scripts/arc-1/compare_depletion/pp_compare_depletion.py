@@ -27,7 +27,7 @@ os.chdir("..")
 os.chdir("INDEPENDENT")
 
 independent_results = Results("depletion_results.h5")
-independent_masses = get_masses_from_mats('U', coupled_results)
+independent_masses = get_masses_from_mats('U', independent_results)
 print(independent_masses)
 
 os.chdir('..')

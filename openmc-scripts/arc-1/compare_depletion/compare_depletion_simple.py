@@ -54,7 +54,7 @@ settings.batches = 10
 settings.source = source
 settings.run_mode = 'fixed source'
 
-independent_device = openmc.model.Model(materials=materials, geometry=geometry, settings=settings)
+
 coupled_device = openmc.model.Model(materials=materials, geometry=geometry, settings=settings)
 
 ## COUPLED DEPLETION ###
@@ -64,26 +64,20 @@ coupled_device = openmc.model.Model(materials=materials, geometry=geometry, sett
 # DEPLETION SETTINGS
 ###
 num_steps = 10
-time_steps = [100*24*60*60 / num_steps] * num_steps
+time_steps = [100 / num_steps] * num_steps
 source_rates = [1e20] * num_steps
 
 chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
 
-# try:
-#     os.mkdir("COUPLED")
-#     os.chdir("COUPLED")
-# except:
-#     os.chdir("COUPLED")
-
-# os.chdir('..')
-
-# coupled_device.deplete(time_steps, 
+# coupled_device.deplete(time_steps,
+#     method = 'predictor',
 #     source_rates=source_rates, 
 #     operator_kwargs={'chain_file':chain_file, 
 #                         'normalization_mode':'source-rate', 
 #                         'reduce_chain':False,
 #                         'reduce_chain_level':None}, 
-#     directory="COUPLED")
+#     directory="COUPLED",
+#     timestep_units='d')
 
 ### INDEPENDENT DEPLETION ###
 try:
@@ -92,10 +86,11 @@ try:
 except:
     os.chdir("INDEPENDENT")
 
+independent_device = openmc.model.Model(materials=materials, geometry=geometry, settings=settings)
 independent_device.export_to_xml()
 
 flux, micro_xs = openmc.deplete.get_microxs_and_flux(independent_device,
-                                                        openmc.Materials.from_xml(),
+                                                        materials,
                                                         chain_file=chain_file,
                                                         run_kwargs = {"threads":20,
                                                                     "particles":int(1e4)})
@@ -112,6 +107,6 @@ operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(),
 integrator = openmc.deplete.PredictorIntegrator(operator, 
                                                 time_steps, 
                                                 source_rates=source_rates,
-                                                timestep_units='s')
+                                                timestep_units='d')
 
 integrator.integrate()
