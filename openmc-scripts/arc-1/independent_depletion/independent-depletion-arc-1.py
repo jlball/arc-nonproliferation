@@ -58,7 +58,7 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-masses = np.array([5e3, 15e3, 30e3, 50e3]) #kg of fertile material
+masses = np.array([5e3, 50e3]) #kg of fertile material
 np.savetxt(base_dir + '/masses.txt', masses)
 
 """ DEPLETION SETTINGS """
@@ -66,11 +66,11 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 100
-    time_steps = [100 / num_steps] * num_steps
+    num_steps = 10
+    time_steps = [365 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-    chain_file = '/home/jlball/arc-nonproliferation/data/simple_fast_chain.xml'
+    chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
     openmc.config['chain_file'] = chain_file
 
     """ Generate blankets doped to specified mass """
@@ -85,9 +85,9 @@ for mass in masses:
     U_device.build()
 
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
-                                                            U_device.materials,
+                                                            [U_device.channel, U_device.blanket],
                                                             run_kwargs = {"threads":20,
-                                                                        "particles":int(1e3)})
+                                                                        "particles":int(1e2)})
 
     flux_file = open('U_flux', 'ab')
     pickle.dump(U_flux, flux_file)
@@ -95,13 +95,13 @@ for mass in masses:
     microxs_file = open("U_microxs", 'ab')
     pickle.dump(U_micro_xs, microxs_file)
 
-    U_operator = openmc.deplete.IndependentOperator(U_device.materials, 
+    U_operator = openmc.deplete.IndependentOperator(openmc.Materials([U_device.channel.fill, U_device.blanket.fill]), 
                                                     U_flux,
                                                     U_micro_xs,
                                                     chain_file=chain_file, 
                                                     normalization_mode='source-rate', 
-                                                    reduce_chain=False, 
-                                                    reduce_chain_level=None, 
+                                                    reduce_chain=True, 
+                                                    reduce_chain_level=5, 
                                                     )
 
     U_integrator = openmc.deplete.PredictorIntegrator(U_operator, 
@@ -118,17 +118,17 @@ for mass in masses:
     Th_device.build()
 
     Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
-                                                                    Th_device.materials,
+                                                                    [Th_device.channel, Th_device.blanket],
                                                                     run_kwargs = {"threads":20,
-                                                                                    "particles":int(1e3)})
+                                                                                    "particles":int(1e2)})
 
-    Th_operator = openmc.deplete.IndependentOperator(Th_device.materials, 
+    Th_operator = openmc.deplete.IndependentOperator(openmc.Materials([Th_device.channel.fill, Th_device.blanket.fill]), 
                                                     Th_flux,
                                                     Th_micro_xs,
                                                     chain_file=chain_file, 
                                                     normalization_mode='source-rate', 
-                                                    reduce_chain=False, 
-                                                    reduce_chain_level=None, 
+                                                    reduce_chain=True, 
+                                                    reduce_chain_level=5, 
                                                     )
 
     Th_integrator = openmc.deplete.PredictorIntegrator(Th_operator, 
