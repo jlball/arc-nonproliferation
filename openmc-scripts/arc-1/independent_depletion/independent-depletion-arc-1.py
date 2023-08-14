@@ -58,7 +58,7 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-masses = np.array([20e3]) #kg of fertile material
+masses = np.array([5e3, 15e3, 30e3, 50e3]) #kg of fertile material
 np.savetxt(base_dir + '/masses.txt', masses)
 
 """ DEPLETION SETTINGS """
@@ -66,8 +66,8 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 50
-    time_steps = [15*24*60*60 / num_steps] * num_steps
+    num_steps = 100
+    time_steps = [100 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
     chain_file = '/home/jlball/arc-nonproliferation/data/simple_fast_chain.xml'
@@ -85,9 +85,9 @@ for mass in masses:
     U_device.build()
 
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
-                                                            openmc.Materials.from_xml(),
+                                                            U_device.materials,
                                                             run_kwargs = {"threads":20,
-                                                                        "particles":int(1e5)})
+                                                                        "particles":int(1e3)})
 
     flux_file = open('U_flux', 'ab')
     pickle.dump(U_flux, flux_file)
@@ -95,48 +95,48 @@ for mass in masses:
     microxs_file = open("U_microxs", 'ab')
     pickle.dump(U_micro_xs, microxs_file)
 
-    U_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
+    U_operator = openmc.deplete.IndependentOperator(U_device.materials, 
                                                     U_flux,
                                                     U_micro_xs,
-                                                    chain_file=None, 
+                                                    chain_file=chain_file, 
                                                     normalization_mode='source-rate', 
                                                     reduce_chain=False, 
                                                     reduce_chain_level=None, 
                                                     )
 
-    U_integrator = openmc.deplete.EPCRK4Integrator(U_operator, 
+    U_integrator = openmc.deplete.PredictorIntegrator(U_operator, 
                                                     time_steps, 
                                                     source_rates=source_rates,
-                                                    timestep_units='s')
+                                                    timestep_units='d')
 
     U_integrator.integrate()
 
     os.chdir('../../..')
 
-    # os.mkdir(base_dir + '/Thorium/'+ str(mass))
-    # os.chdir(base_dir + '/Thorium/'+ str(mass))
-    # Th_device.build()
+    os.mkdir(base_dir + '/Thorium/'+ str(mass))
+    os.chdir(base_dir + '/Thorium/'+ str(mass))
+    Th_device.build()
 
-    # Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
-    #                                                                 openmc.Materials.from_xml(),
-    #                                                                 run_kwargs = {"threads":20,
-    #                                                                                 "particles":int(1e5)})
+    Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
+                                                                    Th_device.materials,
+                                                                    run_kwargs = {"threads":20,
+                                                                                    "particles":int(1e3)})
 
-    # Th_operator = openmc.deplete.IndependentOperator(openmc.Materials.from_xml(), 
-    #                                                 Th_flux,
-    #                                                 Th_micro_xs,
-    #                                                 chain_file=None, 
-    #                                                 normalization_mode='source-rate', 
-    #                                                 reduce_chain=False, 
-    #                                                 reduce_chain_level=None, 
-    #                                                 )
+    Th_operator = openmc.deplete.IndependentOperator(Th_device.materials, 
+                                                    Th_flux,
+                                                    Th_micro_xs,
+                                                    chain_file=chain_file, 
+                                                    normalization_mode='source-rate', 
+                                                    reduce_chain=False, 
+                                                    reduce_chain_level=None, 
+                                                    )
 
-    # Th_integrator = openmc.deplete.EPCRK4Integrator(Th_operator, 
-    #                                                 time_steps, 
-    #                                                 source_rates=source_rates,
-    #                                                 timestep_units='s')
+    Th_integrator = openmc.deplete.PredictorIntegrator(Th_operator, 
+                                                    time_steps, 
+                                                    source_rates=source_rates,
+                                                    timestep_units='d')
 
-    # Th_integrator.integrate()
+    Th_integrator.integrate()
 
-    # os.chdir('../../..')
+    os.chdir('../../..')
 

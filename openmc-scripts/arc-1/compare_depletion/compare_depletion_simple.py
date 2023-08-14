@@ -49,13 +49,14 @@ source.energy = openmc.stats.Discrete(14.1e6, 1)
 
 settings = openmc.Settings()
 settings.photon_transport = False
-settings.particles = int(1e3)
+settings.particles = int(1e2)
 settings.batches = 10
 settings.source = source
 settings.run_mode = 'fixed source'
 
 
 coupled_device = openmc.model.Model(materials=materials, geometry=geometry, settings=settings)
+independent_device = openmc.model.Model(materials=materials, geometry=geometry, settings=settings)
 
 ## COUPLED DEPLETION ###
 #Make a directory for and run the coupled depletion calculation
@@ -67,17 +68,25 @@ num_steps = 10
 time_steps = [4 / num_steps] * num_steps
 source_rates = [1e20] * num_steps
 
-chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
+chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
+
+try:
+    os.mkdir("COUPLED")
+    os.chdir("COUPLED")
+except:
+    os.chdir("COUPLED")
 
 coupled_device.deplete(time_steps,
-    method = 'predictor',
+    method = 'cecm',
     source_rates=source_rates, 
     operator_kwargs={'chain_file':chain_file, 
                         'normalization_mode':'source-rate', 
                         'reduce_chain':False,
                         'reduce_chain_level':None}, 
-    directory="COUPLED",
+    directory=".",
     timestep_units='a')
+
+os.chdir('..')
 
 ### INDEPENDENT DEPLETION ###
 try:
@@ -86,16 +95,16 @@ try:
 except:
     os.chdir("INDEPENDENT")
 
-independent_device = openmc.model.Model(materials=materials, geometry=geometry, settings=settings)
-independent_device.export_to_xml()
+
+#independent_device.export_to_xml()
 
 flux, micro_xs = openmc.deplete.get_microxs_and_flux(independent_device,
-                                                        materials,
+                                                        independent_device.materials,
                                                         chain_file=chain_file,
                                                         run_kwargs = {"threads":20,
-                                                                    "particles":int(1e4)})
+                                                                    "particles":int(1e3)})
 
-operator = openmc.deplete.IndependentOperator(materials, 
+operator = openmc.deplete.IndependentOperator(independent_device.materials, 
                                                 flux,
                                                 micro_xs,
                                                 chain_file=chain_file, 

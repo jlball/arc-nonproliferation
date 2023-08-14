@@ -115,12 +115,21 @@ def get_masses_from_mats(dopant, results):
     for i in range(0, len(time_steps)):
         materials = results.export_to_materials(i)
 
-        doped_flibe = get_material_by_name(materials, 'doped flibe') 
+        doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
+        doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels') 
+
+        if doped_flibe_blanket is None:
+            print("NO BLANKET MAT")
+            print('timestep ID:', i, "dopant:", dopant)
+
+        if doped_flibe_channels is None:
+            print("NO CHANNEL MAT")
+            print('timestep ID:', i, "dopant:", dopant)
 
         if dopant == "U":
-            fissile_mass = doped_flibe.get_mass(nuclide='Pu239')
+            fissile_mass = doped_flibe_blanket.get_mass(nuclide='Pu239') + doped_flibe_channels.get_mass(nuclide='Pu239')
         elif dopant == "Th":
-            fissile_mass = doped_flibe.get_mass(nuclide='U233')
+            fissile_mass = doped_flibe_blanket.get_mass(nuclide='U233') + doped_flibe_channels.get_mass(nuclide='U233')
         else:
             raise ValueError("Invalid dopant type passed into extract time to SQ function")
 
