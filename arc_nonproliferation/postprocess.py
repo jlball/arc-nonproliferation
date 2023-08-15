@@ -118,14 +118,6 @@ def get_masses_from_mats(dopant, results):
         doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
         doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels') 
 
-        if doped_flibe_blanket is None:
-            print("NO BLANKET MAT")
-            print('timestep ID:', i, "dopant:", dopant)
-
-        if doped_flibe_channels is None:
-            print("NO CHANNEL MAT")
-            print('timestep ID:', i, "dopant:", dopant)
-
         if dopant == "U":
             fissile_mass = doped_flibe_blanket.get_mass(nuclide='Pu239') + doped_flibe_channels.get_mass(nuclide='Pu239')
         elif dopant == "Th":
@@ -142,10 +134,14 @@ def extract_time_to_sq(dopant, results):
     
     fissile_masses = get_masses_from_mats(dopant, results)
 
+    # Get timestep with fissile mass nearest 1 SQ
+    idx = np.abs(fissile_masses - 8).argmin() 
+
     """ Linear fit to fissile masses data to determine time to SQ """
-    fit = Polynomial.fit(time_steps, fissile_masses, 1)
+    fit = Polynomial.fit(time_steps[idx-1:idx + 1], fissile_masses[idx-1:idx + 1], 1)
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
     return time_to_sig_quantity
+    
 
 def extract_decay_heat(results):
     time_steps = results.get_times()

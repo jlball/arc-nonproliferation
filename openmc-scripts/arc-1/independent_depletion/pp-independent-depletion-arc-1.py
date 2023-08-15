@@ -118,7 +118,7 @@ ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsiz
 ax.set_ylabel("Time (days)", fontsize=14)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
-fig.savefig("time_to_sq.png")
+fig.savefig("time_to_sq.png", dpi=300)
 
 for i, mass in enumerate(masses):
     fig, ax = plt.subplots()

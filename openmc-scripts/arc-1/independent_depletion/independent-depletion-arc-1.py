@@ -21,6 +21,7 @@ def setup_device(device):
     device.settings.photon_transport = False
     device.settings.particles = int(1e5)
     device.settings.batches = 10
+    device.settings.survival_biasing = True
 
     """ Cylindrical Mesh Tally """
     mesh = openmc.CylindricalMesh()
@@ -58,7 +59,7 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-masses = np.array([5e3, 50e3]) #kg of fertile material
+masses = np.array([5e3, 7e3, 10e3, 15e3, 30e3, 50e3]) #kg of fertile material
 np.savetxt(base_dir + '/masses.txt', masses)
 
 """ DEPLETION SETTINGS """
@@ -66,7 +67,7 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 10
+    num_steps = 50
     time_steps = [365 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
@@ -87,7 +88,7 @@ for mass in masses:
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
                                                             [U_device.channel, U_device.blanket],
                                                             run_kwargs = {"threads":20,
-                                                                        "particles":int(1e2)})
+                                                                        "particles":int(1e3)})
 
     flux_file = open('U_flux', 'ab')
     pickle.dump(U_flux, flux_file)
@@ -120,7 +121,7 @@ for mass in masses:
     Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
                                                                     [Th_device.channel, Th_device.blanket],
                                                                     run_kwargs = {"threads":20,
-                                                                                    "particles":int(1e2)})
+                                                                                    "particles":int(1e3)})
 
     Th_operator = openmc.deplete.IndependentOperator(openmc.Materials([Th_device.channel.fill, Th_device.blanket.fill]), 
                                                     Th_flux,
