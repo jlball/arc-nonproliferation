@@ -12,15 +12,17 @@ lower_left = (-650, -650, -350)
 upper_right = (650, 650, 350)
 
 blanket = device.get_cell('blanket')
-vol_calc = openmc.VolumeCalculation([blanket], int(1e6),
+channels = device.get_cell('channels')
+
+vol_calc = openmc.VolumeCalculation([blanket, channels], int(1e6),
                                     lower_left, upper_right)
 
 device.settings.volume_calculations = [vol_calc]
 
-vol_calc.set_trigger(1e-04, 'rel_err')
+vol_calc.set_trigger(1e-02, 'rel_err')
 
 device.build()
-#openmc.calculate_volumes()
+openmc.calculate_volumes()
 
-vol_calc_load = openmc.VolumeCalculation.from_hdf5('volume_1.h5')
-print(vol_calc_load.volumes[7].n)
+#vol_calc_load = openmc.VolumeCalculation.from_hdf5('volume_1.h5')
+#print(vol_calc_load.volumes[7].n)

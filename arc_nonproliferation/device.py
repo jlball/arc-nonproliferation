@@ -57,6 +57,8 @@ class Device(openmc.model.Model):
         #wedge_cell.fill = self.univ
         self.geometry = openmc.Geometry(self.univ)
         self.tallies = openmc.Tallies(self._tallies)
+        self.materials = openmc.Materials(self.geometry.get_all_materials().values())
+
         super().export_to_xml()
 
     def add_tally(self, name, scores, nuclides=None, filters=None):
@@ -133,17 +135,40 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
 
     # Read volume calc file
     vol_calc_load = openmc.VolumeCalculation.from_hdf5('/home/jlball/arc-nonproliferation/data/arc-1_volumes.h5')
-    flibe_volume = vol_calc_load.volumes[7].n
+    flibe_volume = vol_calc_load.volumes[8].n
+    channels_volume = vol_calc_load.volumes[5].n
 
-    doped_flibe = make_doped_flibe(dopant, dopant_mass, volume=flibe_volume, Li6_enrichment=Li6_enrichment)
+    doped_flibe = make_doped_flibe(dopant, 
+                                           dopant_mass, 
+                                           volume=flibe_volume + channels_volume, 
+                                           Li6_enrichment=Li6_enrichment, 
+                                           name="doped flibe blanket")
+    
     device.doped_flibe = doped_flibe
+
+    doped_flibe_channels = doped_flibe.clone()
+    doped_flibe_channels.volume = channels_volume
+    doped_flibe_channels.name = "doped flibe channels"
+
+    doped_flibe_blanket = doped_flibe.clone()
+    doped_flibe_blanket.volume = flibe_volume
+    doped_flibe_blanket.name = "doped flibe blanket"
+
+    vcrti_VV = vcrti.clone()
+    vcrti.name = "VV"
+
+    vcrti_BI = vcrti.clone()
+    vcrti.name = "tank inner"
+
+    vcrti_BO = vcrti.clone()
+    vcrti.name = "tank outer"
 
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=tungsten, name='PFC')
     device.vv = openmc.Cell(region=vv, fill=vcrti_VV, name='VV')
-    device.channel = openmc.Cell(region=channel, fill=doped_flibe, name='channels')
+    device.channel = openmc.Cell(region=channel, fill=doped_flibe_channels, name='channels')
     device.tank_inner = openmc.Cell(region=tank_inner, fill=vcrti_BI, name='tank inner')
-    device.blanket = openmc.Cell(region=salt, fill=doped_flibe, name='blanket')
+    device.blanket = openmc.Cell(region=salt, fill=doped_flibe_blanket, name='blanket')
     device.tank_outer = openmc.Cell(region=tank_outer, fill=vcrti_BO, name='tank outer')
     device.domain.region = device.domain.region & outside
 
@@ -153,7 +178,82 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
 
     """ Source Definition """
     source = openmc.Source()
-    source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(475, 1), openmc.stats.Uniform(a=-np.pi/18, b=np.pi/18), openmc.stats.Discrete(0, 1))
+    source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(400, 1), openmc.stats.Uniform(a=0, b=2*np.pi), openmc.stats.Discrete(0, 1))
+    source.angles = openmc.stats.Isotropic()
+    source.energy = openmc.stats.Discrete([14.1E6], [1.0])
+
+    device.settings.source = source
+
+    return device
+
+def generate_simple_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt', blanket_file="arc_blanket.txt"):
+    device = Device()
+    device.dopant = dopant
+
+    # ==============================================================================
+    # Geometry
+    # ==============================================================================
+
+    """ PFCs and Vacuum Vessel """
+
+    vv_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/" + vv_file)
+
+    pfc_polygon = openmc.model.Polygon(vv_points, basis='rz')
+    vv_inner_edge = pfc_polygon.offset(0.3) #PFC
+    vv_outer_edge = vv_inner_edge.offset(3.0) #Channel shell
+
+    """ Blanket and Outer Blanket Tank """
+
+    blanket_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/" + blanket_file)
+
+    blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
+    gap = blanket_inner.offset(1.0)
+    blanket_outer = gap.offset(2.0) #Blanket tank outer
+
+    regions = openmc.model.subdivide([pfc_polygon,
+                                    vv_inner_edge, 
+                                    vv_outer_edge,
+                                    blanket_inner, 
+                                    blanket_outer])
+
+    plasma, pfc, vv, salt, tank_outer, outside = regions
+
+    # Read volume calc file
+    vol_calc_load = openmc.VolumeCalculation.from_hdf5('/home/jlball/arc-nonproliferation/data/arc-1_volumes.h5')
+    flibe_volume = vol_calc_load.volumes[8].n
+
+    doped_flibe = make_doped_flibe(dopant, 
+                                           dopant_mass, 
+                                           volume=flibe_volume, 
+                                           Li6_enrichment=Li6_enrichment, 
+                                           name="doped flibe blanket")
+    
+    device.doped_flibe = doped_flibe
+
+    doped_flibe_blanket = doped_flibe.clone()
+    doped_flibe_blanket.volume = flibe_volume
+    doped_flibe_blanket.name = "doped flibe blanket"
+
+    vcrti_VV = vcrti.clone()
+    vcrti.name = "VV"
+
+    vcrti_BO = vcrti.clone()
+    vcrti.name = "tank outer"
+
+    device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
+    device.pfc = openmc.Cell(region=pfc, fill=tungsten, name='PFC')
+    device.vv = openmc.Cell(region=vv, fill=vcrti_VV, name='VV')
+    device.blanket = openmc.Cell(region=salt, fill=doped_flibe_blanket, name='blanket')
+    device.tank_outer = openmc.Cell(region=tank_outer, fill=vcrti_BO, name='tank outer')
+    device.domain.region = device.domain.region & outside
+
+    # ==============================================================================
+    # Settings
+    # ==============================================================================
+
+    """ Source Definition """
+    source = openmc.Source()
+    source.space = openmc.stats.CylindricalIndependent(openmc.stats.Discrete(400, 1), openmc.stats.Uniform(a=0, b=2*np.pi), openmc.stats.Discrete(0, 1))
     source.angles = openmc.stats.Isotropic()
     source.energy = openmc.stats.Discrete([14.1E6], [1.0])
 
