@@ -5,6 +5,19 @@ from arc_nonproliferation.materials import *
 from arc_nonproliferation.constants import neutrons_per_MJ
 import shutil
 
+"""
+Class for simulating an ARC-class reactor blanket doped with either
+U-238 or Th-233 for the purpose of breeding fissile material.
+
+Instances of the class used for simulations are generated using the 
+generate_device function which allows for a device instance to be generated 
+with a given Li-6 enrichment and fertile inventory.
+
+This class also stores as a class variable its fusion power and total neutron 
+source rate so that these values can be easily accessed by both depletion scripts
+and post processing scripts
+
+"""
 class Device(openmc.model.Model):
 
     fusion_power = 500 # MW
@@ -43,8 +56,11 @@ class Device(openmc.model.Model):
         settings.run_mode = 'fixed source'
         self.settings = settings
 
-    def build(self, model_angles=[0, 360]):
-        """Builds the model geometry from specifically named components"""
+    def build(self):
+        """
+        Builds the model geometry from specifically named components.
+        Must be called before model can be run.
+        """
         comp_cells = [cell for comp in self._components for cell in comp.cells]
         comp_regs = [~comp for comp in self._components if comp.exclude]
 
@@ -55,11 +71,6 @@ class Device(openmc.model.Model):
         all_cells = comp_cells + self._cells
         self.univ = openmc.Universe(cells=all_cells)
 
-        #Creates wedge model with specified azimuthal width
-        #neg_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[0]))
-        #pos_plane = openmc.YPlane(boundary_type="reflective").rotate((0, 0, model_angles[1]))
-        #wedge_cell = openmc.Cell(region=+neg_plane & -pos_plane & -self.boundary,name='wedge cell')
-        #wedge_cell.fill = self.univ
         self.geometry = openmc.Geometry(self.univ)
         self.tallies = openmc.Tallies(self._tallies)
         self.materials = openmc.Materials(self.geometry.get_all_materials().values())
@@ -67,7 +78,24 @@ class Device(openmc.model.Model):
         super().export_to_xml()
 
     def add_tally(self, name, scores, nuclides=None, filters=None):
-        """Creates a tally from given kwargs and adds it to the tallies object"""
+        """
+        Creates a tally from given kwargs and adds it to the tallies object
+
+        Parameters
+        ----------
+        name : str
+            Name to be used for the tally
+        scores : str
+            tally scores, e. g. flux, absorption, (n,Xt)
+        nuclides : list of str
+            nuclides to individually track
+        filters: list of openmc.Filter
+                openmc filters like openmc.CellFilter to include in the tally
+
+        Returns
+        -------
+        openmc.Tally, the generated tally object
+        """
         tally = openmc.Tally(name=name)
         
         if nuclides is not None:
@@ -79,20 +107,6 @@ class Device(openmc.model.Model):
         self._tallies.append(tally)
 
         return tally
-
-    def dope_blanket(self):
-        if self.dopant is None:
-            doped_flibe = flibe
-        else:
-            doped_flibe = doped_flibe(self.dopant, self.dopant_mass)
-
-    def run(self, threads=20, batches=10, particles=1000, cwd=None):
-        """Runs the model with specified parameters"""
-        self.settings.particles = particles
-        self.settings.batches = batches
-
-        self.statepointfile = super().run(threads=threads, cwd=cwd)
-        return self.statepointfile
 
     def get_cell(self, name):
         comp_cells = [cell for comp in self._components for cell in comp.cells]
@@ -144,10 +158,10 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
     channels_volume = vol_calc_load.volumes[5].n
 
     doped_flibe = make_doped_flibe(dopant, 
-                                           dopant_mass, 
-                                           volume=flibe_volume + channels_volume, 
-                                           Li6_enrichment=Li6_enrichment, 
-                                           name="doped flibe blanket")
+                                    dopant_mass, 
+                                    volume=flibe_volume + channels_volume, 
+                                    Li6_enrichment=Li6_enrichment, 
+                                    name="doped flibe blanket")
     
     device.doped_flibe = doped_flibe
 
