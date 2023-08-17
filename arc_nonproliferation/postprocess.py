@@ -7,8 +7,16 @@ import uncertainties
 from numpy.polynomial.polynomial import Polynomial
 import os
 
+"""
+This module houses functions which are useful for analysis of OpenMC
+data across multiple different types of simulations (transport, 
+coupled depletion, independent depletion)
+
+"""
+
 def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
-    """Parse out a set of 3 2D np arrays for easy plotting of 
+    """
+    Parse out a set of 3 2D np arrays for easy plotting of 
     2D R/Z cylindrical Mesh tallies.
 
     Parameters
@@ -47,7 +55,8 @@ def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     return r_mesh, z_mesh, data
 
 def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma', value='mean'):
-    """Plots an RZ quantity from a 2D cylindrical mesh
+    """
+    Plots an RZ quantity from a 2D cylindrical mesh
 
     Parameters
     ----------
@@ -79,7 +88,8 @@ def plot_RZ_quantity(tally, score, title='Title', volume_norm=True, cmap='plasma
     return fig, ax
 
 def get_uvalue(tally, score, value='mean', filters=[]):
-    """Gets a value and its uncertainty from a tally (without a mesh filter)
+    """
+    Gets a value and its uncertainty from a tally (without a mesh filter)
 
     Parameters
     ----------
@@ -103,11 +113,42 @@ def get_uvalue(tally, score, value='mean', filters=[]):
     return u_val
 
 def get_material_by_name(materials, name):
+    """
+    Gets a material object from a materials list from a name
+    
+    Parameters
+    ----------
+    materials : openmc.Materials
+        The list of materials to search
+    name : str
+        The name of the material to return
+
+    Returns
+    -------
+    the material with corresponding name
+    """
     for mat in materials:
         if mat.name == name:
             return mat
 
 def get_masses_from_mats(dopant, results):
+    """
+    Returns mass of either Pu-239 or U-233 at each timestep from a depletion 
+    results object. 
+
+    Parameters
+    ----------
+    dopant : str
+        "U" for uranium doped blanket, returns Pu-239 mass, or "Th" for a
+        thorium doped blanket, returns U-233 mass
+    results : openmc.Results
+        depletion results object to analyze
+
+    Returns
+    -------
+    numpy.array, each entry being fissile mass in kg at each timestep
+    """
+
     time_steps = results.get_times()
     fissile_masses = np.empty(len(time_steps))
 
@@ -130,6 +171,22 @@ def get_masses_from_mats(dopant, results):
     return fissile_masses
 
 def extract_time_to_sq(dopant, results):
+    """
+    Computes the time at which 1 significant quantity of fissile material is
+    present in the blanket.
+
+    Parameters
+    ----------
+    dopant : str
+        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
+    results : openmc.Results
+        the depletion results file to analyse
+
+    Returns
+    -------
+    float, the time in hours at which 1 SQ of fissile material is present in the blanket
+    """
+
     time_steps = results.get_times(time_units='h')
     
     fissile_masses = get_masses_from_mats(dopant, results)
@@ -144,6 +201,19 @@ def extract_time_to_sq(dopant, results):
     
 
 def extract_decay_heat(results):
+    """
+    Gets a value and its uncertainty from a tally (without a mesh filter)
+
+    Parameters
+    ----------
+    results : openmc.Results
+        the depletion results file to analyse
+
+    Returns
+    -------
+    numpy.array, decay heat power in MW at each time step.
+    """
+
     time_steps = results.get_times()
     decay_heats = np.empty(len(time_steps))
 
@@ -155,7 +225,22 @@ def extract_decay_heat(results):
     return decay_heats / 1e6 #Convert from watts to MW
 
 def extract_isotopic_purity(dopant, results):
-    
+    """
+    Extracts the purity of fissile material bred in the blanket
+
+    Parameters
+    ----------
+    dopant : str
+        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
+    results : openmc.Results
+        the depletion results file to analyse
+
+    Returns
+    -------
+    numpy.array, the ratio of bred fissile isotope (Pu-239 or U-233) to all other isotopes
+    of Pu or U at each time step.
+    """
+
     materials = results.export_to_materials(-1)
     doped_flibe = get_material_by_name(materials, 'doped flibe') 
 
