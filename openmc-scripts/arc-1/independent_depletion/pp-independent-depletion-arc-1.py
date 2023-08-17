@@ -166,8 +166,8 @@ np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 
 # Fit data to 1/x function:
-def fit(x, A, B):
-    return (A/x) + B
+def fit(x, A, B, C):
+    return (A/x) + (C/x**2) + B
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)

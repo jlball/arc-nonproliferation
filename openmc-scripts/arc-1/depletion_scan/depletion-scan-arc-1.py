@@ -14,6 +14,12 @@ if sys.argv[1] is not None:
     os.mkdir(base_dir + '/Uranium')
     os.mkdir(base_dir + '/Thorium')
 
+""" allows for enrichment to specified, defaults to natual """
+if sys.argv[2] is not None:
+    Li6_enrichment = float(sys.argv[2])
+else:
+    Li6_enrichment = 7.5
+
 # This function handles the simulation specific setup of each device object
 def setup_device(device):
     """ Run settings """

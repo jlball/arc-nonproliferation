@@ -38,6 +38,12 @@ if sys.argv[1] is not None:
     os.mkdir(base_dir + '/Uranium')
     os.mkdir(base_dir + '/Thorium')
 
+""" allows for enrichment to specified, defaults to natual """
+if sys.argv[2] is not None:
+    Li6_enrichment = float(sys.argv[2])
+else:
+    Li6_enrichment = 7.5
+
 # This function handles the simulation specific setup of each device object
 def setup_device(device):
     """ Run settings """
@@ -66,8 +72,8 @@ openmc.config['chain_file'] = anp.constants.chain_file
 for mass in masses:
     """ Generate blankets doped to specified mass """
 
-    U_device = setup_device(anp.generate_device("U", mass))
-    Th_device = setup_device(anp.generate_device("Th", mass))
+    U_device = setup_device(anp.generate_device("U", mass, Li6_enrichment = Li6_enrichment))
+    Th_device = setup_device(anp.generate_device("Th", mass, Li6_enrichment = Li6_enrichment))
 
     """ Run Uranium depletion calculation """
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg" + " DOPANT: Uranium-238" + " ~~~~~~~~~~~~~~~~~~")
