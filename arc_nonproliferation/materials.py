@@ -2,6 +2,13 @@ import openmc
 from scipy.constants import Avogadro
 from arc_nonproliferation.constants import *
 
+"""
+This module contains all material definitions and useful functions
+for generating FLiBe materials doped with a specific mass of fertile
+material.
+
+"""
+
 """ TUNGSTEN """
 tungsten = openmc.Material(name='W')
 tungsten.add_element('O',5/1e6,percent_type='wo')
@@ -58,7 +65,20 @@ thf4.add_elements_from_formula('ThF4')
 thf4.set_density('g/cm3', 6.3)
 
 def get_tetrafluoride_mass(mass, dopant):
-    """Computes mass of tetrafluroide from a given mass of pure dopant"""
+    """
+    Computes mass of tetrafluroide from a given mass of pure dopant
+
+    Parameters
+    ----------
+    mass : float
+        mass of fertile material in grams
+    dopant : str
+        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
+
+    Returns
+    -------
+    float, mass of actinide tetrafluoride containing 'mass' grams of fertile material
+    """
 
     if dopant == 'U':
         moles = mass / openmc.data.atomic_mass('U238')
@@ -73,8 +93,25 @@ def get_tetrafluoride_mass(mass, dopant):
     return tetrafluoride_mass
 
 def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None):
-    """Return openmc material doped with specified fertile material"""
+    """
+    Return openmc material doped with specified fertile material
 
+    Parameters
+    ----------
+    dopant : str
+        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
+    dopant_mass : float
+        mass of fertile material in kilograms
+    Li6_enrichment : float
+        The percent of the lithium which is Li-6 instead of Li-7.
+    name : str
+        the name of the material returned
+    volume : the volume of the material returned in cubic centimeters
+    
+    Returns
+    -------
+    openmc.Material, FLiBe material doped with specified amount of fertile material
+    """
     dopant_mass = dopant_mass * 1000 #Dopant mass is provided in units of kg, so here convert to grams
 
     flibe = openmc.Material()
@@ -101,13 +138,6 @@ def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe'
     doped_mat.depletable = True
     return doped_mat
 
-def get_all_nuclides(materials):
-    all_nucs = []
-    for mat in materials:
-        nucs = mat.get_nuclides()
-        all_nucs.append(nucs)
-
-    return nucs
 
 
     
