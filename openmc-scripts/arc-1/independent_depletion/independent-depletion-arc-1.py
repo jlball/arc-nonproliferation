@@ -61,8 +61,7 @@ num_steps = 50
 time_steps = [365 / num_steps] * num_steps
 source_rates = [anp.Device.neutron_source_rate] * num_steps
 
-chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
-openmc.config['chain_file'] = chain_file
+openmc.config['chain_file'] = anp.constants.chain_file
 
 for mass in masses:
     """ Generate blankets doped to specified mass """

@@ -39,6 +39,8 @@ if sys.argv[1] is not None:
 else:
     raise ValueError("No base directory specified!")
 
+openmc.config['chain_file'] = anp.constants.chain_file
+
 # ====================================================
 # Extract Data
 # ====================================================
@@ -96,6 +98,44 @@ for i, mass in enumerate(masses):
     Th_fissile_masses[i] = get_masses_from_mats('Th', Th_results)
 
     os.chdir("../../..")
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Decay Photon Spectrum
+
+U_decay_spectra_channels = []
+U_decay_spectra_blanket = []
+
+Th_decay_spectra_channels = []
+Th_decay_spectra_blanket = []
+
+for i in range(0, num_steps):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U_mats = U_results.export_to_materials(i)
+
+    flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
+    flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
+
+    U_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
+    U_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_mats = Th_results.export_to_materials(i)
+
+    flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
+    flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
+
+    Th_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
+    Th_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+
+    os.chdir('../../..')
 
 # ====================================================
 # Plotting
@@ -165,3 +205,48 @@ for i, mass in enumerate(masses):
     ax.legend()
 
     fig.savefig(str(mass) + "_metric_tons.png", dpi=300)
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Decay Photon Spectrum
+
+# Uranium
+
+fig, axs = plt.subplots(1, 2)
+
+for ax in axs:
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    ax.set_yscale("log")
+
+    ax.set_ylim(1e15, 1e19)
+    ax.set_xlim(0, 3)
+    ax.set_xlabel("Photon Energy (MeV)")
+
+for i in range(0, num_steps):
+    axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
+    axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
+    
+axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
+axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
+
+fig.set_size_inches(10, 4)
+fig.savefig("U_decay_spectra.png")
+
+# Thorium:
+
+# fig, ax = plt.subplots()
+# ax.spines["top"].set_color("None")
+# ax.spines["right"].set_color("None")
+
+# for i, dist in enumerate(Th_decay_spectra):
+#     ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+
+# ax.set_yscale("log")
+
+# ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
+# ax.set_xlabel("Photon Energy (eV)")
+
+# ax.set_ylim(1e15, 1e22)
+
+# fig.savefig("Th_decay_spectra.png")
