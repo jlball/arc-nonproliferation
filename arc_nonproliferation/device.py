@@ -2,9 +2,14 @@ import numpy as np
 import openmc
 from arc_nonproliferation.components import *
 from arc_nonproliferation.materials import *
+from arc_nonproliferation.constants import neutrons_per_MJ
 import shutil
 
 class Device(openmc.model.Model):
+
+    fusion_power = 500 # MW
+    neutron_source_rate = fusion_power * neutrons_per_MJ
+
     def __init__(self, **kwargs):
 
         super().__init__(**kwargs)

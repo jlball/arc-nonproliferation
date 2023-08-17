@@ -57,10 +57,9 @@ np.savetxt(base_dir + '/masses.txt', masses) # Store masses for later use in pos
 
 
 """ DEPLETION SETTINGS """
-fusion_power = 500 #MW
 num_steps = 50
 time_steps = [365 / num_steps] * num_steps
-source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+source_rates = [anp.Device.neutron_source_rate] * num_steps
 
 chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
 openmc.config['chain_file'] = chain_file

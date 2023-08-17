@@ -39,9 +39,6 @@ if sys.argv[1] is not None:
 else:
     raise ValueError("No base directory specified!")
 
-fusion_power = 500 #MW
-total_neutron_rate = fusion_power * neutrons_per_MJ
-
 # ====================================================
 # Extract Data
 # ====================================================
