@@ -120,6 +120,27 @@ class Device(openmc.model.Model):
         return None
 
 def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt', blanket_file="arc_blanket.txt"):
+    """
+    Generates a device object with specified fertile inventory and Li-6 enrichment.
+
+    Parameters
+    ----------
+    dopant : str
+        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
+    dopant_mass : float
+        mass of fertile material to dope into the blanket in units of kg
+    Li6_enrichment : float
+        The percent of the lithium which is Li-6 instead of Li-7.
+    vv_file : str
+        name of file in the API data folder which contains the set of points which define the vv boundary
+    blanket_file : str
+        name of file in the API data folder which contains the set of points which define the blanket tank boundary
+
+    Returns
+    -------
+    arc_nonproliferation.Device, the generated device object.
+    """
+    
     device = Device()
     device.dopant = dopant
 
