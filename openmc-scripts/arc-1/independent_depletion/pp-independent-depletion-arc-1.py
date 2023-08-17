@@ -61,7 +61,7 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
-    U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
+    U_time_to_SQ[i] = extract_time_to_sq_curve_fit('U', U_results)
 
     #While we're here, get the number of depletion steps:
     time_steps = U_results.get_times()
@@ -73,7 +73,7 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_time_to_SQ[i] = extract_time_to_sq('Th', Th_results)
+    Th_time_to_SQ[i] = extract_time_to_sq_curve_fit('Th', Th_results)
 
     os.chdir("../../..")
 
@@ -134,6 +134,31 @@ for i in range(0, num_steps):
 
     Th_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
     Th_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+
+    os.chdir('../../..')
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Isotopic Purity
+
+U_purities = np.empty(len(masses))
+Th_purities = np.empty(len(masses))
+
+for i, mass in enumerate(masses):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U_purity = extract_isotopic_purity("U", U_results)
+    U_purities[i] = U_purity[-1]
+
+    os.chdir('../../..')
+
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_purity = extract_isotopic_purity("Th", Th_results)
+    Th_purities[i] = Th_purity[-1]
 
     os.chdir('../../..')
 
@@ -250,3 +275,21 @@ fig.savefig("U_decay_spectra.png")
 # ax.set_ylim(1e15, 1e22)
 
 # fig.savefig("Th_decay_spectra.png")
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Isotopic Purity
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.scatter(masses, U_purities*100, label = "Pu239", color='r')
+ax.scatter(masses, Th_purities*100, label = "U233", color='g')
+
+ax.legend()
+
+ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
+ax.set_ylabel("Isotopic Purity (\% fissile isotope)", fontsize=14)
+ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
+
+fig.savefig("isotopic_purity.png")

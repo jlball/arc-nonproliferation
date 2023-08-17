@@ -5,6 +5,7 @@ import arc_nonproliferation as anp
 import matplotlib.pyplot as plt
 import uncertainties
 from numpy.polynomial.polynomial import Polynomial
+from scipy.optimize import curve_fit, root
 import os
 
 """
@@ -198,6 +199,43 @@ def extract_time_to_sq(dopant, results):
     fit = Polynomial.fit(time_steps[idx-1:idx + 1], fissile_masses[idx-1:idx + 1], 1)
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
     return time_to_sig_quantity
+
+def extract_time_to_sq_curve_fit(dopant, results):
+    """
+    Computes the time at which 1 significant quantity of fissile material is
+    present in the blanket.
+
+    Parameters
+    ----------
+    dopant : str
+        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
+    results : openmc.Results
+        the depletion results file to analyse
+
+    Returns
+    -------
+    float, the time in hours at which 1 SQ of fissile material is present in the blanket
+    """
+    def fit_func(x, A, B, C):
+        return A*np.exp(-B*x) + (C * x) - A
+
+    time_steps = results.get_times(time_units='h')
+
+    fissile_masses = get_masses_from_mats(dopant, results)
+
+    # Get timestep with fissile mass nearest 1 SQ
+    idx = np.abs(fissile_masses - 8).argmin() 
+
+
+    p0 = np.array([1, 1, 1])
+    """ fit to fissile masses data to determine time to SQ """
+    popt, pcov = curve_fit(fit_func, time_steps, fissile_masses, p0)
+
+    """ get root """
+
+    res = root(fit_func, 1000, args=(popt[0], popt[1], popt[2]-8))
+
+    return res.x
     
 
 def extract_decay_heat(results):
@@ -242,7 +280,8 @@ def extract_isotopic_purity(dopant, results):
     """
 
     materials = results.export_to_materials(-1)
-    doped_flibe = get_material_by_name(materials, 'doped flibe') 
+    doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels')
+    doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket') 
 
     """ ~~~~~~~ Uranium -> Plutonium ~~~~~~ """
     Pu_nuclides = ["Pu238", "Pu239", "Pu240", "Pu241"]
@@ -250,8 +289,13 @@ def extract_isotopic_purity(dopant, results):
         atoms = {}
         total_atoms = 0
         for nuclide in Pu_nuclides:
-            times, num_atoms = results.get_atoms(mat=doped_flibe, nuc=nuclide)
-            atoms[nuclide] = num_atoms
+            try:
+                times, num_atoms_channels = results.get_atoms(mat=doped_flibe_channels, nuc=nuclide)
+                times, num_atoms_blanket = results.get_atoms(mat=doped_flibe_blanket, nuc=nuclide)
+            except:
+                num_atoms_blanket = 0
+                num_atoms_channels = 0
+            atoms[nuclide] = num_atoms_channels + num_atoms_blanket
             total_atoms = total_atoms + atoms[nuclide]
         return atoms['Pu239']/total_atoms
     
@@ -261,8 +305,13 @@ def extract_isotopic_purity(dopant, results):
         atoms = {}
         total_atoms = 0
         for nuclide in U_nuclides:
-            times, num_atoms = results.get_atoms(mat=doped_flibe, nuc=nuclide)
-            atoms[nuclide] = num_atoms
+            try:
+                times, num_atoms_channels = results.get_atoms(mat=doped_flibe_channels, nuc=nuclide)
+                times, num_atoms_blanket = results.get_atoms(mat=doped_flibe_blanket, nuc=nuclide)
+            except:
+                num_atoms_blanket = 0
+                num_atoms_channels = 0
+            atoms[nuclide] = num_atoms_channels + num_atoms_blanket
             total_atoms = total_atoms + atoms[nuclide]
         return atoms['U233']/total_atoms
     

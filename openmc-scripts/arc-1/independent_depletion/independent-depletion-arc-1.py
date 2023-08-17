@@ -64,7 +64,7 @@ np.savetxt(base_dir + '/masses.txt', masses) # Store masses for later use in pos
 
 """ DEPLETION SETTINGS """
 num_steps = 50
-time_steps = [365 / num_steps] * num_steps
+time_steps = [2000 / num_steps] * num_steps
 source_rates = [anp.Device.neutron_source_rate] * num_steps
 
 openmc.config['chain_file'] = anp.constants.chain_file
