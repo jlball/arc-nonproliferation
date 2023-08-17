@@ -6,6 +6,29 @@ import os
 import sys
 import pickle
 
+"""
+This script runs an independent depletion calculation for the arc-1 model for a 
+set of blanket materials with varying fertile masses present. Used to asses the
+time needed to breed a significant quantity of fissile material. The output of 
+this scrit can be automatically analysed using the corresponding script:
+
+pp-independent-depletion-arc-1.py
+
+Usage: Specify a set of fertile masses you wish to simulate, and a set of
+desired run parameters for each calculation of fluxes and micro_xs in the 
+setup_device function. Fusion power and timesteps can be adjusted in the 
+depletion run section. To run the script, launch it from the command line
+with a single additional argument specifying the name of the directory in 
+which the output will be stored:
+
+python3 independent-depletion-arc-1.py <output_directory_name>
+
+"""
+
+# ==============================================================================
+# Setup
+# ==============================================================================
+
 """ Handle command line arguments and setup directory structure """
 if sys.argv[1] is not None:
     base_dir = str(sys.argv[1])
@@ -23,36 +46,6 @@ def setup_device(device):
     device.settings.batches = 10
     device.settings.survival_biasing = True
 
-    """ Cylindrical Mesh Tally """
-    mesh = openmc.CylindricalMesh()
-    mesh.r_grid = np.linspace(100, 700, num=50)
-    mesh.z_grid = np.linspace(-300, 300, num=50)
-    mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
-    mesh_filter = openmc.MeshFilter(mesh)
-
-    # """ Spectrum Mesh """
-    # spec_mesh = openmc.CylindricalMesh()
-    # spec_mesh.r_grid = np.linspace(100, 700, num=50)
-    # spec_mesh.z_grid = np.linspace(-15, 15, num=1)
-    # spec_mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
-    # spec_mesh_filter = openmc.MeshFilter(mesh)
-
-    """ Cell Filter """
-    blanket_cell = device.get_cell(name='blanket')
-    blanket_filter = openmc.CellFilter(blanket_cell)
-
-    """ Energy Filter """
-    energy_filter = openmc.EnergyFilter.from_group_structure("CCFE-709")
-
-    device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
-
-    """ FLiBe Tally """
-    #flibe_filter = openmc.MaterialFilter(anp.get_material_by_name(device.materials, "doped_flibe"))
-    device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
-    device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
-    device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
-    device.add_tally("Feritle Tally", ['absorption', '(n,gamma)', 'fission'], nuclides=['U238, U235'], filters=[])
-
     return device
 
 # ==============================================================================
@@ -60,42 +53,46 @@ def setup_device(device):
 # ==============================================================================
 
 masses = np.array([5e3, 7e3, 10e3, 15e3, 30e3, 50e3]) #kg of fertile material
-np.savetxt(base_dir + '/masses.txt', masses)
+np.savetxt(base_dir + '/masses.txt', masses) # Store masses for later use in post processing
+
 
 """ DEPLETION SETTINGS """
+fusion_power = 500 #MW
+num_steps = 50
+time_steps = [365 / num_steps] * num_steps
+source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+
+chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
+openmc.config['chain_file'] = chain_file
+
 for mass in masses:
-    print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
-
-    fusion_power = 500 #MW
-    num_steps = 50
-    time_steps = [365 / num_steps] * num_steps
-    source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
-
-    chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
-    openmc.config['chain_file'] = chain_file
-
     """ Generate blankets doped to specified mass """
 
     U_device = setup_device(anp.generate_device("U", mass))
     Th_device = setup_device(anp.generate_device("Th", mass))
 
-    """ Run depletion calculation """
+    """ Run Uranium depletion calculation """
+    print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg" + " DOPANT: Uranium-238" + " ~~~~~~~~~~~~~~~~~~")
+
     # This is necessary to ensure the tally.xml file gets written into the directory where the depletion calculation will run
     os.mkdir(base_dir + '/Uranium/'+ str(mass))
     os.chdir(base_dir + '/Uranium/'+ str(mass))
     U_device.build()
 
+    # Generate fluxes and microxs from model
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
                                                             [U_device.channel, U_device.blanket],
                                                             run_kwargs = {"threads":20,
                                                                         "particles":int(1e3)})
 
+    # Save flux and microxs to disk so transport calculation does not need to be rerun in future
     flux_file = open('U_flux', 'ab')
     pickle.dump(U_flux, flux_file)
 
     microxs_file = open("U_microxs", 'ab')
     pickle.dump(U_micro_xs, microxs_file)
 
+    # Run depletion calculation
     U_operator = openmc.deplete.IndependentOperator(openmc.Materials([U_device.channel.fill, U_device.blanket.fill]), 
                                                     U_flux,
                                                     U_micro_xs,
@@ -114,15 +111,28 @@ for mass in masses:
 
     os.chdir('../../..')
 
+    """ Run Thorium depletion calculation """
+    print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg" + " DOPANT: Thorium-232" + " ~~~~~~~~~~~~~~~~~~")
+
+     # This is necessary to ensure the tally.xml file gets written into the directory where the depletion calculation will run
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
     os.chdir(base_dir + '/Thorium/'+ str(mass))
     Th_device.build()
 
+    # Generate fluxes and microxs from model
     Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
                                                                     [Th_device.channel, Th_device.blanket],
                                                                     run_kwargs = {"threads":20,
                                                                                     "particles":int(1e3)})
 
+    # Save flux and microxs to disk so transport calculation does not need to be rerun in future
+    flux_file = open('U_flux', 'ab')
+    pickle.dump(U_flux, flux_file)
+
+    microxs_file = open("U_microxs", 'ab')
+    pickle.dump(U_micro_xs, microxs_file)
+
+    # Run depletion calculation
     Th_operator = openmc.deplete.IndependentOperator(openmc.Materials([Th_device.channel.fill, Th_device.blanket.fill]), 
                                                     Th_flux,
                                                     Th_micro_xs,
