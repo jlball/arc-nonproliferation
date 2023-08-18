@@ -1,6 +1,8 @@
 import openmc
 from openmc.deplete import Results
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
+import matplotlib as mpl
 import numpy as np
 import sys
 from arc_nonproliferation.postprocess import *
@@ -218,7 +220,17 @@ fig.savefig("time_to_sq.png", dpi=300)
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
 
+fig_tot, ax_tot = plt.subplots()
+ax_tot.spines["top"].set_color("None")
+ax_tot.spines["right"].set_color("None")
+
+U_cm = mpl.cm.Reds
+Th_cm = mpl.cm.Greens
+
+norm = colors.Normalize(vmin=-10, vmax=masses.max() + 10)
+
 for i, mass in enumerate(masses):
+    # Individual plot for this mass
     fig, ax = plt.subplots()
 
     ax.plot(time_steps, U_fissile_masses[i], label="Pu239")
@@ -237,6 +249,21 @@ for i, mass in enumerate(masses):
     ax.legend()
 
     fig.savefig(str(mass) + "_metric_tons.png", dpi=300)
+
+    # Add this mass to the total plot
+    U_color = U_cm.__call__(norm(mass))
+    Th_color = Th_cm.__call__(norm(mass))
+
+    ax_tot.plot(time_steps, U_fissile_masses[i], label=str(mass), color=U_color)
+    ax_tot.plot(time_steps, Th_fissile_masses[i], label=str(mass), color=Th_color)
+
+ax_tot.set_xlabel("Time (days)")
+ax_tot.set_ylabel("Mass (kg)")
+ax_tot.set_title("Fissile Mass vs. Time")
+
+ax_tot.set_yscale("linear")
+
+fig_tot.savefig("all_masses.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectrum

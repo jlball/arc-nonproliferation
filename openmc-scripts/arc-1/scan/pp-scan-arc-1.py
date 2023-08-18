@@ -62,17 +62,17 @@ for i, mass in enumerate(masses):
     """ Extract time to 1 SQ for Uranium """
     os.chdir(base_dir + "/Uranium/" + str(mass))
     sp = openmc.StatePoint('statepoint.10.h5')
-    U_tally = sp.get_tally(name='FLiBe Tally')
+    U_tally = sp.get_tally(name='Li Tally')
 
-    U_tbr[i] = U_tally.get_values(scores=['(n,Xt)'])
+    U_tbr[i] = np.sum(U_tally.get_values(scores=['(n,Xt)']))
     os.chdir("../../..")
 
     """ Extract time to 1 SQ for Thorium """
     os.chdir(base_dir + "/Thorium/" + str(mass))
     sp = openmc.StatePoint('statepoint.10.h5')
-    Th_tally = sp.get_tally(name='FLiBe Tally')
+    Th_tally = sp.get_tally(name='Li Tally')
 
-    Th_tbr[i] = Th_tally.get_values(scores=['(n,Xt)'])
+    Th_tbr[i] = np.sum(Th_tally.get_values(scores=['(n,Xt)']))
     os.chdir("../../..")
 
 # ====================================================
@@ -140,14 +140,14 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_tbr, label="$^{238}$U", marker='o')
-ax.scatter(masses, Th_tbr, label="$^{232}$Th", marker='s')
+ax.scatter(masses, U_tbr, label="$^{238}$U", marker='o', color='r')
+ax.scatter(masses, Th_tbr, label="$^{232}$Th", marker='s', color='g')
 
 U_res = linregress(masses, y=U_tbr)
 Th_res = linregress(masses, y=Th_tbr)
 
-ax.plot(masses, U_res.intercept + U_res.slope*masses, alpha=0.3)
-ax.plot(masses, Th_res.intercept + Th_res.slope*masses, alpha=0.3)
+ax.plot(masses, U_res.intercept + U_res.slope*masses, alpha=0.3, color='r')
+ax.plot(masses, Th_res.intercept + Th_res.slope*masses, alpha=0.3, color='g')
 
 ax.legend()
 
@@ -156,6 +156,6 @@ ax.set_ylabel("TBR", fontsize=14)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
 ax.set_xlim(0, masses[-1] + 2)
-ax.set_ylim(0.6, 1.2)
+ax.set_ylim(1, 1.2)
 
-fig.savefig("tbr.png")
+fig.savefig("tbr.png", dpi=300)

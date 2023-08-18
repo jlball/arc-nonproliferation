@@ -395,7 +395,7 @@ ax.set_ylabel("Flux (arb. units)")
 ax.set_title("Average Neutron Flux Spectrum in Uranium Doped Blanket After 100 Days")
 
 ax.set_ylim(0.01, 9)
-ax.set_xlim(100, 1e8)
+ax.set_xlim(10, 1e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
@@ -417,7 +417,7 @@ ax.set_ylabel("Flux (arb. units)")
 ax.set_title("Average Neutron Flux Spectrum in Thorium Doped Blanket After 100 Days")
 
 ax.set_ylim(0.01, 9)
-ax.set_xlim(100, 1e8)
+ax.set_xlim(10, 1e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
