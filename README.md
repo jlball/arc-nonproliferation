@@ -19,6 +19,18 @@ This repository is built around a custom python api called `arc-nonproliferation
 #### device.py
 The device class inherits from the OpenMC model class, and is designed to allow for the rapid parametric generation of ARC OpenMC models with FLiBe doped with a specified amount of fertile material. This is achieved using the `generate_device()` function. This allows for many models with varying fertile inventories, dopant types, and lithium enrichments to be generated and simulated in a single script.
 
+#### constants.py
+
+Containts useful constant values which can be easily accessed across scripts. Includes things like neutrons / MJ, and the path to the OpenMC chain file to use.
+
+#### materials.py
+
+This file contains definitions for all of the materials used in the OpenMC simulations, along with functions for generating FLiBe materials doped with specific masses of Thorium or Uranium.
+
+#### postprocess.py
+
+This file contains useful helper functions which can be applied across simulation type to extract useful information from OpenMC statepoint and depletion results files. This includes functions for computing the time to breed a significant quantity and compute the isotopic purity of fissile material.
+
 ### data
 
 This directory contains supporting data files, like outputs from stochastic volume calculations, lists of points which specify vacuum vessel and blanket geometries, and OpenMC chain files.
@@ -38,6 +50,5 @@ Each directory contains a script which runs a calculation and generates an outpu
 
 By default, all output directories are placed in the same directory as the scripts. Some of the scripts, like `independent-depletion-arc-1.py` and `depletion-scan-arc-1.py` take a second command line argument, the enrichment of Li-6 in percent.
 
-Included in each directory is an output folder which contains the data and figures used in the publication.
 
 
