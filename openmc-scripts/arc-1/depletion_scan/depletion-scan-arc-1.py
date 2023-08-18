@@ -1,4 +1,5 @@
 import arc_nonproliferation.device as anp
+import arc_nonproliferation.constants as anp_constants
 import openmc
 import openmc.deplete
 import numpy as np
@@ -26,6 +27,7 @@ def setup_device(device):
     device.settings.photon_transport = False
     device.settings.particles = int(1e3)
     device.settings.batches = 10
+    device.survival_biasing = True
 
     """ Cylindrical Mesh Tally """
     mesh = openmc.CylindricalMesh()
@@ -62,6 +64,8 @@ def setup_device(device):
 # Depletion Scan
 # ==============================================================================
 
+openmc.config['chain_file'] = anp_constants.chain_file
+
 masses = np.array([5e3, 10e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
@@ -71,11 +75,9 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 3
-    time_steps = [365*24*60*60 / num_steps] * num_steps
+    num_steps = 10
+    time_steps = [365 / num_steps] * num_steps
     source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
-
-    chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
 
     """ Generate blankets doped to specified mass """
     
@@ -93,12 +95,12 @@ for mass in masses:
 
     U_device.deplete(time_steps, 
         source_rates=source_rates, 
-        operator_kwargs={'chain_file':chain_file, 
-                         'normalization_mode':'source-rate', 
-                         'dilute_initial':0, 
-                         'reduce_chain':False,
-                         'reduce_chain_level':3}, 
-        directory=base_dir + '/Uranium/'+ str(mass))
+        operator_kwargs={'normalization_mode':'source-rate', 
+                         'reduce_chain':True,
+                         'reduce_chain_level':5}, 
+        directory=base_dir + '/Uranium/'+ str(mass),
+        timestep_units='d',
+        method='cecm')
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
     os.chdir(base_dir + '/Thorium/'+ str(mass))
@@ -107,9 +109,9 @@ for mass in masses:
 
     Th_device.deplete(time_steps, 
         source_rates=source_rates, 
-        operator_kwargs={'chain_file':chain_file, 
-                         'normalization_mode':'source-rate',
-                         'dilute_initial':0, 
-                         'reduce_chain':False,
-                         'reduce_chain_level':3}, 
-        directory=base_dir + '/Thorium/' + str(mass))
+        operator_kwargs={'normalization_mode':'source-rate',
+                         'reduce_chain':True,
+                         'reduce_chain_level':5}, 
+        directory=base_dir + '/Thorium/' + str(mass),
+        timestep_units='d',
+        method='cecm')

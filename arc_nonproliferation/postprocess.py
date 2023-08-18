@@ -196,7 +196,7 @@ def extract_time_to_sq(dopant, results):
     idx = np.abs(fissile_masses - 8).argmin() 
 
     """ Linear fit to fissile masses data to determine time to SQ """
-    fit = Polynomial.fit(time_steps[idx-1:idx + 1], fissile_masses[idx-1:idx + 1], 1)
+    fit = Polynomial.fit(time_steps, fissile_masses, 1)
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
     return time_to_sig_quantity
 
