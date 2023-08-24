@@ -16,12 +16,14 @@ else:
 fusion_power = 500 #MW
 total_neutron_rate = fusion_power * neutrons_per_MJ
 
-chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
 openmc.config['chain_file'] = chain_file
 
 # ====================================================
-# Time to a Significant Quantity
+# Extract Data
 # ====================================================
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Time to a Significant Quantity
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
@@ -52,9 +54,9 @@ for i, mass in enumerate(masses):
 
     os.chdir("../../..")
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission
-# ====================================================
+
 U_fission_powers = np.empty((len(masses), num_steps, 2))
 Th_fission_powers = np.empty((len(masses), num_steps, 2))
 
@@ -90,9 +92,8 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # TBR
-# ====================================================
 
 U_TBR = np.empty((len(masses), 2, 2))
 Th_TBR = np.empty((len(masses), 2, 2))
@@ -136,9 +137,8 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
-# ====================================================
 
 U_flux_spectra = np.empty((len(masses), num_steps, 709))
 Th_flux_spectra = np.empty((len(masses), num_steps, 709))
@@ -170,9 +170,9 @@ for i, mass in enumerate(masses):
 energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
 energies = energy_groups.group_edges
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
-# ====================================================
+
 U_purities = np.empty(len(masses))
 Th_purities = np.empty(len(masses))
 for i, mass in enumerate(masses):
@@ -194,20 +194,27 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectrum
-# ====================================================
-U_decay_spectra = []
-Th_decay_spectra = []
 
-for i, mass in enumerate(masses):
+U_decay_spectra_channels = []
+U_decay_spectra_blanket = []
+
+Th_decay_spectra_channels = []
+Th_decay_spectra_blanket = []
+
+for i in range(0, num_steps):
     """ Uranium """
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
-    U_mats = U_results.export_to_materials(-1)
-    flibe_mat = get_material_by_name(U_mats, "doped flibe")
-    U_decay_spectra.append(flibe_mat.decay_photon_energy)
+    U_mats = U_results.export_to_materials(i)
+
+    flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
+    flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
+
+    U_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
+    U_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
 
     os.chdir('../../..')
 
@@ -215,12 +222,37 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_mats = Th_results.export_to_materials(-1)
-    flibe_mat = get_material_by_name(Th_mats, "doped flibe")
-    Th_decay_spectra.append(flibe_mat.decay_photon_energy)
+    Th_mats = Th_results.export_to_materials(i)
+
+    flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
+    flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
+
+    Th_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
+    Th_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
 
     os.chdir('../../..')
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Fissile Mass
+
+""" Iterate through each mass simulated and get fissile mass at each time step"""
+U_fissile_masses = np.empty((len(masses), len(time_steps)))
+Th_fissile_masses = np.empty((len(masses), len(time_steps)))
+for i, mass in enumerate(masses):
+
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U_fissile_masses[i] = get_masses_from_mats('U', U_results)
+
+    os.chdir("../../..")
+
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th_fissile_masses[i] = get_masses_from_mats('Th', Th_results)
+
+    os.chdir("../../..")
 
 # ====================================================
 # Plotting
@@ -327,9 +359,7 @@ ax.spines["right"].set_color("None")
 mass_grid, time_grid = np.meshgrid(masses, time_steps)
 #ax.plot_surface(mass_grid, time_grid, U_fission_rates, vmim=U_fission_rates.min())
 
-
 fig.savefig("U_fissile_fission_rate.png")
-
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
@@ -365,7 +395,7 @@ ax.set_ylabel("Flux (arb. units)")
 ax.set_title("Average Neutron Flux Spectrum in Uranium Doped Blanket After 100 Days")
 
 ax.set_ylim(0.01, 9)
-ax.set_xlim(100, 1e8)
+ax.set_xlim(10, 1e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
@@ -387,7 +417,7 @@ ax.set_ylabel("Flux (arb. units)")
 ax.set_title("Average Neutron Flux Spectrum in Thorium Doped Blanket After 100 Days")
 
 ax.set_ylim(0.01, 9)
-ax.set_xlim(100, 1e8)
+ax.set_xlim(10, 1e8)
 
 ax.set_xscale('log')
 ax.set_yscale('log')
@@ -399,44 +429,47 @@ fig.savefig("Th_flux_spectra.png", dpi=300)
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectra
 
-fig, ax = plt.subplots()
-ax.spines["top"].set_color("None")
-ax.spines["right"].set_color("None")
+# Uranium
 
-for i, dist in enumerate(U_decay_spectra):
-    ax.scatter(dist.x/1e6, dist.p, label = str(masses[i]) + " kg", marker='s', s=4)
+fig, axs = plt.subplots(1, 2)
 
-ax.set_yscale("linear")
-ax.legend()
+for ax in axs:
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
 
-ax.set_xlim(0.5, 3)
-ax.set_ylim(0, 1.5e17)
+    ax.set_yscale("log")
 
-ax.set_title("Gamma spectrum after 100 days in a Uranium doped blanket", y=1.06)
-ax.set_xlabel("Photon Energy (MeV)")
-ax.set_ylabel("Activity (Bq)")
+    ax.set_ylim(1e15, 1e19)
+    ax.set_xlim(0, 3)
+    ax.set_xlabel("Photon Energy (MeV)")
 
-fig.savefig("U_decay_spectra.png", dpi=300)
+for i in range(0, num_steps):
+    axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
+    axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
+    
+axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
+axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
 
-fig, ax = plt.subplots()
-ax.spines["top"].set_color("None")
-ax.spines["right"].set_color("None")
+fig.set_size_inches(10, 4)
+fig.savefig("U_decay_spectra.png")
 
-for i, dist in enumerate(Th_decay_spectra):
-    ax.scatter(dist.x/1e6, dist.p, label = str(masses[i]) + " kg", marker='s', s=4)
+#Thorium:
 
-ax.set_yscale("linear")
-ax.legend()
+# fig, ax = plt.subplots()
+# ax.spines["top"].set_color("None")
+# ax.spines["right"].set_color("None")
 
-ax.set_xlim(0.5, 3)
-ax.set_ylim(0, 1.5e17)
+# for i, dist in enumerate(Th_decay_spectra):
+#     ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
 
+# ax.set_yscale("log")
 
-ax.set_title("Gamma spectrum after 100 days in a Thorium doped blanket", y=1.06)
-ax.set_xlabel("Photon Energy (MeV)")
-ax.set_ylabel("Activity (Bq)")
+# ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
+# ax.set_xlabel("Photon Energy (eV)")
 
-fig.savefig("Th_decay_spectra.png", dpi=300)
+# ax.set_ylim(1e15, 1e22)
+
+# fig.savefig("Th_decay_spectra.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # TBR
@@ -460,5 +493,29 @@ ax.set_xlabel("Fertile Mass (metric tons)")
 ax.set_title("TBR vs. Fertile Mass at $t=0$")
 
 fig.savefig("fertile_tbr.png", dpi=300)
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Fissile Mass
+
+for i, mass in enumerate(masses):
+    fig, ax = plt.subplots()
+
+    ax.plot(time_steps, U_fissile_masses[i], label="Pu239")
+    ax.plot(time_steps, Th_fissile_masses[i], label="U233")
+
+    U_fit = Polynomial.fit(time_steps, U_fissile_masses[i], 4)
+    Th_fit = Polynomial.fit(time_steps, Th_fissile_masses[i], 4)
+
+    ax.plot(time_steps, U_fit.__call__(time_steps), alpha=0.5)
+    ax.plot(time_steps, Th_fit.__call__(time_steps), alpha=0.5)
+
+    ax.set_xlabel("Time (days)")
+    ax.set_ylabel("Mass (kg)")
+    ax.set_title("Fissile Mass vs. Time for a Fertile Mass of " + str(mass) + " metric tons")
+
+    ax.legend()
+
+    fig.savefig(str(mass) + "_metric_tons.png", dpi=300)
+
 
 print("Completed Post Processing")

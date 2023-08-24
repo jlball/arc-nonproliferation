@@ -18,7 +18,8 @@ os.mkdir(base_dir + '/Thorium')
 def setup_device(device):
     device.settings.photon_transport = False
     device.settings.batches = 10
-    device.settings.particles = int(1e5)
+    device.settings.particles = int(5e5)
+    device.settings.survival_biasing = True
 
     """ Cylindrical Mesh Tally """
     mesh = openmc.CylindricalMesh()
@@ -65,7 +66,7 @@ os.chdir("../..")
 # Scan
 # ==============================================================================
 
-masses = np.array([5e3, 10e3])
+masses = np.array([1e3, 5e3, 10e3, 15e3, 20e3, 30e3, 40e3, 50e3])
 np.savetxt(base_dir + '/masses.txt', masses)
 
 for mass in masses:

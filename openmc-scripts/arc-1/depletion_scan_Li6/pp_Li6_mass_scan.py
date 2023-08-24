@@ -74,8 +74,6 @@ def fit(x, A, B):
 
 fit_masses = np.linspace(1, masses[-1], num=100)
 
-
-
 for i, enrichment in enumerate(enrichments):
     current_color = cm.__call__(norm(enrichment+10))
 

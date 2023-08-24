@@ -38,11 +38,17 @@ if sys.argv[1] is not None:
     os.mkdir(base_dir + '/Uranium')
     os.mkdir(base_dir + '/Thorium')
 
+""" allows for enrichment to specified, defaults to natual """
+if sys.argv[2] is not None:
+    Li6_enrichment = float(sys.argv[2])
+else:
+    Li6_enrichment = 7.5
+
 # This function handles the simulation specific setup of each device object
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e5)
+    device.settings.particles = int(2e4)
     device.settings.batches = 10
     device.settings.survival_biasing = True
 
@@ -52,13 +58,13 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-masses = np.array([5e3, 7e3, 10e3, 15e3, 30e3, 50e3]) #kg of fertile material
+masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3, 50e3]) #kg of fertile material
 np.savetxt(base_dir + '/masses.txt', masses) # Store masses for later use in post processing
 
 
 """ DEPLETION SETTINGS """
 num_steps = 50
-time_steps = [365 / num_steps] * num_steps
+time_steps = [150 / num_steps] * num_steps
 source_rates = [anp.Device.neutron_source_rate] * num_steps
 
 openmc.config['chain_file'] = anp.constants.chain_file
@@ -66,8 +72,8 @@ openmc.config['chain_file'] = anp.constants.chain_file
 for mass in masses:
     """ Generate blankets doped to specified mass """
 
-    U_device = setup_device(anp.generate_device("U", mass))
-    Th_device = setup_device(anp.generate_device("Th", mass))
+    U_device = setup_device(anp.generate_device("U", mass, Li6_enrichment = Li6_enrichment))
+    Th_device = setup_device(anp.generate_device("Th", mass, Li6_enrichment = Li6_enrichment))
 
     """ Run Uranium depletion calculation """
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg" + " DOPANT: Uranium-238" + " ~~~~~~~~~~~~~~~~~~")
@@ -81,7 +87,7 @@ for mass in masses:
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
                                                             [U_device.channel, U_device.blanket],
                                                             run_kwargs = {"threads":20,
-                                                                        "particles":int(1e3)})
+                                                                        "particles":int(2e4)})
 
     # Save flux and microxs to disk so transport calculation does not need to be rerun in future
     flux_file = open('U_flux', 'ab')
@@ -120,7 +126,7 @@ for mass in masses:
     Th_flux, Th_micro_xs = openmc.deplete.get_microxs_and_flux(Th_device,
                                                                     [Th_device.channel, Th_device.blanket],
                                                                     run_kwargs = {"threads":20,
-                                                                                    "particles":int(1e3)})
+                                                                                    "particles":int(2e4)})
 
     # Save flux and microxs to disk so transport calculation does not need to be rerun in future
     flux_file = open('U_flux', 'ab')
