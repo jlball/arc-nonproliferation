@@ -284,8 +284,8 @@ def extract_isotopic_purity(dopant, results):
     doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket') 
 
     """ ~~~~~~~ Uranium -> Plutonium ~~~~~~ """
-    Pu_nuclides = ["Pu238", "Pu239", "Pu240", "Pu241"]
     if dopant == 'U':
+        Pu_nuclides = doped_flibe_blanket.get_nuclides(element="Pu")
         atoms = {}
         total_atoms = 0
         for nuclide in Pu_nuclides:
@@ -300,8 +300,8 @@ def extract_isotopic_purity(dopant, results):
         return atoms['Pu239']/total_atoms
     
     """ ~~~~~~~ Thorium -> Uranium ~~~~~~ """
-    U_nuclides =["U232", "U233", "U234", "U235", "U236", "U237", "U238"]
     if dopant == 'Th':
+        U_nuclides = doped_flibe_blanket.get_nuclides(element="U")
         atoms = {}
         total_atoms = 0
         for nuclide in U_nuclides:
