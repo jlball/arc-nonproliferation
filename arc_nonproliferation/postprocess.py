@@ -132,16 +132,15 @@ def get_material_by_name(materials, name):
         if mat.name == name:
             return mat
 
-def get_masses_from_mats(dopant, results):
+def get_masses_from_mats(nuclide, results):
     """
     Returns mass of either Pu-239 or U-233 at each timestep from a depletion 
     results object. 
 
     Parameters
     ----------
-    dopant : str
-        "U" for uranium doped blanket, returns Pu-239 mass, or "Th" for a
-        thorium doped blanket, returns U-233 mass
+    nuclide : str
+        nuclide whose mass is to be extracted
     results : openmc.Results
         depletion results object to analyze
 
@@ -151,7 +150,7 @@ def get_masses_from_mats(dopant, results):
     """
 
     time_steps = results.get_times()
-    fissile_masses = np.empty(len(time_steps))
+    masses = np.empty(len(time_steps))
 
     """ Extract list of fissile masses for each depletion time step """
     for i in range(0, len(time_steps)):
@@ -160,16 +159,11 @@ def get_masses_from_mats(dopant, results):
         doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
         doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels') 
 
-        if dopant == "U":
-            fissile_mass = doped_flibe_blanket.get_mass(nuclide='Pu239') + doped_flibe_channels.get_mass(nuclide='Pu239')
-        elif dopant == "Th":
-            fissile_mass = doped_flibe_blanket.get_mass(nuclide='U233') + doped_flibe_channels.get_mass(nuclide='U233')
-        else:
-            raise ValueError("Invalid dopant type passed into extract time to SQ function")
+        mass = doped_flibe_blanket.get_mass(nuclide=nuclide) + doped_flibe_channels.get_mass(nuclide=nuclide)
 
-        fissile_masses[i] = fissile_mass / 1000 # Convert from grams to kg
+        masses[i] = mass / 1000 # Convert from grams to kg
     
-    return fissile_masses
+    return masses
 
 def extract_time_to_sq(dopant, results):
     """

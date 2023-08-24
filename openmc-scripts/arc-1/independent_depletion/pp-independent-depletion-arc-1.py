@@ -91,16 +91,18 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
-    U_fissile_masses[i] = get_masses_from_mats('U', U_results)
+    U_fissile_masses[i] = get_masses_from_mats('Pu239', U_results)
 
     os.chdir("../../..")
 
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_fissile_masses[i] = get_masses_from_mats('Th', Th_results)
+    Th_fissile_masses[i] = get_masses_from_mats('U233', Th_results)
 
     os.chdir("../../..")
+
+
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectrum
@@ -327,3 +329,10 @@ ax.set_ylabel("Isotopic Purity (\% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("isotopic_purity.png")
+
+
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+
