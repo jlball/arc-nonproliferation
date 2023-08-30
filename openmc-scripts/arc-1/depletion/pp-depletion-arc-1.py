@@ -75,11 +75,7 @@ for step in range(0, num_steps):
 
 os.chdir('../../..')
 
-# ====================================================
-# Mesh Tally
-# ====================================================
-
-
+print("Loaded fission power data...")
 
 # ====================================================
 # Isotopic Purity
@@ -101,6 +97,8 @@ Th_purity = extract_isotopic_purity("Th", Th_results)
 Th_purity = Th_purity[-1]
 
 os.chdir('../../..')
+
+print("Loaded isotopic purity data...")
 
 # ====================================================
 # Flux Spectrum in Blanket
@@ -134,33 +132,37 @@ os.chdir('../../..')
 energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
 energies = energy_groups.group_edges
 
+print("Loaded flux spectrum data...")
+
 # ====================================================
 # Decay Photon Spectrum
 # ====================================================
 
-U_decay_spectra = []
-Th_decay_spectra = []
+# U_decay_spectra = []
+# Th_decay_spectra = []
 
-for i in range(0, num_steps):
-    """ Uranium """
-    os.chdir(base_dir + "/Uranium/" + str(mass))
+# for i in range(0, num_steps):
+#     """ Uranium """
+#     os.chdir(base_dir + "/Uranium/" + str(mass))
 
-    U_results = Results('depletion_results.h5')
-    U_mats = U_results.export_to_materials(i)
-    flibe_mat = get_material_by_name(U_mats, "doped flibe")
-    U_decay_spectra.append(flibe_mat.decay_photon_energy)
+#     U_results = Results('depletion_results.h5')
+#     U_mats = U_results.export_to_materials(i)
+#     flibe_mat = get_material_by_name(U_mats, "doped flibe blanket")
+#     U_decay_spectra.append(flibe_mat.decay_photon_energy)
 
-    os.chdir('../../..')
+#     os.chdir('../../..')
 
-    """ Thorium """
-    os.chdir(base_dir + "/Thorium/" + str(mass))
+#     """ Thorium """
+#     os.chdir(base_dir + "/Thorium/" + str(mass))
 
-    Th_results = Results('depletion_results.h5')
-    Th_mats = Th_results.export_to_materials(i)
-    flibe_mat = get_material_by_name(Th_mats, "doped flibe")
-    Th_decay_spectra.append(flibe_mat.decay_photon_energy)
+#     Th_results = Results('depletion_results.h5')
+#     Th_mats = Th_results.export_to_materials(i)
+#     flibe_mat = get_material_by_name(Th_mats, "doped flibe blanket")
+#     Th_decay_spectra.append(flibe_mat.decay_photon_energy)
 
-    os.chdir('../../..')
+#     os.chdir('../../..')
+
+# print("Loaded decay photon spectrum data...")
 
 # ====================================================
 # Plotting
@@ -213,35 +215,67 @@ fig.savefig('U_flux_spectra_difference.png')
 
 # Decay Photon Spectrum
 
+# fig, ax = plt.subplots()
+# ax.spines["top"].set_color("None")
+# ax.spines["right"].set_color("None")
+
+# for i, dist in enumerate(U_decay_spectra):
+#     ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+
+# ax.set_yscale("linear")
+
+# ax.set_ylim(0, 1e17)
+
+# ax.set_title("Gamma spectrum at $t_{SQ}$ in a Uranium doped blanket")
+# ax.set_xlabel("Photon Energy (eV)")
+
+# fig.savefig("U_decay_spectra.png")
+
+# fig, ax = plt.subplots()
+# ax.spines["top"].set_color("None")
+# ax.spines["right"].set_color("None")
+
+# for i, dist in enumerate(Th_decay_spectra):
+#     ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+
+# ax.set_yscale("linear")
+
+# ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
+# ax.set_xlabel("Photon Energy (eV)")
+
+# ax.set_ylim(0, 1e17)
+
+# fig.savefig("Th_decay_spectra.png")
+
+# Flux Spectrum Evolution
+
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-for i, dist in enumerate(U_decay_spectra):
-    ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+ax.set_yscale("log")
 
-ax.set_yscale("linear")
+energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 
-ax.set_ylim(0, 1e17)
+for j in range(0, num_steps):
+    difference_spectrum = (U_flux_spectra[j, :] - U_flux_spectra[0, :])/U_flux_spectra[0, :]
 
-ax.set_title("Gamma spectrum at $t_{SQ}$ in a Uranium doped blanket")
-ax.set_xlabel("Photon Energy (eV)")
+    ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
 
-fig.savefig("U_decay_spectra.png")
+fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
 fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-for i, dist in enumerate(Th_decay_spectra):
-    ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+ax.set_yscale('log')
 
-ax.set_yscale("linear")
+energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 
-ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
-ax.set_xlabel("Photon Energy (eV)")
+for j in range(0, num_steps):
+    difference_spectrum = (Th_flux_spectra[j, :] - Th_flux_spectra[0, :])/Th_flux_spectra[0, :]
 
-ax.set_ylim(0, 1e17)
+    ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
 
-fig.savefig("Th_decay_spectra.png")
+fig.savefig("Th_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 

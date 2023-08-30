@@ -25,7 +25,7 @@ else:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e3)
+    device.settings.particles = int(1e4)
     device.settings.batches = 10
     device.survival_biasing = True
 
@@ -66,7 +66,7 @@ def setup_device(device):
 
 openmc.config['chain_file'] = anp_constants.chain_file
 
-masses = np.array([5e3, 10e3])
+masses = np.array([5e3, 10e3, 20e3, 30e3, 40e3, 50e3])
 
 np.savetxt(base_dir + '/masses.txt', masses)
 
