@@ -131,6 +131,8 @@ def get_material_by_name(materials, name):
     for mat in materials:
         if mat.name == name:
             return mat
+        else:
+            print("NO MAT FOUND WITH NAME:", name)
 
 def get_masses_from_mats(nuclide, results):
     """
@@ -184,7 +186,13 @@ def extract_time_to_sq(dopant, results):
 
     time_steps = results.get_times(time_units='h')
     
-    fissile_masses = get_masses_from_mats(dopant, results)
+    if dopant == "U":
+        fissile_masses = get_masses_from_mats("Pu239", results)
+
+    if dopant == "Th":
+        fissile_masses = get_masses_from_mats("U233", results)
+
+    print(fissile_masses)
 
     # Get timestep with fissile mass nearest 1 SQ
     idx = np.abs(fissile_masses - 8).argmin() 

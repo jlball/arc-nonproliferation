@@ -18,22 +18,8 @@ if sys.argv[1] is not None:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e5)
+    device.settings.particles = int(1e4)
     device.settings.batches = 10
-
-    """ Cylindrical Mesh Tally """
-    mesh = openmc.CylindricalMesh()
-    mesh.r_grid = np.linspace(100, 700, num=50)
-    mesh.z_grid = np.linspace(-300, 300, num=50)
-    mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
-    mesh_filter = openmc.MeshFilter(mesh)
-
-    # """ Spectrum Mesh """
-    # spec_mesh = openmc.CylindricalMesh()
-    # spec_mesh.r_grid = np.linspace(100, 700, num=50)
-    # spec_mesh.z_grid = np.linspace(-15, 15, num=1)
-    # spec_mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
-    # spec_mesh_filter = openmc.MeshFilter(mesh)
 
     """ Cell Filter """
     blanket_cell = device.get_cell(name='blanket')
@@ -41,8 +27,6 @@ def setup_device(device):
 
     """ Energy Filter """
     energy_filter = openmc.EnergyFilter.from_group_structure("CCFE-709")
-
-    device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
 
     """ FLiBe Tally """
     #flibe_filter = openmc.MaterialFilter(anp.get_material_by_name(device.materials, "doped_flibe"))
@@ -56,7 +40,7 @@ def setup_device(device):
 # Depletion Run
 # ==============================================================================
 
-mass = np.array([50e3]) #kg of fertile material
+mass = np.array([20e3]) #kg of fertile material
 np.savetxt(base_dir + '/mass.txt', mass)
 
 """ DEPLETION SETTINGS """
@@ -64,10 +48,10 @@ print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~"
 
 fusion_power = 500 #MW
 num_steps = 50
-time_steps = [15*24*60*60 / num_steps] * num_steps
+time_steps = [100*24*60*60 / num_steps] * num_steps
 source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
-chain_file = '/home/jlball/arc-nonproliferation/data/simple_fast_chain.xml'
+chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
 
 """ Generate blankets doped to specified mass """
 
@@ -85,12 +69,11 @@ os.chdir('../../..')
 
 U_device.deplete(time_steps, 
     source_rates=source_rates, 
-    method = 'epc_rk4',
+    method = 'cecm',
     operator_kwargs={'chain_file':chain_file, 
                      'normalization_mode':'source-rate',
-                     'dilute_initial':0, 
-                     'reduce_chain':False,
-                     'reduce_chain_level':3}, 
+                     'reduce_chain':True,
+                     'reduce_chain_level':5}, 
     directory=base_dir + '/Uranium/'+ str(mass))
 
 os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -100,10 +83,9 @@ os.chdir('../../..')
 
 Th_device.deplete(time_steps, 
     source_rates=source_rates, 
-    method = 'epc_rk4',
+    method = 'cecm',
     operator_kwargs={'chain_file':chain_file, 
                      'normalization_mode':'source-rate',
-                     'dilute_initial':0, 
-                     'reduce_chain':False,
-                     'reduce_chain_level':3}, 
+                     'reduce_chain':True,
+                     'reduce_chain_level':5}, 
     directory=base_dir + '/Thorium/' + str(mass))
