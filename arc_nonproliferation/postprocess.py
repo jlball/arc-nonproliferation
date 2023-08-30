@@ -165,6 +165,7 @@ def get_masses_from_mats(nuclide, results):
     
     return masses
 
+
 def extract_time_to_sq(dopant, results):
     """
     Computes the time at which 1 significant quantity of fissile material is
@@ -193,44 +194,6 @@ def extract_time_to_sq(dopant, results):
     fit = Polynomial.fit(time_steps, fissile_masses, 1)
     time_to_sig_quantity = (fit - anp.sig_quantity).roots()[0]
     return time_to_sig_quantity
-
-def extract_time_to_sq_curve_fit(dopant, results):
-    """
-    Computes the time at which 1 significant quantity of fissile material is
-    present in the blanket.
-
-    Parameters
-    ----------
-    dopant : str
-        "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
-    results : openmc.Results
-        the depletion results file to analyse
-
-    Returns
-    -------
-    float, the time in hours at which 1 SQ of fissile material is present in the blanket
-    """
-    def fit_func(x, A, B, C):
-        return A*np.exp(-B*x) + (C * x) - A
-
-    time_steps = results.get_times(time_units='h')
-
-    fissile_masses = get_masses_from_mats(dopant, results)
-
-    # Get timestep with fissile mass nearest 1 SQ
-    idx = np.abs(fissile_masses - 8).argmin() 
-
-
-    p0 = np.array([1, 1, 1])
-    """ fit to fissile masses data to determine time to SQ """
-    popt, pcov = curve_fit(fit_func, time_steps, fissile_masses, p0)
-
-    """ get root """
-
-    res = root(fit_func, 1000, args=(popt[0], popt[1], popt[2]-8))
-
-    return res.x
-    
 
 def extract_decay_heat(results):
     """
