@@ -91,6 +91,7 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
+    
     U_fissile_masses[i] = get_masses_from_mats('Pu239', U_results)
 
     os.chdir("../../..")

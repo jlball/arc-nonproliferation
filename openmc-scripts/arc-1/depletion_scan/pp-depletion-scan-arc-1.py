@@ -427,6 +427,36 @@ ax.legend()
 fig.savefig("Th_flux_spectra.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Flux Spectrum Evolution
+
+for i, mass in enumerate(masses):
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    difference_spectrum = (U_flux_spectra[i, j, :] - U_flux_spectra[i, 0, :])/U_flux_spectra[i, 0, :]
+
+    energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
+
+    for j in range(0, num_steps):
+        ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
+
+    fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    difference_spectrum = (Th_flux_spectra[i, j, :] - Th_flux_spectra[i, 0, :])/Th_flux_spectra[i, 0, :]
+
+    energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
+
+    for j in range(0, num_steps):
+        ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
+
+    fig.savefig("spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectra
 
 # Uranium
