@@ -135,6 +135,37 @@ energies = energy_groups.group_edges
 
 print("Loaded flux spectrum data...")
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Absorption
+
+U_absorption = np.empty((num_steps, 709, 3))
+Th_absorption = np.empty((num_steps, 709, 3))
+
+""" Uranium """
+os.chdir(base_dir + "/Uranium/" + str(mass))
+
+for step in range(0, num_steps):
+    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+    absorption_tally = sp.get_tally(name='Absorption Tally')
+    absorption_spectrum = absorption_tally.get_reshaped_data()
+    U_absorption[step] = absorption_spectrum.reshape((709,3))
+
+os.chdir('../../..')
+
+""" Thorium """
+os.chdir(base_dir + "/Thorium/" + str(mass))
+
+for step in range(0, num_steps):
+    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+    absorption_tally = sp.get_tally(name='Absorption Tally')
+    absorption_spectrum = absorption_tally.get_reshaped_data()
+    Th_absorption[step] = absorption_spectrum.reshape((709,3))
+
+os.chdir('../../..')
+
+print("Loaded absorption data...")
+
+
 # ====================================================
 # Decay Photon Spectrum
 # ====================================================
@@ -325,8 +356,40 @@ ax.legend()
 
 fig.savefig("fissile_mass.png", dpi=300)
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Absorption
 
+# First time step
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
 
+ax.step(energy_bin_centers, U_absorption[0, :, -1], label="U238")
+ax.step(energy_bin_centers, U_absorption[0, :, -1], label='Th232')
 
+ax.set_xlabel("Energy")
+ax.set_ylabel("Arb. Units")
+ax.set_title("Absorption of neutrons by fertile isotopes at $t = 0$")
 
+ax.set_xscale("log")
+ax.set_yscale("log")
+
+fig.savefig("Absorption_t0.png", dpi=300)
+
+# Final timestep
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.step(energy_bin_centers, U_absorption[-1 :, -1], label="U238")
+ax.step(energy_bin_centers, U_absorption[-1 :, -1], label='Th232')
+
+ax.set_xlabel("Energy")
+ax.set_ylabel("Arb. Units")
+ax.set_title("Absorption of neutrons by fertile isotopes at final time step")
+
+ax.set_xscale("log")
+ax.set_yscale("log")
+
+fig.savefig("Absorption_tfinal.png", dpi=300)
 
