@@ -1,6 +1,7 @@
 import arc_nonproliferation as anp
 import openmc
 import openmc.deplete
+import openmc.data
 import numpy as np
 import os
 import sys
@@ -64,11 +65,30 @@ np.savetxt(base_dir + '/mass.txt', mass)
 print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
 fusion_power = 500 #MW
-num_steps = 10
-time_steps = [1500*24*60*60 / num_steps] * num_steps
-source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+log_num_steps = 10
+linear_num_steps = 10
 
-chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
+linear_time_steps = np.array([100*24*60*60 / linear_num_steps] * linear_num_steps)
+
+#Generate first set of timesteps based on decay of logest life isotope in breeding decay chain
+U_time_steps = np.logspace(0, 3/openmc.data.decay_constant('Np239'), 
+                               num=log_num_steps + 1, 
+                               base=np.exp(openmc.data.decay_constant('Np239')))
+
+U_time_steps = U_time_steps[1:] - U_time_steps[:-1]
+U_time_steps = np.append(U_time_steps, linear_time_steps)
+
+Th_time_steps = np.logspace(0, 3/openmc.data.decay_constant('Pa233'), 
+                              num=log_num_steps + 1, 
+                              base=np.exp(openmc.data.decay_constant('Pa233')))
+
+Th_time_steps = Th_time_steps[1:] - Th_time_steps[:-1]
+Th_time_steps = np.append(Th_time_steps, linear_time_steps)
+
+# Setup constant array of source rates
+source_rates = [fusion_power * anp.neutrons_per_MJ] * (log_num_steps + linear_num_steps)
+
+chain_file = anp.constants.chain_file
 
 """ Generate blankets doped to specified mass """
 

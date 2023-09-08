@@ -319,7 +319,7 @@ ax.set_xlabel("Time (days)")
 ax.set_ylabel("Mass (kg)")
 ax.set_title("Fissile Mass vs. Time for a Fertile Mass of " + str(mass) + " metric tons")
 
-ax.hlines([anp.sig_quantity])
+ax.hlines(time_steps[0], time_steps[-1], [anp.sig_quantity])
 
 ax.legend()
 
