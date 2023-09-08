@@ -7,6 +7,7 @@ from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
+import time
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -24,6 +25,8 @@ openmc.config['chain_file'] = chain_file
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Time to a Significant Quantity
+
+init_time = time.perf_counter()
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
@@ -54,8 +57,11 @@ for i, mass in enumerate(masses):
 
     os.chdir("../../..")
 
+print("Loaded time to 1 SQ data in " + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission
+init_time = time.perf_counter()
 
 U_fission_powers = np.empty((len(masses), num_steps, 2))
 Th_fission_powers = np.empty((len(masses), num_steps, 2))
@@ -92,8 +98,11 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
+print("Loaded fission power data in " + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # TBR
+init_time = time.perf_counter()
 
 U_TBR = np.empty((len(masses), 2, 2))
 Th_TBR = np.empty((len(masses), 2, 2))
@@ -137,8 +146,11 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
+print("Loaded TBR data in " + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
+init_time = time.perf_counter()
 
 U_flux_spectra = np.empty((len(masses), num_steps, 709))
 Th_flux_spectra = np.empty((len(masses), num_steps, 709))
@@ -170,8 +182,11 @@ for i, mass in enumerate(masses):
 energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
 energies = energy_groups.group_edges
 
+print("Loaded flux spectrum data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
+init_time = time.perf_counter()
 
 U_purities = np.empty(len(masses))
 Th_purities = np.empty(len(masses))
@@ -194,8 +209,11 @@ for i, mass in enumerate(masses):
 
     os.chdir('../../..')
 
+print("Loaded isotopic purity data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectrum
+init_time = time.perf_counter()
 
 U_decay_spectra_channels = []
 U_decay_spectra_blanket = []
@@ -232,8 +250,11 @@ for i in range(0, num_steps):
 
     os.chdir('../../..')
 
+print("Loaded decay photon data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
+init_time = time.perf_counter()
 
 """ Iterate through each mass simulated and get fissile mass at each time step"""
 U_fissile_masses = np.empty((len(masses), len(time_steps)))
@@ -243,16 +264,18 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
-    U_fissile_masses[i] = get_masses_from_mats('U', U_results)
+    U_fissile_masses[i] = get_masses_from_mats('Pu239', U_results)
 
     os.chdir("../../..")
 
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_fissile_masses[i] = get_masses_from_mats('Th', Th_results)
+    Th_fissile_masses[i] = get_masses_from_mats('U233', Th_results)
 
     os.chdir("../../..")
+
+print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # ====================================================
 # Plotting
@@ -434,11 +457,11 @@ for i, mass in enumerate(masses):
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
-    difference_spectrum = (U_flux_spectra[i, j, :] - U_flux_spectra[i, 0, :])/U_flux_spectra[i, 0, :]
-
     energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 
     for j in range(0, num_steps):
+        difference_spectrum = (U_flux_spectra[i, j, :] - U_flux_spectra[i, 0, :])/U_flux_spectra[i, 0, :]
+
         ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
 
     fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
@@ -447,11 +470,11 @@ for i, mass in enumerate(masses):
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
-    difference_spectrum = (Th_flux_spectra[i, j, :] - Th_flux_spectra[i, 0, :])/Th_flux_spectra[i, 0, :]
-
     energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 
     for j in range(0, num_steps):
+        difference_spectrum = (Th_flux_spectra[i, j, :] - Th_flux_spectra[i, 0, :])/Th_flux_spectra[i, 0, :]
+
         ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
 
     fig.savefig("spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)

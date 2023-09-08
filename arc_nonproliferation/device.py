@@ -31,6 +31,8 @@ class Device(openmc.model.Model):
         self._components = []
         self._tallies = []
 
+        self.materials = None
+
         self.dopant = None
         self.dopant_mass = 0
 
@@ -73,8 +75,10 @@ class Device(openmc.model.Model):
 
         self.geometry = openmc.Geometry(self.univ)
         self.tallies = openmc.Tallies(self._tallies)
-        self.materials = openmc.Materials(self.geometry.get_all_materials().values())
 
+        if self.materials is None:
+            self.materials = openmc.Materials(self.geometry.get_all_materials().values())
+        
         super().export_to_xml()
 
     def add_tally(self, name, scores, nuclides=None, filters=None):

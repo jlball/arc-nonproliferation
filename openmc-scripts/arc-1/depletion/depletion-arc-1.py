@@ -14,11 +14,17 @@ if sys.argv[1] is not None:
     os.mkdir(base_dir + '/Uranium')
     os.mkdir(base_dir + '/Thorium')
 
+""" allows for enrichment to specified, defaults to natual """
+if sys.argv[2] is not None:
+    Li6_enrichment = float(sys.argv[2])
+else:
+    Li6_enrichment = 7.5
+
 # This function handles the simulation specific setup of each device object
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e4)
+    device.settings.particles = int(1e5)
     device.settings.batches = 10
 
     """ Cell Filter """
@@ -34,6 +40,17 @@ def setup_device(device):
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
 
+    """ Absorption Tally """
+
+    if device.dopant == "U":
+        nuclide = "U238"
+    elif device.dopant == "Th":
+        nuclide = "Th232"
+    else:
+        raise ValueError("Invalid Dopant Type!")
+
+    device.add_tally("Absorption Tally", ['absorption'], filters=[energy_filter, blanket_filter], nuclides=['Li6', 'Li7', nuclide])
+
     return device
 
 # ==============================================================================
@@ -47,16 +64,16 @@ np.savetxt(base_dir + '/mass.txt', mass)
 print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
 fusion_power = 500 #MW
-num_steps = 50
-time_steps = [100*24*60*60 / num_steps] * num_steps
+num_steps = 10
+time_steps = [1500*24*60*60 / num_steps] * num_steps
 source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
 
 chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
 
 """ Generate blankets doped to specified mass """
 
-U_device = setup_device(anp.generate_device("U", mass[0]))
-Th_device = setup_device(anp.generate_device("Th", mass[0]))
+U_device = setup_device(anp.generate_device("U", mass[0], Li6_enrichment=Li6_enrichment))
+Th_device = setup_device(anp.generate_device("Th", mass[0], Li6_enrichment=Li6_enrichment))
 
 """ Run depletion calculation """
 

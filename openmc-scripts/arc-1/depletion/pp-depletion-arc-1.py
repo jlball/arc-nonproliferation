@@ -7,6 +7,7 @@ from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
+import time
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -164,6 +165,30 @@ print("Loaded flux spectrum data...")
 
 # print("Loaded decay photon spectrum data...")
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Fissile Mass
+init_time = time.perf_counter()
+
+""" Iterate through each mass simulated and get fissile mass at each time step"""
+U_fissile_masses = np.empty((len(time_steps)))
+Th_fissile_masses = np.empty((len(time_steps)))
+
+os.chdir(base_dir + "/Uranium/" + str(mass))
+
+U_results = Results('depletion_results.h5')
+U_fissile_masses = get_masses_from_mats('Pu239', U_results)
+
+os.chdir("../../..")
+
+os.chdir(base_dir + "/Thorium/" + str(mass))
+
+Th_results = Results('depletion_results.h5')
+Th_fissile_masses = get_masses_from_mats('U233', Th_results)
+
+os.chdir("../../..")
+
+print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # ====================================================
 # Plotting
 # ====================================================
@@ -208,9 +233,11 @@ ax.step(energies[1:], (Th_flux_spectra[-1] - Th_flux_spectra[0])*100/U_flux_spec
 
 ax.legend()
 
+ax.set_xscale("log")
+
 ax.set_xlabel("Energy")
 ax.set_ylabel("Relative difference (percent)")
-ax.set_ylim(0, 10)
+ax.set_ylim(0, 25)
 fig.savefig('U_flux_spectra_difference.png')
 
 # Decay Photon Spectrum
@@ -278,4 +305,28 @@ for j in range(0, num_steps):
     ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
 
 fig.savefig("Th_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
+
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Fissile Mass
+
+fig, ax = plt.subplots()
+
+ax.plot(time_steps, U_fissile_masses, label="Pu239")
+ax.plot(time_steps, Th_fissile_masses, label="U233")
+
+ax.set_xlabel("Time (days)")
+ax.set_ylabel("Mass (kg)")
+ax.set_title("Fissile Mass vs. Time for a Fertile Mass of " + str(mass) + " metric tons")
+
+ax.hlines([anp.sig_quantity])
+
+ax.legend()
+
+fig.savefig("fissile_mass.png", dpi=300)
+
+
+
+
+
 
