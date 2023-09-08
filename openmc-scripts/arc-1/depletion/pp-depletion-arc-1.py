@@ -20,9 +20,8 @@ total_neutron_rate = fusion_power * neutrons_per_MJ
 chain_file = '/home/jlball/arc-nonproliferation/data/simple_chain_endfb71_pwr.xml'
 openmc.config['chain_file'] = chain_file
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Time to a Significant Quantity
-# ====================================================
 
 """ Load masses and initialisze final output arrays """
 mass = np.loadtxt(base_dir + '/mass.txt')
@@ -50,9 +49,8 @@ os.chdir("../../..")
 print("THORIUM TIME TO 1 SQ: " + str(Th_time_to_SQ/24) + " Days")
 print("URANIUM TIME TO 1 SQ: " + str(U_time_to_SQ/24) + " Days")
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission Power
-# ====================================================
 
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -78,9 +76,9 @@ os.chdir('../../..')
 
 print("Loaded fission power data...")
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
-# ====================================================
+
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
 
@@ -101,9 +99,8 @@ os.chdir('../../..')
 
 print("Loaded isotopic purity data...")
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum in Blanket
-# ====================================================
 
 U_flux_spectra = np.empty((num_steps, 709))
 Th_flux_spectra = np.empty((num_steps, 709))
@@ -166,9 +163,8 @@ os.chdir('../../..')
 print("Loaded absorption data...")
 
 
-# ====================================================
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectrum
-# ====================================================
 
 # U_decay_spectra = []
 # Th_decay_spectra = []
