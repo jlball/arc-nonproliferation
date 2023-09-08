@@ -31,7 +31,7 @@ class Device(openmc.model.Model):
         self._components = []
         self._tallies = []
 
-        self.materials = None
+        self.materials = []
 
         self.dopant = None
         self.dopant_mass = 0
@@ -76,7 +76,7 @@ class Device(openmc.model.Model):
         self.geometry = openmc.Geometry(self.univ)
         self.tallies = openmc.Tallies(self._tallies)
 
-        if self.materials is None:
+        if self.materials is []:
             self.materials = openmc.Materials(self.geometry.get_all_materials().values())
         
         super().export_to_xml()

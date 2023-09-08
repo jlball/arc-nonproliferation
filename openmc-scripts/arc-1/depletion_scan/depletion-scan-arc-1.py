@@ -75,9 +75,24 @@ for mass in masses:
     print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
     fusion_power = 500 #MW
-    num_steps = 10
-    time_steps = [365 / num_steps] * num_steps
-    source_rates = [fusion_power * anp.neutrons_per_MJ] * num_steps
+    decay_num_steps = 9 # Number of timesteps to take within 3 half lives of breeding decay
+    linear_num_steps = 10 # Number of timesteps to take beyond 3 half lives of breeding decay
+
+    linear_time_steps = np.array([100*24*60*60 / linear_num_steps] * linear_num_steps)
+
+    #Generate first set of timesteps based on decay of logest life isotope in breeding decay chain
+    U_time_steps = np.linspace(0, 3/openmc.data.decay_constant("Np239"), num=decay_num_steps+1)
+
+    U_time_steps = U_time_steps[1:] - U_time_steps[:-1]
+    U_time_steps = np.append(U_time_steps, linear_time_steps)
+
+    Th_time_steps = np.linspace(0, 3/openmc.data.decay_constant('Pa233'), num=decay_num_steps + 1)
+
+    Th_time_steps = Th_time_steps[1:] - Th_time_steps[:-1]
+    Th_time_steps = np.append(Th_time_steps, linear_time_steps)
+
+    # Setup constant array of source rates
+    source_rates = [fusion_power * anp.neutrons_per_MJ] * (decay_num_steps + linear_num_steps)
 
     """ Generate blankets doped to specified mass """
     

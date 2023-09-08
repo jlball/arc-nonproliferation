@@ -25,7 +25,7 @@ else:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e5)
+    device.settings.particles = int(1e2)
     device.settings.batches = 10
 
     """ Cell Filter """
@@ -65,28 +65,24 @@ np.savetxt(base_dir + '/mass.txt', mass)
 print("~~~~~~~~~~~~~~~~~~ FERTILE MASS: " + str(mass) + " kg ~~~~~~~~~~~~~~~~~~")
 
 fusion_power = 500 #MW
-log_num_steps = 10
-linear_num_steps = 10
+decay_num_steps = 9 # Number of timesteps to take within 3 half lives of breeding decay
+linear_num_steps = 10 # Number of timesteps to take beyond 3 half lives of breeding decay
 
 linear_time_steps = np.array([100*24*60*60 / linear_num_steps] * linear_num_steps)
 
 #Generate first set of timesteps based on decay of logest life isotope in breeding decay chain
-U_time_steps = np.logspace(0, 3/openmc.data.decay_constant('Np239'), 
-                               num=log_num_steps + 1, 
-                               base=np.exp(openmc.data.decay_constant('Np239')))
+U_time_steps = np.linspace(0, 3/openmc.data.decay_constant("Np239"), num=decay_num_steps+1)
 
 U_time_steps = U_time_steps[1:] - U_time_steps[:-1]
 U_time_steps = np.append(U_time_steps, linear_time_steps)
 
-Th_time_steps = np.logspace(0, 3/openmc.data.decay_constant('Pa233'), 
-                              num=log_num_steps + 1, 
-                              base=np.exp(openmc.data.decay_constant('Pa233')))
+Th_time_steps = np.linspace(0, 3/openmc.data.decay_constant('Pa233'), num=decay_num_steps + 1)
 
 Th_time_steps = Th_time_steps[1:] - Th_time_steps[:-1]
 Th_time_steps = np.append(Th_time_steps, linear_time_steps)
 
 # Setup constant array of source rates
-source_rates = [fusion_power * anp.neutrons_per_MJ] * (log_num_steps + linear_num_steps)
+source_rates = [fusion_power * anp.neutrons_per_MJ] * (decay_num_steps + linear_num_steps)
 
 chain_file = anp.constants.chain_file
 
@@ -104,7 +100,7 @@ U_device.build()
 
 os.chdir('../../..')
 
-U_device.deplete(time_steps, 
+U_device.deplete(U_time_steps, 
     source_rates=source_rates, 
     method = 'cecm',
     operator_kwargs={'chain_file':chain_file, 
@@ -118,7 +114,7 @@ os.chdir(base_dir + '/Thorium/'+ str(mass))
 Th_device.build()
 os.chdir('../../..')
 
-Th_device.deplete(time_steps, 
+Th_device.deplete(Th_time_steps, 
     source_rates=source_rates, 
     method = 'cecm',
     operator_kwargs={'chain_file':chain_file, 

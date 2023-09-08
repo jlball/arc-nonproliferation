@@ -361,7 +361,7 @@ ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
 ax.step(energy_bin_centers, U_absorption[0, :, -1], label="U238")
-ax.step(energy_bin_centers, U_absorption[0, :, -1], label='Th232')
+ax.step(energy_bin_centers, Th_absorption[0, :, -1], label='Th232')
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Arb. Units")
@@ -370,6 +370,11 @@ ax.set_title("Absorption of neutrons by fertile isotopes at $t = 0$")
 ax.set_xscale("log")
 ax.set_yscale("log")
 
+ax.set_xlim(1, 1e8)
+ax.set_ylim(1e-10, 1e-3)
+
+ax.legend()
+
 fig.savefig("Absorption_t0.png", dpi=300)
 
 # Final timestep
@@ -377,8 +382,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.step(energy_bin_centers, U_absorption[-1 :, -1], label="U238")
-ax.step(energy_bin_centers, U_absorption[-1 :, -1], label='Th232')
+ax.step(energy_bin_centers, U_absorption[-1, :, -1], label="U238")
+ax.step(energy_bin_centers, Th_absorption[-1, :, -1], label='Th232')
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Arb. Units")
@@ -386,6 +391,11 @@ ax.set_title("Absorption of neutrons by fertile isotopes at final time step")
 
 ax.set_xscale("log")
 ax.set_yscale("log")
+
+ax.set_xlim(1, 1e8)
+ax.set_ylim(1e-10, 1e-3)
+
+ax.legend()
 
 fig.savefig("Absorption_tfinal.png", dpi=300)
 
