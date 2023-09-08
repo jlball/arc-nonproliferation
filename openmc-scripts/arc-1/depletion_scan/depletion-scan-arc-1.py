@@ -26,7 +26,7 @@ def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
     device.settings.particles = int(1e4)
-    device.settings.batches = 10
+    device.settings.batches = 100
     device.survival_biasing = True
 
     """ Cylindrical Mesh Tally """
@@ -57,6 +57,18 @@ def setup_device(device):
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
+
+    """ Absorption Tally """
+
+    if device.dopant == "U":
+        nuclide = "U238"
+    elif device.dopant == "Th":
+        nuclide = "Th232"
+    else:
+        raise ValueError("Invalid Dopant Type!")
+
+    device.add_tally("Absorption Tally", ['absorption'], filters=[energy_filter, blanket_filter], nuclides=['Li6', 'Li7', nuclide])
+
 
     return device
 
@@ -108,13 +120,13 @@ for mass in masses:
 
     os.chdir('../../..')
 
-    U_device.deplete(time_steps, 
+    U_device.deplete(U_time_steps, 
         source_rates=source_rates, 
         operator_kwargs={'normalization_mode':'source-rate', 
                          'reduce_chain':True,
                          'reduce_chain_level':5}, 
         directory=base_dir + '/Uranium/'+ str(mass),
-        timestep_units='d',
+        timestep_units='s',
         method='cecm')
 
     os.mkdir(base_dir + '/Thorium/'+ str(mass))
@@ -122,11 +134,11 @@ for mass in masses:
     Th_device.build()
     os.chdir('../../..')
 
-    Th_device.deplete(time_steps, 
+    Th_device.deplete(Th_time_steps, 
         source_rates=source_rates, 
         operator_kwargs={'normalization_mode':'source-rate',
                          'reduce_chain':True,
                          'reduce_chain_level':5}, 
         directory=base_dir + '/Thorium/' + str(mass),
-        timestep_units='d',
+        timestep_units='s',
         method='cecm')
