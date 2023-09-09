@@ -3,6 +3,7 @@ from openmc.deplete import Results
 import matplotlib.pyplot as plt
 import numpy as np
 import sys
+import time
 from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
@@ -22,6 +23,7 @@ openmc.config['chain_file'] = chain_file
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Time to a Significant Quantity
+init_time = time.perf_counter()
 
 """ Load masses and initialisze final output arrays """
 mass = np.loadtxt(base_dir + '/mass.txt')
@@ -49,8 +51,11 @@ os.chdir("../../..")
 print("THORIUM TIME TO 1 SQ: " + str(Th_time_to_SQ/24) + " Days")
 print("URANIUM TIME TO 1 SQ: " + str(U_time_to_SQ/24) + " Days")
 
+print("Loaded time to 1 SQ data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission Power
+init_time = time.perf_counter()
 
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -74,10 +79,11 @@ for step in range(0, num_steps):
 
 os.chdir('../../..')
 
-print("Loaded fission power data...")
+print("Loaded fission power data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
+init_time = time.perf_counter()
 
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -97,10 +103,11 @@ Th_purity = Th_purity[-1]
 
 os.chdir('../../..')
 
-print("Loaded isotopic purity data...")
+print("Loaded isotopic purity data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum in Blanket
+init_time = time.perf_counter()
 
 U_flux_spectra = np.empty((num_steps, 709))
 Th_flux_spectra = np.empty((num_steps, 709))
@@ -130,10 +137,11 @@ os.chdir('../../..')
 energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
 energies = energy_groups.group_edges
 
-print("Loaded flux spectrum data...")
+print("Loaded flux spectrum data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# Absorption
+# (n, gamma)
+init_time = time.perf_counter()
 
 U_absorption = np.empty((num_steps, 709, 3))
 Th_absorption = np.empty((num_steps, 709, 3))
@@ -160,8 +168,7 @@ for step in range(0, num_steps):
 
 os.chdir('../../..')
 
-print("Loaded absorption data...")
-
+print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectrum

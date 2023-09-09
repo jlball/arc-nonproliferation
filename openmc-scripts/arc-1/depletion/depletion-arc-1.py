@@ -50,7 +50,7 @@ def setup_device(device):
     else:
         raise ValueError("Invalid Dopant Type!")
 
-    device.add_tally("Absorption Tally", ['absorption'], filters=[energy_filter, blanket_filter], nuclides=['Li6', 'Li7', nuclide])
+    device.add_tally("Absorption Tally", ['(n,gamma)'], filters=[energy_filter, blanket_filter], nuclides=['Li6', 'Li7', nuclide])
 
     return device
 
