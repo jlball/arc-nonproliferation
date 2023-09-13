@@ -25,7 +25,7 @@ else:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e2)
+    device.settings.particles = int(1e3)
     device.settings.batches = 10
 
     """ Cell Filter """
@@ -68,7 +68,7 @@ fusion_power = 500 #MW
 decay_num_steps = 9 # Number of timesteps to take within 3 half lives of breeding decay
 linear_num_steps = 10 # Number of timesteps to take beyond 3 half lives of breeding decay
 
-linear_time_steps = np.array([100*24*60*60 / linear_num_steps] * linear_num_steps)
+linear_time_steps = np.array([1000*24*60*60 / linear_num_steps] * linear_num_steps)
 
 #Generate first set of timesteps based on decay of logest life isotope in breeding decay chain
 U_time_steps = np.linspace(0, 3/openmc.data.decay_constant("Np239"), num=decay_num_steps+1)

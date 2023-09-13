@@ -44,8 +44,8 @@ for i, mass in enumerate(masses):
     U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
 
     #While we're here, get the number of depletion steps:
-    time_steps = U_results.get_times()
-    num_steps = len(time_steps)
+    U_time_steps = U_results.get_times()
+    num_steps = len(U_time_steps)
 
     os.chdir("../../..")
 
@@ -54,6 +54,8 @@ for i, mass in enumerate(masses):
 
     Th_results = Results('depletion_results.h5')
     Th_time_to_SQ[i] = extract_time_to_sq('Th', Th_results)
+
+    Th_time_steps = Th_results.get_times()
 
     os.chdir("../../..")
 
@@ -372,11 +374,11 @@ U_fission_power_at_SQ = np.empty((len(masses)))
 Th_fission_power_at_SQ = np.empty((len(masses)))
 for i, mass in enumerate(masses):
     """ Uranium """
-    U_res = linregress(time_steps, U_fission_powers[i, :, 0])
+    U_res = linregress(U_time_steps, U_fission_powers[i, :, 0])
     U_fission_power_at_SQ[i] = U_res.intercept + U_res.slope*U_time_to_SQ[i]
 
     """ Thorium """
-    Th_res = linregress(time_steps, Th_fission_powers[i, :, 0])
+    Th_res = linregress(Th_time_steps, Th_fission_powers[i, :, 0])
     Th_fission_power_at_SQ[i] = Th_res.intercept + Th_res.slope*Th_time_to_SQ[i]
 
 ax.scatter(masses, U_fission_powers[:, 0, 0], c='r', s=4, label='At t = 0')
@@ -403,18 +405,6 @@ ax.set_ylabel("Fission Power (MW)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("fission_power.png")
-
-# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# Fission Rate
-
-fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
-ax.spines["top"].set_color("None")
-ax.spines["right"].set_color("None")
-
-mass_grid, time_grid = np.meshgrid(masses, time_steps)
-#ax.plot_surface(mass_grid, time_grid, U_fission_rates, vmim=U_fission_rates.min())
-
-fig.savefig("U_fissile_fission_rate.png")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
@@ -494,7 +484,7 @@ for i, mass in enumerate(masses):
     for j in range(0, num_steps):
         difference_spectrum = (U_flux_spectra[i, j, :] - U_flux_spectra[i, 0, :])/U_flux_spectra[i, 0, :]
 
-        ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
+        ax.step(energy_bin_centers, difference_spectrum, label=U_time_steps[j])
 
     fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
@@ -507,7 +497,7 @@ for i, mass in enumerate(masses):
     for j in range(0, num_steps):
         difference_spectrum = (Th_flux_spectra[i, j, :] - Th_flux_spectra[i, 0, :])/Th_flux_spectra[i, 0, :]
 
-        ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
+        ax.step(energy_bin_centers, difference_spectrum, label=Th_time_steps[j])
 
     fig.savefig("spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
@@ -585,14 +575,17 @@ fig.savefig("fertile_tbr.png", dpi=300)
 for i, mass in enumerate(masses):
     fig, ax = plt.subplots()
 
-    ax.plot(time_steps, U_fissile_masses[i], label="Pu239")
-    ax.plot(time_steps, Th_fissile_masses[i], label="U233")
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
 
-    U_fit = Polynomial.fit(time_steps, U_fissile_masses[i], 4)
-    Th_fit = Polynomial.fit(time_steps, Th_fissile_masses[i], 4)
+    ax.plot(U_time_steps, U_fissile_masses[i], label="Pu239")
+    ax.plot(Th_time_steps, Th_fissile_masses[i], label="U233")
 
-    ax.plot(time_steps, U_fit.__call__(time_steps), alpha=0.5)
-    ax.plot(time_steps, Th_fit.__call__(time_steps), alpha=0.5)
+    U_fit = Polynomial.fit(U_time_steps, U_fissile_masses[i], 4)
+    Th_fit = Polynomial.fit(Th_time_steps, Th_fissile_masses[i], 4)
+
+    ax.plot(U_time_steps, U_fit.__call__(U_time_steps), alpha=0.5)
+    ax.plot(Th_time_steps, Th_fit.__call__(Th_time_steps), alpha=0.5)
 
     ax.set_xlabel("Time (days)")
     ax.set_ylabel("Mass (kg)")

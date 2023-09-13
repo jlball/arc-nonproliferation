@@ -35,8 +35,8 @@ U_results = Results('depletion_results.h5')
 U_time_to_SQ = extract_time_to_sq('U', U_results)
 
 #While we're here, get the number of depletion steps:
-time_steps = U_results.get_times()
-num_steps = len(time_steps)
+U_time_steps = U_results.get_times()
+num_steps = len(U_time_steps)
 
 os.chdir("../../..")
 
@@ -45,6 +45,8 @@ os.chdir(base_dir + "/Thorium/" + str(mass))
 
 Th_results = Results('depletion_results.h5')
 Th_time_to_SQ = extract_time_to_sq('Th', Th_results)
+
+Th_time_steps = Th_results.get_times()
 
 os.chdir("../../..")
 
@@ -143,8 +145,8 @@ print("Loaded flux spectrum data in "  + str(round(time.perf_counter() - init_ti
 # (n, gamma)
 init_time = time.perf_counter()
 
-U_absorption = np.empty((num_steps, 709, 3))
-Th_absorption = np.empty((num_steps, 709, 3))
+U_absorption = np.empty((num_steps, 709, 3, 2))
+Th_absorption = np.empty((num_steps, 709, 3, 2))
 
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -153,7 +155,9 @@ for step in range(0, num_steps):
     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
     absorption_tally = sp.get_tally(name='Absorption Tally')
     absorption_spectrum = absorption_tally.get_reshaped_data()
-    U_absorption[step] = absorption_spectrum.reshape((709,3))
+    absorption_spectrum_rel_err = absorption_tally.get_reshaped_data(value="rel_err")
+    U_absorption[step, :, :, 0] = absorption_spectrum.reshape((709,3))
+    U_absorption[step, :, :, 1] = absorption_spectrum_rel_err.reshape((709,3))
 
 os.chdir('../../..')
 
@@ -164,7 +168,9 @@ for step in range(0, num_steps):
     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
     absorption_tally = sp.get_tally(name='Absorption Tally')
     absorption_spectrum = absorption_tally.get_reshaped_data()
-    Th_absorption[step] = absorption_spectrum.reshape((709,3))
+    absorption_spectrum_rel_err = absorption_tally.get_reshaped_data(value="rel_err")
+    Th_absorption[step, :, :, 0] = absorption_spectrum.reshape((709,3))
+    Th_absorption[step, :, :, 1] = absorption_spectrum_rel_err.reshape((709,3))
 
 os.chdir('../../..')
 
@@ -204,8 +210,8 @@ print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time,
 init_time = time.perf_counter()
 
 """ Iterate through each mass simulated and get fissile mass at each time step"""
-U_fissile_masses = np.empty((len(time_steps)))
-Th_fissile_masses = np.empty((len(time_steps)))
+U_fissile_masses = np.empty((num_steps))
+Th_fissile_masses = np.empty((num_steps))
 
 os.chdir(base_dir + "/Uranium/" + str(mass))
 
@@ -254,6 +260,8 @@ ax.set_xlabel("Energy")
 ax.set_ylabel("Flux (arb. units)")
 ax.set_yscale('log')
 ax.set_xscale('log')
+
+ax.set_ylim(1e-4, 10)
 
 ax.legend()
 fig.savefig('U_flux_spectra.png')
@@ -321,7 +329,7 @@ energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 for j in range(0, num_steps):
     difference_spectrum = (U_flux_spectra[j, :] - U_flux_spectra[0, :])/U_flux_spectra[0, :]
 
-    ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
+    ax.step(energy_bin_centers, difference_spectrum, label=U_time_steps[j])
 
 fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
@@ -336,7 +344,7 @@ energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 for j in range(0, num_steps):
     difference_spectrum = (Th_flux_spectra[j, :] - Th_flux_spectra[0, :])/Th_flux_spectra[0, :]
 
-    ax.step(energy_bin_centers, difference_spectrum, label=time_steps[j])
+    ax.step(energy_bin_centers, difference_spectrum, label=Th_time_steps[j])
 
 fig.savefig("Th_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
@@ -345,17 +353,21 @@ fig.savefig("Th_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 # Fissile Mass
 
 fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
 
-ax.plot(time_steps, U_fissile_masses, label="Pu239")
-ax.plot(time_steps, Th_fissile_masses, label="U233")
+ax.plot(U_time_steps, U_fissile_masses, label="Pu239")
+ax.plot(Th_time_steps, Th_fissile_masses, label="U233")
 
 ax.set_xlabel("Time (days)")
 ax.set_ylabel("Mass (kg)")
-ax.set_title("Fissile Mass vs. Time for a Fertile Mass of " + str(mass) + " metric tons")
+ax.set_title("Fissile Mass vs. Time for a Fertile Mass of " + str(mass[0]) + " kg")
 
-ax.hlines(time_steps[0], time_steps[-1], [anp.sig_quantity])
+ax.hlines(anp.sig_quantity, Th_time_steps[0], Th_time_steps[-1], linestyles="dashed", colors=["tab:red"])
 
 ax.legend()
+
+ax.set_xlim(Th_time_steps[0], Th_time_steps[-1])
 
 fig.savefig("fissile_mass.png", dpi=300)
 
@@ -367,8 +379,10 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.step(energy_bin_centers, U_absorption[0, :, -1], label="U238")
-ax.step(energy_bin_centers, Th_absorption[0, :, -1], label='Th232')
+ax.step(energy_bin_centers, U_absorption[0, :, -1, 0], label="U238")
+ax.step(energy_bin_centers, Th_absorption[0, :, -1, 0], label='Th232')
+
+print("sum of absorption", np.sum(U_absorption[0, :, -1]))
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Arb. Units")
@@ -377,8 +391,8 @@ ax.set_title("Absorption of neutrons by fertile isotopes at $t = 0$")
 ax.set_xscale("log")
 ax.set_yscale("log")
 
-ax.set_xlim(1, 1e8)
-ax.set_ylim(1e-10, 1e-3)
+ax.set_xlim(1e-4, 1e8)
+ax.set_ylim(1e-10, np.max(U_absorption[0, :, -1, 0]))
 
 ax.legend()
 
@@ -389,8 +403,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.step(energy_bin_centers, U_absorption[-1, :, -1], label="U238")
-ax.step(energy_bin_centers, Th_absorption[-1, :, -1], label='Th232')
+ax.step(energy_bin_centers, U_absorption[-1, :, -1, 0], label="U238")
+ax.step(energy_bin_centers, Th_absorption[-1, :, -1, 0], label='Th232')
 
 ax.set_xlabel("Energy")
 ax.set_ylabel("Arb. Units")
@@ -399,10 +413,27 @@ ax.set_title("Absorption of neutrons by fertile isotopes at final time step")
 ax.set_xscale("log")
 ax.set_yscale("log")
 
-ax.set_xlim(1, 1e8)
-ax.set_ylim(1e-10, 1e-3)
+ax.set_xlim(1e-4, 1e8)
+ax.set_ylim(1e-10, np.max(U_absorption[-1, :, -1, 0]))
 
 ax.legend()
 
 fig.savefig("Absorption_tfinal.png", dpi=300)
 
+# Relative uncertainty at t = 0
+fig, ax = plt.subplots()
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.step(energy_bin_centers, U_absorption[0, :, -1, 1], label="U238")
+ax.step(energy_bin_centers, Th_absorption[0, :, -1, 1], label='Th232')
+
+ax.set_xlabel("Energy")
+ax.set_ylabel("Relative Error")
+ax.set_title("Relative error in (n, gamma) reactions on fertile isotopes")
+
+ax.set_xscale("log")
+
+ax.legend()
+ax.set_xlim(1e-4, 1e8)
+fig.savefig("Absorption_t0_rel_err.png", dpi=300)
