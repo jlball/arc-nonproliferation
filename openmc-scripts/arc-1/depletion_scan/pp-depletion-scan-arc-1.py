@@ -259,8 +259,8 @@ print("Loaded decay photon data in "  + str(round(time.perf_counter() - init_tim
 init_time = time.perf_counter()
 
 """ Iterate through each mass simulated and get fissile mass at each time step"""
-U_fissile_masses = np.empty((len(masses), len(time_steps)))
-Th_fissile_masses = np.empty((len(masses), len(time_steps)))
+U_fissile_masses = np.empty((len(masses), len(U_time_steps)))
+Th_fissile_masses = np.empty((len(masses), len(Th_time_steps)))
 for i, mass in enumerate(masses):
 
     os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -279,36 +279,36 @@ for i, mass in enumerate(masses):
 
 print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
-# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# (n, gamma)
-init_time = time.perf_counter()
+# # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# # (n, gamma)
+# init_time = time.perf_counter()
 
-U_absorption = np.empty((num_steps, 709, 3))
-Th_absorption = np.empty((num_steps, 709, 3))
+# U_absorption = np.empty((num_steps, 709, 3))
+# Th_absorption = np.empty((num_steps, 709, 3))
 
-""" Uranium """
-os.chdir(base_dir + "/Uranium/" + str(mass))
+# """ Uranium """
+# os.chdir(base_dir + "/Uranium/" + str(mass))
 
-for step in range(0, num_steps):
-    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-    absorption_tally = sp.get_tally(name='Absorption Tally')
-    absorption_spectrum = absorption_tally.get_reshaped_data()
-    U_absorption[step] = absorption_spectrum.reshape((709,3))
+# for step in range(0, num_steps):
+#     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+#     absorption_tally = sp.get_tally(name='Absorption Tally')
+#     absorption_spectrum = absorption_tally.get_reshaped_data()
+#     U_absorption[step] = absorption_spectrum.reshape((709,3))
 
-os.chdir('../../..')
+# os.chdir('../../..')
 
-""" Thorium """
-os.chdir(base_dir + "/Thorium/" + str(mass))
+# """ Thorium """
+# os.chdir(base_dir + "/Thorium/" + str(mass))
 
-for step in range(0, num_steps):
-    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-    absorption_tally = sp.get_tally(name='Absorption Tally')
-    absorption_spectrum = absorption_tally.get_reshaped_data()
-    Th_absorption[step] = absorption_spectrum.reshape((709,3))
+# for step in range(0, num_steps):
+#     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+#     absorption_tally = sp.get_tally(name='Absorption Tally')
+#     absorption_spectrum = absorption_tally.get_reshaped_data()
+#     Th_absorption[step] = absorption_spectrum.reshape((709,3))
 
-os.chdir('../../..')
+# os.chdir('../../..')
 
-print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+# print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 
 # ====================================================
@@ -486,6 +486,8 @@ for i, mass in enumerate(masses):
 
         ax.step(energy_bin_centers, difference_spectrum, label=U_time_steps[j])
 
+    ax.set_yscale("log")
+    ax.set_xscale("log")
     fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
     fig, ax = plt.subplots()
@@ -499,6 +501,8 @@ for i, mass in enumerate(masses):
 
         ax.step(energy_bin_centers, difference_spectrum, label=Th_time_steps[j])
 
+    ax.set_yscale("log")
+    ax.set_xscale("log")
     fig.savefig("spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
@@ -586,6 +590,11 @@ for i, mass in enumerate(masses):
 
     ax.plot(U_time_steps, U_fit.__call__(U_time_steps), alpha=0.5)
     ax.plot(Th_time_steps, Th_fit.__call__(Th_time_steps), alpha=0.5)
+
+    ax.hlines(anp.sig_quantity, Th_time_steps[0], Th_time_steps[-1], colors='tab:red', linestyles="dashed")
+
+    ax.scatter(U_time_to_SQ[i]/24, anp.sig_quantity)
+    ax.scatter(Th_time_to_SQ[i]/24, anp.sig_quantity)
 
     ax.set_xlabel("Time (days)")
     ax.set_ylabel("Mass (kg)")
