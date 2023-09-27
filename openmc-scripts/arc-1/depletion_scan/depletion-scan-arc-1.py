@@ -29,15 +29,6 @@ def setup_device(device):
     device.settings.batches = 100
     device.survival_biasing = True
 
-    """ Cylindrical Mesh Tally """
-    mesh = openmc.CylindricalMesh()
-    mesh.r_grid = np.linspace(100, 700, num=50)
-    mesh.z_grid = np.linspace(-300, 300, num=50)
-    mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
-    mesh_filter = openmc.MeshFilter(mesh)
-
-    device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
-
     """ Cell Filter """
     blanket_cell = device.get_cell(name='blanket')
     blanket_filter = openmc.CellFilter(blanket_cell)
@@ -46,29 +37,22 @@ def setup_device(device):
     energy_filter = openmc.EnergyFilter.from_group_structure("CCFE-709")
 
     """ FLiBe Tally """
-    #flibe_filter = openmc.MaterialFilter(anp.get_material_by_name(device.materials, "doped_flibe"))
-    
-    # if device.dopant == "U":
-    #     device.add_tally('Fissile Fission Tally', ['fission'], filters=[], nuclides=["Pu239"])
-
-    # elif device.dopant == "Th":
-    #     device.add_tally('Fissile Fission Tally', ['fission'], filters=[], nuclides=["U233"])
-
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
 
     """ Absorption Tally """
-
     if device.dopant == "U":
-        nuclide = "U238"
+        fertile_nuclide = "U238"
+        fissile_nuclide = "Pu239"
     elif device.dopant == "Th":
-        nuclide = "Th232"
+        fertile_nuclide = "Th232"
+        fissile_nuclide = "U233"
     else:
         raise ValueError("Invalid Dopant Type!")
 
-    device.add_tally("Absorption Tally", ['(n,gamma)'], filters=[energy_filter, blanket_filter], nuclides=['Li6', 'Li7', nuclide])
-
+    device.add_tally("Absorption Tally", ['(n,gamma)'], filters=[energy_filter, blanket_filter], nuclides=[fertile_nuclide])
+    device.add_tally('Fissile Fission Tally', ['fission', '(n,gamma)'], filters=[], nuclides=[fissile_nuclide])
 
     return device
 
