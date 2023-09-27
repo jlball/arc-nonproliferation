@@ -41,10 +41,10 @@ def setup_device(device):
 
     """ FLiBe Tally """
     device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[])
-    device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter])
-    device.add_tally('Li Tally', ['(n,Xt)'], filters=[], nuclides=['Li6', 'Li7'])
+    device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter, channel_filter])
+    device.add_tally('Li Tally', ['(n,Xt)'], filters=[energy_filter, blanket_filter, channel_filter], nuclides=['Li6', 'Li7'])
 
-    """ Absorption Tally """
+    """ Fertile/Fissile Tally """
     if device.dopant == "U":
         fertile_nuclide = "U238"
         fissile_nuclide = "Pu239"
@@ -54,8 +54,8 @@ def setup_device(device):
     else:
         raise ValueError("Invalid Dopant Type!")
 
-    device.add_tally("Absorption Tally", ['fission','(n,gamma)'], filters=[energy_filter, blanket_filter], nuclides=[fertile_nuclide])
-    device.add_tally('Fissile Fission Tally', ['fission', '(n,gamma)'], filters=[], nuclides=[fissile_nuclide])
+    device.add_tally("Fertile Tally", ['fission','(n,gamma)'], filters=[energy_filter, blanket_filter, channel_filter], nuclides=[fertile_nuclide])
+    device.add_tally('Fissile Tally', ['fission', '(n,gamma)'], filters=[energy_filter, blanket_filter, channel_filter], nuclides=[fissile_nuclide])
 
     return device
 
