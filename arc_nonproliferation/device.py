@@ -210,7 +210,7 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
     device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
     device.pfc = openmc.Cell(region=pfc, fill=tungsten, name='PFC')
     device.vv = openmc.Cell(region=vv, fill=vcrti_VV, name='VV')
-    device.channel = openmc.Cell(region=channel, fill=doped_flibe_channels, name='channels')
+    device.channel = openmc.Cell(region=channel, fill=doped_flibe_channels, name='channel')
     device.tank_inner = openmc.Cell(region=tank_inner, fill=vcrti_BI, name='tank inner')
     device.blanket = openmc.Cell(region=salt, fill=doped_flibe_blanket, name='blanket')
     device.tank_outer = openmc.Cell(region=tank_outer, fill=vcrti_BO, name='tank outer')

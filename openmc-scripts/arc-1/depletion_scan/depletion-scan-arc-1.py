@@ -33,6 +33,9 @@ def setup_device(device):
     blanket_cell = device.get_cell(name='blanket')
     blanket_filter = openmc.CellFilter(blanket_cell)
 
+    channel_cell = device.get_cell(name='channel')
+    channel_filter = openmc.CellFilter(channel_cell)
+
     """ Energy Filter """
     energy_filter = openmc.EnergyFilter.from_group_structure("CCFE-709")
 
@@ -51,7 +54,7 @@ def setup_device(device):
     else:
         raise ValueError("Invalid Dopant Type!")
 
-    device.add_tally("Absorption Tally", ['(n,gamma)'], filters=[energy_filter, blanket_filter], nuclides=[fertile_nuclide])
+    device.add_tally("Absorption Tally", ['fission','(n,gamma)'], filters=[energy_filter, blanket_filter], nuclides=[fertile_nuclide])
     device.add_tally('Fissile Fission Tally', ['fission', '(n,gamma)'], filters=[], nuclides=[fissile_nuclide])
 
     return device
