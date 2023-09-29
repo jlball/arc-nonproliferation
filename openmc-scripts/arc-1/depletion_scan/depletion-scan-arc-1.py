@@ -25,7 +25,7 @@ else:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e4)
+    device.settings.particles = int(5e3)
     device.settings.batches = 100
     device.survival_biasing = True
 
@@ -44,18 +44,15 @@ def setup_device(device):
     device.add_tally('Flux Tally', ['flux'], filters=[energy_filter, blanket_filter, channel_filter])
     device.add_tally('Li Tally', ['(n,Xt)'], filters=[energy_filter, blanket_filter, channel_filter], nuclides=['Li6', 'Li7'])
 
-    """ Fertile/Fissile Tally """
+    """ Fertile Tally """
     if device.dopant == "U":
         fertile_nuclide = "U238"
-        fissile_nuclide = "Pu239"
     elif device.dopant == "Th":
         fertile_nuclide = "Th232"
-        fissile_nuclide = "U233"
     else:
         raise ValueError("Invalid Dopant Type!")
 
     device.add_tally("Fertile Tally", ['fission','(n,gamma)'], filters=[energy_filter, blanket_filter, channel_filter], nuclides=[fertile_nuclide])
-    device.add_tally('Fissile Tally', ['fission', '(n,gamma)'], filters=[energy_filter, blanket_filter, channel_filter], nuclides=[fissile_nuclide])
 
     return device
 

@@ -280,36 +280,36 @@ for i, mass in enumerate(masses):
 print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# # (n, gamma)
-# init_time = time.perf_counter()
+# (n, gamma)
 
-# U_absorption = np.empty((num_steps, 709, 3))
-# Th_absorption = np.empty((num_steps, 709, 3))
+init_time = time.perf_counter()
 
-# """ Uranium """
-# os.chdir(base_dir + "/Uranium/" + str(mass))
+U_absorption = np.empty((num_steps, 709, 3))
+Th_absorption = np.empty((num_steps, 709, 3))
 
-# for step in range(0, num_steps):
-#     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-#     absorption_tally = sp.get_tally(name='Absorption Tally')
-#     absorption_spectrum = absorption_tally.get_reshaped_data()
-#     U_absorption[step] = absorption_spectrum.reshape((709,3))
+""" Uranium """
+os.chdir(base_dir + "/Uranium/" + str(mass))
 
-# os.chdir('../../..')
+for step in range(0, num_steps):
+    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+    absorption_tally = sp.get_tally(name='Fertile Tally')
+    absorption_spectrum = absorption_tally.get_reshaped_data()
+    U_absorption[step] = absorption_spectrum.reshape((709,2))
 
-# """ Thorium """
-# os.chdir(base_dir + "/Thorium/" + str(mass))
+os.chdir('../../..')
 
-# for step in range(0, num_steps):
-#     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-#     absorption_tally = sp.get_tally(name='Absorption Tally')
-#     absorption_spectrum = absorption_tally.get_reshaped_data()
-#     Th_absorption[step] = absorption_spectrum.reshape((709,3))
+""" Thorium """
+os.chdir(base_dir + "/Thorium/" + str(mass))
 
-# os.chdir('../../..')
+for step in range(0, num_steps):
+    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+    absorption_tally = sp.get_tally(name='Fertile Tally')
+    absorption_spectrum = absorption_tally.get_reshaped_data()
+    Th_absorption[step] = absorption_spectrum.reshape((709,2))
 
-# print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+os.chdir('../../..')
 
+print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # ====================================================
 # Plotting
