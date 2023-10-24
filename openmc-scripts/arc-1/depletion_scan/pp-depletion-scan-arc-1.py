@@ -640,3 +640,12 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "isotopic_purities":Th_purities,
               "tbr_t0":Th_TBR[:, 0, 0],
               "tbr_t_SQ":Th_TBR[:, 1, 0]}
+
+try:
+    os.chdir(base_dir + "/data")
+except:
+    os.mkdir(base_dir + "/data")
+    os.chdir(base_dir + "/data")
+
+U_data_dict.to_csv()
+Th_data_dict.to_csv()
