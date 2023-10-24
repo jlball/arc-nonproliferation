@@ -8,7 +8,7 @@ from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
 import time
-import pandas
+import pickle
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -222,46 +222,46 @@ for i, mass in enumerate(masses):
 
 print("Loaded isotopic purity data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
 
-# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# Decay Photon Spectrum
-init_time = time.perf_counter()
+# # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# # Decay Photon Spectrum
+# init_time = time.perf_counter()
 
-U_decay_spectra_channels = []
-U_decay_spectra_blanket = []
+# U_decay_spectra_channels = []
+# U_decay_spectra_blanket = []
 
-Th_decay_spectra_channels = []
-Th_decay_spectra_blanket = []
+# Th_decay_spectra_channels = []
+# Th_decay_spectra_blanket = []
 
-for i in range(0, num_steps):
-    """ Uranium """
-    os.chdir(base_dir + "/Uranium/" + str(mass))
+# for i in range(0, num_steps):
+#     """ Uranium """
+#     os.chdir(base_dir + "/Uranium/" + str(mass))
 
-    U_results = Results('depletion_results.h5')
-    U_mats = U_results.export_to_materials(i)
+#     U_results = Results('depletion_results.h5')
+#     U_mats = U_results.export_to_materials(i)
 
-    flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
-    flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
+#     flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
+#     flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
 
-    U_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
-    U_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+#     U_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
+#     U_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
 
-    os.chdir('../../..')
+#     os.chdir('../../..')
 
-    """ Thorium """
-    os.chdir(base_dir + "/Thorium/" + str(mass))
+#     """ Thorium """
+#     os.chdir(base_dir + "/Thorium/" + str(mass))
 
-    Th_results = Results('depletion_results.h5')
-    Th_mats = Th_results.export_to_materials(i)
+#     Th_results = Results('depletion_results.h5')
+#     Th_mats = Th_results.export_to_materials(i)
 
-    flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
-    flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
+#     flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
+#     flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
 
-    Th_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
-    Th_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+#     Th_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
+#     Th_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
 
-    os.chdir('../../..')
+#     os.chdir('../../..')
 
-print("Loaded decay photon data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
+# print("Loaded decay photon data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
@@ -621,25 +621,30 @@ print("Completed Post Processing")
 
 U_data_dict ={"time_steps":U_time_steps,
               "time_to_sq":U_time_to_SQ,
-              "fission_powers":U_fission_powers,
-              "fission_power_at_sq":U_fission_power_at_SQ,
+              "fission_power_t_0":U_fission_powers[0],
+              "fission_power_t_sq":U_fission_power_at_SQ,
               "isotopic_purities":U_purities,
               "tbr_t0":U_TBR[:, 0, 0],
               "tbr_t_SQ":U_TBR[:, 1, 0]}
 
 Th_data_dict ={"time_steps":Th_time_steps,
               "time_to_sq":Th_time_to_SQ,
-              "fission_powers":Th_fission_powers,
-              "fission_power_at_sq":Th_fission_power_at_SQ,
+              "fission_power_t_0":Th_fission_powers[0],
+              "fission_power_t_sq":Th_fission_power_at_SQ,
               "isotopic_purities":Th_purities,
               "tbr_t0":Th_TBR[:, 0, 0],
               "tbr_t_SQ":Th_TBR[:, 1, 0]}
 
-try:
-    os.chdir(base_dir + "/data")
-except:
-    os.mkdir(base_dir + "/data")
-    os.chdir(base_dir + "/data")
+os.chdir("../..")
 
-U_data_dict.to_csv()
-Th_data_dict.to_csv()
+try:
+    os.chdir(base_dir + "data")
+except:
+    os.mkdir(base_dir + "data")
+    os.chdir(base_dir + "data")
+
+with open("U_data_dict.pkl", 'wb') as file:
+    pickle.dump(U_data_dict, file)
+
+with open("Th_data_dict.pkl", 'wb') as file:
+    pickle.dump(Th_data_dict, file)
