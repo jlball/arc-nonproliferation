@@ -74,8 +74,8 @@ print("Loaded time to 1 SQ data in " + str(round(time.perf_counter() - init_time
 # Fission
 init_time = time.perf_counter()
 
-U_fission_powers = np.empty((len(masses), num_steps, 2))
-Th_fission_powers = np.empty((len(masses), num_steps, 2))
+U_fission_powers = np.empty((len(masses), num_steps))
+Th_fission_powers = np.empty((len(masses), num_steps))
 
 U_fission_rates = np.empty((len(masses), num_steps))
 Th_fission_rates = np.empty((len(masses), num_steps))
@@ -88,10 +88,7 @@ for i, mass in enumerate(masses):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
         tally = sp.get_tally(name='FLiBe Tally')
 
-        U_fission_powers[i, step, 0] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
-        U_fission_powers[i, step, 1] = anp.get_uvalue(tally, 'kappa-fission').s * total_neutron_rate * MJ_per_eV
-
-        #U_fission_rates[i, step] = tally.get_values(scores=['fission'], value='mean', nuclides=['Pu239']) * total_neutron_rate
+        U_fission_powers[i, step] = np.sum(tally.get_values(scores=["kappa-fission"])) * total_neutron_rate * MJ_per_eV
         
     os.chdir('../../..')
 
@@ -102,10 +99,7 @@ for i, mass in enumerate(masses):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
         tally = sp.get_tally(name='FLiBe Tally')
 
-        Th_fission_powers[i, step, 0] = anp.get_uvalue(tally, 'kappa-fission').n * total_neutron_rate * MJ_per_eV
-        Th_fission_powers[i, step, 1] = anp.get_uvalue(tally, 'kappa-fission').s * total_neutron_rate * MJ_per_eV
-
-        #Th_fission_rates[i, step] = tally.get_values(scores=['fission'], value='mean', nuclides=['U233']) * total_neutron_rate
+        Th_fission_powers[i, step] = np.sum(tally.get_values(scores=["kappa-fission"])) * total_neutron_rate * MJ_per_eV
 
     os.chdir('../../..')
 
@@ -125,15 +119,15 @@ for i, mass in enumerate(masses):
     sp = openmc.StatePoint('openmc_simulation_n0.h5')
     tally = sp.get_tally(name='FLiBe Tally')
 
-    U_TBR[i, 0, 0] = anp.get_uvalue(tally, "(n,Xt)").n
-    U_TBR[i, 0, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    U_TBR[i, 0, 0] = np.sum(tally.get_values(scores=["(n,Xt)"]))
+    U_TBR[i, 0, 1] = np.sqrt(np.sum(np.square(tally.get_values(scores=["(n,Xt)"], value="std_dev"))))
     sp.close()
 
     sp = openmc.StatePoint('openmc_simulation_n' + str(num_steps-1) + '.h5')
     tally = sp.get_tally(name='FLiBe Tally')
 
-    U_TBR[i, 1, 0] = anp.get_uvalue(tally, "(n,Xt)").n
-    U_TBR[i, 1, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    U_TBR[i, 1, 0] = np.sum(tally.get_values(scores=["(n,Xt)"]))
+    U_TBR[i, 1, 1] = np.sqrt(np.sum(np.square(tally.get_values(scores=["(n,Xt)"], value="std_dev"))))
     sp.close()
         
     os.chdir('../../..')
@@ -144,15 +138,15 @@ for i, mass in enumerate(masses):
     sp = openmc.StatePoint('openmc_simulation_n0.h5')
     tally = sp.get_tally(name='FLiBe Tally')
 
-    Th_TBR[i, 0, 0] = anp.get_uvalue(tally, "(n,Xt)").n
-    Th_TBR[i, 0, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    Th_TBR[i, 0, 0] = np.sum(tally.get_values(scores=["(n,Xt)"]))
+    Th_TBR[i, 0, 1] = np.sqrt(np.sum(np.square(tally.get_values(scores=["(n,Xt)"], value="std_dev"))))
     sp.close()
 
     sp = openmc.StatePoint('openmc_simulation_n' + str(num_steps-1) + '.h5')
     tally = sp.get_tally(name='FLiBe Tally')
 
-    Th_TBR[i, 1, 0] = anp.get_uvalue(tally, "(n,Xt)").n
-    Th_TBR[i, 1, 1] = anp.get_uvalue(tally, "(n,Xt)").s
+    Th_TBR[i, 1, 0] = np.sum(tally.get_values(scores=["(n,Xt)"]))
+    Th_TBR[i, 1, 1] = np.sqrt(np.sum(np.square(tally.get_values(scores=["(n,Xt)"], value="std_dev"))))
     sp.close()
 
     os.chdir('../../..')
@@ -163,8 +157,8 @@ print("Loaded TBR data in " + str(round(time.perf_counter() - init_time, 2)) + "
 # Flux Spectrum
 init_time = time.perf_counter()
 
-U_flux_spectra = np.empty((len(masses), num_steps, 709))
-Th_flux_spectra = np.empty((len(masses), num_steps, 709))
+U_flux_spectra = np.empty((len(masses), num_steps, 709, 2))
+Th_flux_spectra = np.empty((len(masses), num_steps, 709, 2))
 
 """ Uranium """
 for i, mass in enumerate(masses):
@@ -173,9 +167,9 @@ for i, mass in enumerate(masses):
 
     for step in range(0, num_steps):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-        flux_tally = sp.get_tally(name='Flux Tally')
+        flux_tally = sp.get_tally(name='Channel Flux Tally')
         flux_spectrum = flux_tally.get_reshaped_data()
-        U_flux_spectra[i, step] = flux_spectrum.reshape((709,))
+        U_flux_spectra[i, step] = flux_spectrum.reshape((709,2))
 
     os.chdir('../../..')
 
@@ -184,9 +178,9 @@ for i, mass in enumerate(masses):
 
     for step in range(0, num_steps):
         sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-        flux_tally = sp.get_tally(name='Flux Tally')
+        flux_tally = sp.get_tally(name='Channel Flux Tally')
         flux_spectrum = flux_tally.get_reshaped_data()
-        Th_flux_spectra[i, step] = flux_spectrum.reshape((709,))
+        Th_flux_spectra[i, step] = flux_spectrum.reshape((709,2))
 
     os.chdir('../../..')
 
@@ -299,8 +293,8 @@ print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_tim
 
 init_time = time.perf_counter()
 
-U_absorption = np.empty((num_steps, 709, 2))
-Th_absorption = np.empty((num_steps, 709, 2))
+U_absorption = np.empty((num_steps, 709, 2, 2))
+Th_absorption = np.empty((num_steps, 709, 2, 2))
 
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -309,7 +303,7 @@ for step in range(0, num_steps):
     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
     absorption_tally = sp.get_tally(name='Fertile Tally')
     absorption_spectrum = absorption_tally.get_reshaped_data()
-    U_absorption[step] = absorption_spectrum.reshape((709,2))
+    U_absorption[step] = absorption_spectrum.reshape((709,2,2))
 
 os.chdir('../../..')
 
@@ -320,7 +314,7 @@ for step in range(0, num_steps):
     sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
     absorption_tally = sp.get_tally(name='Fertile Tally')
     absorption_spectrum = absorption_tally.get_reshaped_data()
-    Th_absorption[step] = absorption_spectrum.reshape((709,2))
+    Th_absorption[step] = absorption_spectrum.reshape((709,2,2))
 
 os.chdir('../../..')
 
@@ -389,28 +383,28 @@ U_fission_power_at_SQ = np.empty((len(masses)))
 Th_fission_power_at_SQ = np.empty((len(masses)))
 for i, mass in enumerate(masses):
     """ Uranium """
-    U_res = linregress(U_time_steps, U_fission_powers[i, :, 0])
+    U_res = linregress(U_time_steps, U_fission_powers[i, :])
     U_fission_power_at_SQ[i] = U_res.intercept + U_res.slope*U_time_to_SQ[i]
 
     """ Thorium """
-    Th_res = linregress(Th_time_steps, Th_fission_powers[i, :, 0])
+    Th_res = linregress(Th_time_steps, Th_fission_powers[i, ])
     Th_fission_power_at_SQ[i] = Th_res.intercept + Th_res.slope*Th_time_to_SQ[i]
 
-ax.scatter(masses, U_fission_powers[:, 0, 0], c='r', s=4, label='At t = 0')
-ax.scatter(masses, Th_fission_powers[:, 0, 0], c='g', s=4, label='At t = 0')
+ax.scatter(masses, U_fission_powers[:, 0], c='r', s=4, label='At t = 0')
+ax.scatter(masses, Th_fission_powers[:, 0], c='g', s=4, label='At t = 0')
 
 ax.scatter(masses, U_fission_power_at_SQ, c='r', s=4, label='After 1 SQ bred')
 ax.scatter(masses, Th_fission_power_at_SQ, c='g', s=4, label='After 1 SQ bred')
 
-ax.fill_between(masses, U_fission_powers[:, 0, 0], U_fission_power_at_SQ, color='r', alpha=0.3)
-ax.fill_between(masses, Th_fission_powers[:, 0, 0], Th_fission_power_at_SQ, color='g', alpha=0.3)
+ax.fill_between(masses, U_fission_powers[:, 0], U_fission_power_at_SQ, color='r', alpha=0.3)
+ax.fill_between(masses, Th_fission_powers[:, 0], Th_fission_power_at_SQ, color='g', alpha=0.3)
 
 text_offset = 5
 ax.annotate("t = $t_{SQ}$", (masses[-1], U_fission_power_at_SQ[-1]), color='r', textcoords='offset points', xytext=(text_offset, 0))
-ax.annotate("t = 0", (masses[-1], U_fission_powers[-1, 0, 0]), color='r', textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = 0", (masses[-1], U_fission_powers[-1, 0]), color='r', textcoords='offset points', xytext=(text_offset, 0))
 
 ax.annotate("t = $t_{SQ}$", (masses[-1], Th_fission_power_at_SQ[-1]), color='g', textcoords='offset points', xytext=(text_offset, 0))
-ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0, 0]), color='g', textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color='g', textcoords='offset points', xytext=(text_offset, 0))
 
 ax.set_xlim(0, masses[-1] + 5)
 ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
@@ -525,27 +519,27 @@ fig.savefig("Th_flux_spectra.png", dpi=300)
 
 # Uranium
 
-fig, axs = plt.subplots(1, 2)
+# fig, axs = plt.subplots(1, 2)
 
-for ax in axs:
-    ax.spines["top"].set_color("None")
-    ax.spines["right"].set_color("None")
+# for ax in axs:
+#     ax.spines["top"].set_color("None")
+#     ax.spines["right"].set_color("None")
 
-    ax.set_yscale("log")
+#     ax.set_yscale("log")
 
-    ax.set_ylim(1e15, 1e19)
-    ax.set_xlim(0, 3)
-    ax.set_xlabel("Photon Energy (MeV)")
+#     ax.set_ylim(1e15, 1e19)
+#     ax.set_xlim(0, 3)
+#     ax.set_xlabel("Photon Energy (MeV)")
 
-for i in range(0, num_steps):
-    axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
-    axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
+# for i in range(0, num_steps):
+#     axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
+#     axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
     
-axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
-axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
+# axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
+# axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
 
-fig.set_size_inches(10, 4)
-fig.savefig("U_decay_spectra.png")
+# fig.set_size_inches(10, 4)
+# fig.savefig("U_decay_spectra.png")
 
 #Thorium:
 
@@ -600,11 +594,11 @@ for i, mass in enumerate(masses):
     ax.plot(U_time_steps, U_fissile_masses[i], label="Pu239")
     ax.plot(Th_time_steps, Th_fissile_masses[i], label="U233")
 
-    U_fit = Polynomial.fit(U_time_steps, U_fissile_masses[i], 4)
-    Th_fit = Polynomial.fit(Th_time_steps, Th_fissile_masses[i], 4)
+    #U_fit = Polynomial.fit(U_time_steps, U_fissile_masses[i], 4)
+    #Th_fit = Polynomial.fit(Th_time_steps, Th_fissile_masses[i], 4)
 
-    ax.plot(U_time_steps, U_fit.__call__(U_time_steps), alpha=0.5)
-    ax.plot(Th_time_steps, Th_fit.__call__(Th_time_steps), alpha=0.5)
+    #ax.plot(U_time_steps, U_fit(U_time_steps), alpha=0.5)
+    #ax.plot(Th_time_steps, Th_fit(Th_time_steps), alpha=0.5)
 
     ax.hlines(anp.sig_quantity, Th_time_steps[0], Th_time_steps[-1], colors='tab:red', linestyles="dashed")
 
