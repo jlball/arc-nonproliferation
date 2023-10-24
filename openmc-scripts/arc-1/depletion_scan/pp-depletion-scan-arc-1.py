@@ -8,6 +8,7 @@ from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
 import time
+import pandas
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -18,6 +19,10 @@ fusion_power = 500 #MW
 total_neutron_rate = fusion_power * neutrons_per_MJ
 
 openmc.config['chain_file'] = chain_file
+
+loaded_data_dict = {}
+loaded_data_dict["uranium"] = {}
+loaded_data_dict["thorium"] = {}
 
 # ====================================================
 # Extract Data
@@ -30,6 +35,7 @@ init_time = time.perf_counter()
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
+loaded_data_dict["masses"] = masses
 
 U_time_to_SQ = np.empty(len(masses))
 Th_time_to_SQ = np.empty(len(masses))
@@ -58,6 +64,9 @@ for i, mass in enumerate(masses):
     Th_time_steps = Th_results.get_times()
 
     os.chdir("../../..")
+
+loaded_data_dict["uranium"]["time_to_sq"] = U_time_to_SQ
+loaded_data_dict["thorium"]["time_to_sq"] = Th_time_to_SQ
 
 print("Loaded time to 1 SQ data in " + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
@@ -198,7 +207,10 @@ for i, mass in enumerate(masses):
 
     U_results = Results('depletion_results.h5')
     U_purity = extract_isotopic_purity("U", U_results)
-    U_purities[i] = U_purity[-1]
+
+    # Use linear fit to extract purity at t_SQ
+    U_purity_fit = linregress(U_time_steps, y=U_purity)
+    U_purities[i] = U_purity_fit.slope * U_time_to_SQ[i] + U_purity_fit.intercept
 
     os.chdir('../../..')
 
@@ -207,7 +219,10 @@ for i, mass in enumerate(masses):
 
     Th_results = Results('depletion_results.h5')
     Th_purity = extract_isotopic_purity("Th", Th_results)
-    Th_purities[i] = Th_purity[-1]
+
+    # Use linear fit to extract purity at t_SQ
+    Th_purity_fit = linregress(Th_time_steps, y=Th_purity)
+    Th_purities[i] = Th_purity_fit.slope * Th_time_to_SQ[i] + Th_purity_fit.intercept
 
     os.chdir('../../..')
 
@@ -284,8 +299,8 @@ print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_tim
 
 init_time = time.perf_counter()
 
-U_absorption = np.empty((num_steps, 709, 3))
-Th_absorption = np.empty((num_steps, 709, 3))
+U_absorption = np.empty((num_steps, 709, 2))
+Th_absorption = np.empty((num_steps, 709, 2))
 
 """ Uranium """
 os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -474,36 +489,36 @@ fig.savefig("Th_flux_spectra.png", dpi=300)
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum Evolution
 
-for i, mass in enumerate(masses):
-    fig, ax = plt.subplots()
-    ax.spines["top"].set_color("None")
-    ax.spines["right"].set_color("None")
+# for i, mass in enumerate(masses):
+#     fig, ax = plt.subplots()
+#     ax.spines["top"].set_color("None")
+#     ax.spines["right"].set_color("None")
 
-    energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
+#     energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 
-    for j in range(0, num_steps):
-        difference_spectrum = (U_flux_spectra[i, j, :] - U_flux_spectra[i, 0, :])/U_flux_spectra[i, 0, :]
+#     for j in range(0, num_steps):
+#         difference_spectrum = (U_flux_spectra[i, j, :] - U_flux_spectra[i, 0, :])/U_flux_spectra[i, 0, :]
 
-        ax.step(energy_bin_centers, difference_spectrum, label=U_time_steps[j])
+#         ax.step(energy_bin_centers, difference_spectrum, label=U_time_steps[j])
 
-    ax.set_yscale("log")
-    ax.set_xscale("log")
-    fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
+#     ax.set_yscale("log")
+#     ax.set_xscale("log")
+#     fig.savefig("U_spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
-    fig, ax = plt.subplots()
-    ax.spines["top"].set_color("None")
-    ax.spines["right"].set_color("None")
+#     fig, ax = plt.subplots()
+#     ax.spines["top"].set_color("None")
+#     ax.spines["right"].set_color("None")
 
-    energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
+#     energy_bin_centers = 0.5 * (energies[1:] + energies[:-1])
 
-    for j in range(0, num_steps):
-        difference_spectrum = (Th_flux_spectra[i, j, :] - Th_flux_spectra[i, 0, :])/Th_flux_spectra[i, 0, :]
+#     for j in range(0, num_steps):
+#         difference_spectrum = (Th_flux_spectra[i, j, :] - Th_flux_spectra[i, 0, :])/Th_flux_spectra[i, 0, :]
 
-        ax.step(energy_bin_centers, difference_spectrum, label=Th_time_steps[j])
+#         ax.step(energy_bin_centers, difference_spectrum, label=Th_time_steps[j])
 
-    ax.set_yscale("log")
-    ax.set_xscale("log")
-    fig.savefig("spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
+#     ax.set_yscale("log")
+#     ax.set_xscale("log")
+#     fig.savefig("spectrum_evolution_" + str(mass) + "_kg.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Photon Spectra
@@ -605,3 +620,23 @@ for i, mass in enumerate(masses):
     fig.savefig(str(mass) + "_metric_tons.png", dpi=300)
 
 print("Completed Post Processing")
+
+# ====================================================
+# Data Storage
+# ====================================================
+
+U_data_dict ={"time_steps":U_time_steps,
+              "time_to_sq":U_time_to_SQ,
+              "fission_powers":U_fission_powers,
+              "fission_power_at_sq":U_fission_power_at_SQ,
+              "isotopic_purities":U_purities,
+              "tbr_t0":U_TBR[:, 0, 0],
+              "tbr_t_SQ":U_TBR[:, 1, 0]}
+
+Th_data_dict ={"time_steps":Th_time_steps,
+              "time_to_sq":Th_time_to_SQ,
+              "fission_powers":Th_fission_powers,
+              "fission_power_at_sq":Th_fission_power_at_SQ,
+              "isotopic_purities":Th_purities,
+              "tbr_t0":Th_TBR[:, 0, 0],
+              "tbr_t_SQ":Th_TBR[:, 1, 0]}
