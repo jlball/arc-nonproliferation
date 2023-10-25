@@ -20,10 +20,6 @@ total_neutron_rate = fusion_power * neutrons_per_MJ
 
 openmc.config['chain_file'] = chain_file
 
-loaded_data_dict = {}
-loaded_data_dict["uranium"] = {}
-loaded_data_dict["thorium"] = {}
-
 # ====================================================
 # Extract Data
 # ====================================================
@@ -35,7 +31,6 @@ init_time = time.perf_counter()
 
 """ Load masses and initialisze final output arrays """
 masses = np.loadtxt(base_dir + '/masses.txt')
-loaded_data_dict["masses"] = masses
 
 U_time_to_SQ = np.empty(len(masses))
 Th_time_to_SQ = np.empty(len(masses))
@@ -64,9 +59,6 @@ for i, mass in enumerate(masses):
     Th_time_steps = Th_results.get_times()
 
     os.chdir("../../..")
-
-loaded_data_dict["uranium"]["time_to_sq"] = U_time_to_SQ
-loaded_data_dict["thorium"]["time_to_sq"] = Th_time_to_SQ
 
 print("Loaded time to 1 SQ data in " + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
@@ -195,6 +187,8 @@ init_time = time.perf_counter()
 
 U_purities = np.empty(len(masses))
 Th_purities = np.empty(len(masses))
+
+#fig, ax = plt.subplots()
 for i, mass in enumerate(masses):
     """ Uranium """
     os.chdir(base_dir + "/Uranium/" + str(mass))
@@ -202,9 +196,12 @@ for i, mass in enumerate(masses):
     U_results = Results('depletion_results.h5')
     U_purity = extract_isotopic_purity("U", U_results)
 
+    #ax.plot(U_time_steps[1:], U_purity[1:])
+    #ax.vlines(U_time_to_SQ[i]/24, U_purity[1:].min(), U_purity[1:].max())
+
     # Use linear fit to extract purity at t_SQ
-    U_purity_fit = linregress(U_time_steps, y=U_purity)
-    U_purities[i] = U_purity_fit.slope * U_time_to_SQ[i] + U_purity_fit.intercept
+    U_purity_fit = linregress(U_time_steps[1:], y=U_purity[1:])
+    U_purities[i] = U_purity_fit.slope * (U_time_to_SQ[i]/24) + U_purity_fit.intercept
 
     os.chdir('../../..')
 
@@ -215,12 +212,16 @@ for i, mass in enumerate(masses):
     Th_purity = extract_isotopic_purity("Th", Th_results)
 
     # Use linear fit to extract purity at t_SQ
-    Th_purity_fit = linregress(Th_time_steps, y=Th_purity)
-    Th_purities[i] = Th_purity_fit.slope * Th_time_to_SQ[i] + Th_purity_fit.intercept
+    Th_purity_fit = linregress(Th_time_steps[1:], y=Th_purity[1:])
+    Th_purities[i] = Th_purity_fit.slope * (Th_time_to_SQ[i]/24) + Th_purity_fit.intercept
 
     os.chdir('../../..')
 
 print("Loaded isotopic purity data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
+
+#ax.scatter(U_time_to_SQ/24, U_purities)
+
+#plt.show()
 
 # # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # # Decay Photon Spectrum
@@ -356,8 +357,8 @@ U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
 
 fit_masses = np.linspace(1, masses[-1], num=100)
-ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
-ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
+#ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
+#ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
 
 ax.legend()
 
@@ -621,7 +622,7 @@ print("Completed Post Processing")
 
 U_data_dict ={"time_steps":U_time_steps,
               "time_to_sq":U_time_to_SQ,
-              "fission_power_t_0":U_fission_powers[0],
+              "fission_power_t_0":U_fission_powers[:, 0],
               "fission_power_t_sq":U_fission_power_at_SQ,
               "isotopic_purities":U_purities,
               "tbr_t0":U_TBR[:, 0, 0],
@@ -629,7 +630,7 @@ U_data_dict ={"time_steps":U_time_steps,
 
 Th_data_dict ={"time_steps":Th_time_steps,
               "time_to_sq":Th_time_to_SQ,
-              "fission_power_t_0":Th_fission_powers[0],
+              "fission_power_t_0":Th_fission_powers[:, 0],
               "fission_power_t_sq":Th_fission_power_at_SQ,
               "isotopic_purities":Th_purities,
               "tbr_t0":Th_TBR[:, 0, 0],
@@ -638,10 +639,10 @@ Th_data_dict ={"time_steps":Th_time_steps,
 os.chdir("../..")
 
 try:
-    os.chdir(base_dir + "data")
+    os.chdir(base_dir + "/data")
 except:
-    os.mkdir(base_dir + "data")
-    os.chdir(base_dir + "data")
+    os.mkdir(base_dir + "/data")
+    os.chdir(base_dir + "/data")
 
 with open("U_data_dict.pkl", 'wb') as file:
     pickle.dump(U_data_dict, file)
