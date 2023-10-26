@@ -62,6 +62,7 @@ for dopant in dopants:
 
     ax.set_xlabel("Li-6 Enrichment (percent)")
     ax.set_ylabel("Time to 1 SQ (days)")
+    
 
     fig.savefig(f"{dopant}_time_to_sq.png", dpi=300)
 
@@ -72,14 +73,14 @@ for dopant in dopants:
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
-    for i, tbr in enumerate(tbr_t_0.T):
-        ax.scatter(masses, tbr, color=plt_color)
-        ax.plot(masses, tbr, color=plt_color)
+    for i, tbr in enumerate(tbr_t_0):
+        ax.scatter(Li6_enrichments, tbr, color=plt_color)
+        ax.plot(Li6_enrichments, tbr, color=plt_color, alpha=0.3)
 
         text_offset = 5
-        ax.annotate(f"{Li6_enrichments_str[i]} %", (masses[-1], tbr[-1]), color=plt_color, textcoords='offset points', xytext=(text_offset, 0))
+        ax.annotate(f"{masses[i]} Tons", (masses[-1], tbr[-1]), color=plt_color, textcoords='offset points', xytext=(text_offset, 0))
 
-    ax.set_xlabel("Fertile Mass (Metric Tons)")
+    ax.set_xlabel("Li-6 Enrichment (percent)")
     ax.set_ylabel("TBR")
 
     fig.savefig(f"{dopant}_TBR.png", dpi=300)
