@@ -2,6 +2,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+from scipy.stats import linregress
 
 # ====================================================
 # Data loading
@@ -41,6 +42,30 @@ for dopant in dopants:
 
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Time to 1 SQ
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, t_SQ in enumerate(time_to_sq):
+        ax.scatter(Li6_enrichments, t_SQ, color=plt_color)
+        ax.plot(Li6_enrichments, t_SQ, color=plt_color, alpha=0.3)
+
+        #fit = linregress(Li6_enrichments, t_SQ)
+        #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
+
+        text_offset = (10, -4)
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], t_SQ[-1]), color=plt_color, textcoords='offset points', xytext=text_offset)
+
+    ax.set_yscale("log")
+
+    ax.set_xlabel("Li-6 Enrichment (percent)")
+    ax.set_ylabel("Time to 1 SQ (days)")
+
+    fig.savefig(f"{dopant}_time_to_sq.png", dpi=300)
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # TBR
 
     fig, ax = plt.subplots()
@@ -58,3 +83,48 @@ for dopant in dopants:
     ax.set_ylabel("TBR")
 
     fig.savefig(f"{dopant}_TBR.png", dpi=300)
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Isotopic Purity
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, purity in enumerate(isotopic_purity):
+        ax.scatter(Li6_enrichments, purity, color=plt_color, s=10)
+        ax.plot(Li6_enrichments, purity, color=plt_color, alpha=0.3)
+
+        #fit = linregress(Li6_enrichments, t_SQ)
+        #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
+
+        text_offset = (10, -4)
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], purity[-1]), color=plt_color, textcoords='offset points', xytext=text_offset)
+
+    ax.set_xlabel("Li-6 Enrichment (percent)")
+    ax.set_ylabel("Percent Fissile Isotope (percent)")
+
+    fig.savefig(f"{dopant}_isotopic_purity.png", dpi=300)
+
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Fission Power
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, power in enumerate(fission_power_t_sq):
+        ax.scatter(Li6_enrichments, power, color=plt_color, s=10)
+        ax.plot(Li6_enrichments, power, color=plt_color, alpha=0.3)
+
+        #fit = linregress(Li6_enrichments, t_SQ)
+        #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
+
+        text_offset = (10, -4)
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], power[-1]), color=plt_color, textcoords='offset points', xytext=text_offset)
+
+    ax.set_xlabel("Li-6 Enrichment (percent)")
+    ax.set_ylabel("Fission Power (MW)")
+
+    fig.savefig(f"{dopant}_fission_Power_t_sq.png", dpi=300)
