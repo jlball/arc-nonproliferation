@@ -20,12 +20,20 @@ folder_prefix = 'pub_run_'
 
 dopants = ["U", "Th"]
 
+figure_folder = 'pub_figures'
+
+try:
+    os.mkdir(figure_folder)
+except:
+    print("skipping folder creation")
+
 for dopant in dopants:
     time_to_sq = np.empty((len(masses), len(Li6_enrichments)))
     fission_power_t_sq = np.empty((len(masses), len(Li6_enrichments)))
     isotopic_purity = np.empty((len(masses), len(Li6_enrichments)))
     tbr_t_0 = np.empty((len(masses), len(Li6_enrichments)))
     flux_spectrum = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2))
+    reaction_spectra = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2, 2))
 
     for i, enrichment in enumerate(Li6_enrichments_str):
         with open(folder_prefix + enrichment + f'/data/{dopant}_data_dict.pkl', 'rb') as file:
@@ -36,10 +44,17 @@ for dopant in dopants:
             isotopic_purity[:, i] = data_dict["isotopic_purities"]
             tbr_t_0[:, i] = data_dict["tbr_t0"]
             flux_spectrum[i] = data_dict["flux_spectrum"]
+            reaction_spectra[i] = data_dict["reaction_spectra"]
+
 
 # ====================================================
 # Plotting
 # ====================================================
+    try:
+        os.chdir(figure_folder + f"/{dopant}")
+    except:
+        os.mkdir(figure_folder + f"/{dopant}")
+        os.chdir(figure_folder + f"/{dopant}")
 
     if dopant == 'U':
         plt_color ='r'
@@ -167,3 +182,47 @@ for dopant in dopants:
     ax.set_ylim(1e-5, 1e1)
 
     fig.savefig(f"{dopant}_flux_spectrum.png", dpi=300)
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # (n, gamma)
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, enrichment in enumerate(Li6_enrichments):
+        ax.step(flux_energies, reaction_spectra[i, 0, 0, :, 1, 0], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
+
+    ax.set_xlabel("Neutron Energy (eV)")
+    ax.set_ylabel("Reaction Rate (arc. units)")
+    ax.set_title("(n, gamma) reaction rate vs. neutron energy")
+
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+
+    ax.set_xlim(1e-2, 20e6)
+
+    fig.savefig(f"{dopant}_ngamma_spectrum.png")
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # fission
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, enrichment in enumerate(Li6_enrichments):
+        ax.step(flux_energies, reaction_spectra[i, 0, 0, :, 1, 1], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
+
+    ax.set_xlabel("Neutron Energy (eV)")
+    ax.set_ylabel("Reaction Rate (arc. units)")
+    ax.set_title("Fission reaction rate vs. neutron energy")
+
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+
+    ax.set_xlim(1e-2, 20e6)
+
+    fig.savefig(f"{dopant}_fission_spectrum.png")
+
+    os.chdir("../..")
