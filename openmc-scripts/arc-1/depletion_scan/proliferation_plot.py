@@ -26,7 +26,7 @@ for dopant in dopants:
     fission_power_t_0 = np.empty((len(masses), len(Li6_enrichments)))
     isotopic_purity = np.empty((len(masses), len(Li6_enrichments)))
     tbr_t_0 = np.empty((len(masses), len(Li6_enrichments)))
-    flux_spectrum = np.empty(len(Li6_enrichments), len(masses), num_steps, 709, 2)
+    
 
     for i, enrichment in enumerate(Li6_enrichments_str):
         with open(folder_prefix + enrichment + f'/data/{dopant}_data_dict.pkl', 'rb') as file:
@@ -37,9 +37,7 @@ for dopant in dopants:
             fission_power_t_0[:, i] = data_dict["fission_power_t_0"]
             isotopic_purity[:, i] = data_dict["isotopic_purities"]
             tbr_t_0[:, i] = data_dict["tbr_t0"]
-            flux_spectrum[i] = data_dict["flux_spectrum"]
-
-
+            
     fig, ax = plt.subplots()
     fig.set_size_inches(8, 5)
 
@@ -62,6 +60,7 @@ for dopant in dopants:
     cs_tbr = ax.contour(X, Y, tbr_t_0, colors="blue")
     ax.clabel(cs_tbr, inline=True, fontsize=10)
 
+    # Isotopic purity
     cs_purity = ax.contour(X, Y, isotopic_purity, colors='purple')
     ax.clabel(cs_purity, inline=True, fontsize=10)
 

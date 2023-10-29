@@ -5,6 +5,7 @@ import os
 from scipy.stats import linregress
 import matplotlib.colors as colors
 import matplotlib.cm as cm
+import openmc
 
 
 # ====================================================
@@ -13,6 +14,7 @@ import matplotlib.cm as cm
 masses = np.array([5, 10, 20, 30, 40, 50])
 Li6_enrichments = np.array([2.5, 5, 7.5, 15, 30, 60, 90])
 Li6_enrichments_str = np.array(['2.5', '5', '7.5', '15', '30', '60', '90'])
+num_steps = 20
 
 folder_prefix = 'pub_run_'
 
@@ -23,16 +25,17 @@ for dopant in dopants:
     fission_power_t_sq = np.empty((len(masses), len(Li6_enrichments)))
     isotopic_purity = np.empty((len(masses), len(Li6_enrichments)))
     tbr_t_0 = np.empty((len(masses), len(Li6_enrichments)))
+    flux_spectrum = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2))
 
     for i, enrichment in enumerate(Li6_enrichments_str):
         with open(folder_prefix + enrichment + f'/data/{dopant}_data_dict.pkl', 'rb') as file:
-            U_data_dict = pickle.load(file)
+            data_dict = pickle.load(file)
 
-            time_to_sq[:, i] = U_data_dict["time_to_sq"]/24
-            fission_power_t_sq[:, i] = U_data_dict["fission_power_t_sq"]
-            isotopic_purity[:, i] = U_data_dict["isotopic_purities"]
-            tbr_t_0[:, i] = U_data_dict["tbr_t0"]
-
+            time_to_sq[:, i] = data_dict["time_to_sq"]/24
+            fission_power_t_sq[:, i] = data_dict["fission_power_t_sq"]
+            isotopic_purity[:, i] = data_dict["isotopic_purities"]
+            tbr_t_0[:, i] = data_dict["tbr_t0"]
+            flux_spectrum[i] = data_dict["flux_spectrum"]
 
 # ====================================================
 # Plotting
@@ -46,6 +49,7 @@ for dopant in dopants:
         plt_cm = cm.Greens
 
     norm = colors.Normalize(vmin=-0.5*masses[-1], vmax=1.1*masses[-1])
+    enrichment_norm = colors.Normalize(vmin=-0.5*Li6_enrichments[-1], vmax=1.1*Li6_enrichments[-1])
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Time to 1 SQ
@@ -137,3 +141,29 @@ for dopant in dopants:
     ax.set_ylabel("Fission Power (MW)")
 
     fig.savefig(f"{dopant}_fission_Power_t_sq.png", dpi=300)
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Flux Spectrum
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
+    energy_bins = energy_groups.group_edges
+    flux_energies = 0.5*(energy_bins[1:] + energy_bins[:-1])
+
+    for i, enrichment in enumerate(Li6_enrichments):
+        ax.step(flux_energies, flux_spectrum[i, 0, 0, :, 1], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
+
+    ax.set_xlabel("Neutron Energy (eV)")
+    ax.set_ylabel("Average Flux (arb. units)")
+    ax.set_title("Average Flux in BLanket Tank")
+
+    ax.set_yscale("log")
+    ax.set_xscale("log")
+
+    ax.set_xlim(1e-2, 20e6)
+    ax.set_ylim(1e-5, 1e1)
+
+    fig.savefig(f"{dopant}_flux_spectrum.png", dpi=300)
