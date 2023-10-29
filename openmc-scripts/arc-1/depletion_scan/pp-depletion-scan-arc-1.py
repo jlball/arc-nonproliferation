@@ -626,7 +626,9 @@ U_data_dict ={"time_steps":U_time_steps,
               "fission_power_t_sq":U_fission_power_at_SQ,
               "isotopic_purities":U_purities,
               "tbr_t0":U_TBR[:, 0, 0],
-              "tbr_t_SQ":U_TBR[:, 1, 0]}
+              "tbr_t_SQ":U_TBR[:, 1, 0],
+              "flux_spectrum":U_flux_spectra,
+              "fissile_mass":U_fissile_masses}
 
 Th_data_dict ={"time_steps":Th_time_steps,
               "time_to_sq":Th_time_to_SQ,
@@ -634,7 +636,9 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "fission_power_t_sq":Th_fission_power_at_SQ,
               "isotopic_purities":Th_purities,
               "tbr_t0":Th_TBR[:, 0, 0],
-              "tbr_t_SQ":Th_TBR[:, 1, 0]}
+              "tbr_t_SQ":Th_TBR[:, 1, 0],
+              "flux_spectrum":Th_flux_spectra,
+              "fissile_mass":Th_fissile_masses}
 
 os.chdir("../..")
 

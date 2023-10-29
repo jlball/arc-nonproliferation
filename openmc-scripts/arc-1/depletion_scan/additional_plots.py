@@ -3,6 +3,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from scipy.stats import linregress
+import matplotlib.colors as colors
+import matplotlib.cm as cm
+
 
 # ====================================================
 # Data loading
@@ -37,9 +40,12 @@ for dopant in dopants:
 
     if dopant == 'U':
         plt_color ='r'
+        plt_cm = cm.Reds
     else:
         plt_color = 'g'
+        plt_cm = cm.Greens
 
+    norm = colors.Normalize(vmin=-0.5*masses[-1], vmax=1.1*masses[-1])
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Time to 1 SQ
@@ -49,14 +55,14 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, t_SQ in enumerate(time_to_sq):
-        ax.scatter(Li6_enrichments, t_SQ, color=plt_color)
-        ax.plot(Li6_enrichments, t_SQ, color=plt_color, alpha=0.3)
+        ax.scatter(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), s=15)
+        ax.plot(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), alpha=0.5)
 
         #fit = linregress(Li6_enrichments, t_SQ)
         #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
 
         text_offset = (10, -4)
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], t_SQ[-1]), color=plt_color, textcoords='offset points', xytext=text_offset)
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], t_SQ[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
     ax.set_yscale("log")
 
@@ -74,11 +80,13 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, tbr in enumerate(tbr_t_0):
-        ax.scatter(Li6_enrichments, tbr, color=plt_color)
-        ax.plot(Li6_enrichments, tbr, color=plt_color, alpha=0.3)
+        ax.scatter(Li6_enrichments, tbr, color=plt_cm(norm(masses[i])))
+        ax.plot(Li6_enrichments, tbr, color=plt_cm(norm(masses[i])))
 
         text_offset = 5
-        ax.annotate(f"{masses[i]} Tons", (masses[-1], tbr[-1]), color=plt_color, textcoords='offset points', xytext=(text_offset, 0))
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], tbr[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=(text_offset, 0))
+
+    #ax.set_yscale("log")
 
     ax.set_xlabel("Li-6 Enrichment (percent)")
     ax.set_ylabel("TBR")
@@ -93,14 +101,14 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, purity in enumerate(isotopic_purity):
-        ax.scatter(Li6_enrichments, purity, color=plt_color, s=10)
-        ax.plot(Li6_enrichments, purity, color=plt_color, alpha=0.3)
+        ax.scatter(Li6_enrichments, purity, color=plt_cm(norm(masses[i])), s=10)
+        ax.plot(Li6_enrichments, purity, color=plt_cm(norm(masses[i])))
 
         #fit = linregress(Li6_enrichments, t_SQ)
         #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
 
         text_offset = (10, -4)
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], purity[-1]), color=plt_color, textcoords='offset points', xytext=text_offset)
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], purity[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
     ax.set_xlabel("Li-6 Enrichment (percent)")
     ax.set_ylabel("Percent Fissile Isotope (percent)")
@@ -116,14 +124,14 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, power in enumerate(fission_power_t_sq):
-        ax.scatter(Li6_enrichments, power, color=plt_color, s=10)
-        ax.plot(Li6_enrichments, power, color=plt_color, alpha=0.3)
+        ax.scatter(Li6_enrichments, power, color=plt_cm(norm(masses[i])), s=10)
+        ax.plot(Li6_enrichments, power, color=plt_cm(norm(masses[i])), alpha=0.3)
 
         #fit = linregress(Li6_enrichments, t_SQ)
         #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
 
         text_offset = (10, -4)
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], power[-1]), color=plt_color, textcoords='offset points', xytext=text_offset)
+        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], power[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
     ax.set_xlabel("Li-6 Enrichment (percent)")
     ax.set_ylabel("Fission Power (MW)")
