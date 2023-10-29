@@ -191,7 +191,7 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, enrichment in enumerate(Li6_enrichments):
-        ax.step(flux_energies, reaction_spectra[i, 0, 0, :, 1, 0], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
+        ax.step(flux_energies, reaction_spectra[i, 0, 0, :, 1, 1], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
 
     ax.set_xlabel("Neutron Energy (eV)")
     ax.set_ylabel("Reaction Rate (arc. units)")
@@ -212,7 +212,7 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, enrichment in enumerate(Li6_enrichments):
-        ax.step(flux_energies, reaction_spectra[i, 0, 0, :, 1, 1], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
+        ax.step(flux_energies, reaction_spectra[i, 0, 0, :, 1, 0], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
 
     ax.set_xlabel("Neutron Energy (eV)")
     ax.set_ylabel("Reaction Rate (arc. units)")
