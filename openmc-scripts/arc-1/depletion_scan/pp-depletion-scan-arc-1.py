@@ -290,36 +290,38 @@ for i, mass in enumerate(masses):
 print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# (n, gamma)
+# Reaction Spectra (energy resolved n,gamma and fission on fertile isotope)
 
 init_time = time.perf_counter()
 
-U_absorption = np.empty((num_steps, 709, 2, 2))
-Th_absorption = np.empty((num_steps, 709, 2, 2))
+U_reaction_spectra = np.empty((len(masses), num_steps, 709, 2, 2))
+Th_reaction_spectra = np.empty((len(masses), num_steps, 709, 2, 2))
 
 """ Uranium """
-os.chdir(base_dir + "/Uranium/" + str(mass))
+for i, mass in enumerate(masses):
+    os.chdir(base_dir + "/Uranium/" + str(mass))
 
-for step in range(0, num_steps):
-    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-    absorption_tally = sp.get_tally(name='Fertile Tally')
-    absorption_spectrum = absorption_tally.get_reshaped_data()
-    U_absorption[step] = absorption_spectrum.reshape((709,2,2))
+    for step in range(0, num_steps):
+        sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+        reaction_spectra_tally = sp.get_tally(name='Fertile Tally')
+        reaction_spectra = reaction_spectra_tally.get_reshaped_data()
+        U_reaction_spectra[i, step] = reaction_spectra.reshape((709,2,2))
 
-os.chdir('../../..')
+    os.chdir('../../..')
 
 """ Thorium """
-os.chdir(base_dir + "/Thorium/" + str(mass))
+for i, mass in enumerate(masses):
+    os.chdir(base_dir + "/Thorium/" + str(mass))
 
-for step in range(0, num_steps):
-    sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
-    absorption_tally = sp.get_tally(name='Fertile Tally')
-    absorption_spectrum = absorption_tally.get_reshaped_data()
-    Th_absorption[step] = absorption_spectrum.reshape((709,2,2))
+    for step in range(0, num_steps):
+        sp = openmc.StatePoint('openmc_simulation_n'+str(step)+'.h5')
+        absorption_tally = sp.get_tally(name='Fertile Tally')
+        absorption_spectrum = absorption_tally.get_reshaped_data()
+        Th_reaction_spectra[i, step] = absorption_spectrum.reshape((709,2,2))
 
-os.chdir('../../..')
+    os.chdir('../../..')
 
-print("Loaded (n, gamma) data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+print("Loaded reaction spectra data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # ====================================================
 # Plotting
@@ -628,7 +630,8 @@ U_data_dict ={"time_steps":U_time_steps,
               "tbr_t0":U_TBR[:, 0, 0],
               "tbr_t_SQ":U_TBR[:, 1, 0],
               "flux_spectrum":U_flux_spectra,
-              "fissile_mass":U_fissile_masses}
+              "fissile_mass":U_fissile_masses,
+              "reaction_spectra":U_reaction_spectra}
 
 Th_data_dict ={"time_steps":Th_time_steps,
               "time_to_sq":Th_time_to_SQ,
@@ -638,7 +641,8 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "tbr_t0":Th_TBR[:, 0, 0],
               "tbr_t_SQ":Th_TBR[:, 1, 0],
               "flux_spectrum":Th_flux_spectra,
-              "fissile_mass":Th_fissile_masses}
+              "fissile_mass":Th_fissile_masses,
+              "reaction_spectra":Th_reaction_spectra}
 
 os.chdir("../..")
 
