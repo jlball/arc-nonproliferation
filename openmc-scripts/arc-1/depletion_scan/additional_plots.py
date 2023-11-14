@@ -73,20 +73,23 @@ for dopant in dopants:
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
+    fontdict = {"size":14}
+
     for i, t_SQ in enumerate(time_to_sq):
         ax.scatter(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), s=15)
         ax.plot(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), alpha=0.5)
-
         #fit = linregress(Li6_enrichments, t_SQ)
         #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
 
-        text_offset = (10, -4)
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], t_SQ[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
+        #text_offset = (10, -4)
+        #ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], t_SQ[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
     ax.set_yscale("log")
+    ax.set_ylim(7, 3000)
 
-    ax.set_xlabel("Li-6 Enrichment (percent)")
-    ax.set_ylabel("Time to 1 SQ (days)")
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("Time to 1 SQ (days)", fontdict=fontdict)
+    ax.set_title("Li-6 Enrichment impact on time to 1 SQ")
     
 
     fig.savefig(f"{dopant}_time_to_sq.png", dpi=300)
@@ -99,16 +102,18 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, tbr in enumerate(tbr_t_0):
-        ax.scatter(Li6_enrichments, tbr, color=plt_cm(norm(masses[i])))
-        ax.plot(Li6_enrichments, tbr, color=plt_cm(norm(masses[i])))
+        ax.scatter(Li6_enrichments, tbr, color=plt_cm(norm(masses[i])), s=15)
+        ax.plot(Li6_enrichments, tbr, color=plt_cm(norm(masses[i])), alpha=0.5)
 
-        text_offset = 5
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], tbr[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=(text_offset, 0))
+        #text_offset = 5
+        #ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], tbr[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=(text_offset, 0))
 
     #ax.set_yscale("log")
 
-    ax.set_xlabel("Li-6 Enrichment (percent)")
-    ax.set_ylabel("TBR")
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("TBR", fontdict=fontdict)
+
+    ax.set_ylim(0.9, 1.25)
 
     fig.savefig(f"{dopant}_TBR.png", dpi=300)
 
@@ -120,17 +125,19 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, purity in enumerate(isotopic_purity):
-        ax.scatter(Li6_enrichments, purity, color=plt_cm(norm(masses[i])), s=10)
-        ax.plot(Li6_enrichments, purity, color=plt_cm(norm(masses[i])))
+        ax.scatter(Li6_enrichments, purity*100, color=plt_cm(norm(masses[i])), s=20)
+        ax.plot(Li6_enrichments, purity*100, color=plt_cm(norm(masses[i])), alpha=0.5)
 
         #fit = linregress(Li6_enrichments, t_SQ)
         #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
 
-        text_offset = (10, -4)
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], purity[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
+        #text_offset = (10, -4)
+        #ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], purity[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
-    ax.set_xlabel("Li-6 Enrichment (percent)")
-    ax.set_ylabel("Percent Fissile Isotope (percent)")
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("Percent Fissile Isotope (percent)", fontdict=fontdict)
+
+    ax.set_ylim(98.9, 100)
 
     fig.savefig(f"{dopant}_isotopic_purity.png", dpi=300)
 
@@ -143,17 +150,19 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, power in enumerate(fission_power_t_sq):
-        ax.scatter(Li6_enrichments, power, color=plt_cm(norm(masses[i])), s=10)
-        ax.plot(Li6_enrichments, power, color=plt_cm(norm(masses[i])), alpha=0.3)
+        ax.scatter(Li6_enrichments, power, color=plt_cm(norm(masses[i])), s=20)
+        ax.plot(Li6_enrichments, power, color=plt_cm(norm(masses[i])), alpha=0.5)
 
         #fit = linregress(Li6_enrichments, t_SQ)
         #ax.plot(Li6_enrichments, fit.slope*Li6_enrichments + fit.intercept, color=plt_color, alpha=0.3)
 
-        text_offset = (10, -4)
-        ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], power[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
+        #text_offset = (10, -4)
+        #ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], power[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
-    ax.set_xlabel("Li-6 Enrichment (percent)")
-    ax.set_ylabel("Fission Power (MW)")
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
+
+    ax.set_ylim(0, 120)
 
     fig.savefig(f"{dopant}_fission_Power_t_sq.png", dpi=300)
 
