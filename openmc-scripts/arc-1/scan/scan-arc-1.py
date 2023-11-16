@@ -5,12 +5,10 @@ import os
 import sys
 
 if sys.argv[1] is not None:
-    base_dir = './' + sys.argv[1]
+    base_dir = str(sys.argv[1])
+    os.mkdir(base_dir)
 else:
     raise ValueError("No base directory specified!")
-
-os.mkdir(base_dir)
-#os.chdir(base_dir)
 
 os.mkdir(base_dir + '/Uranium')
 os.mkdir(base_dir + '/Thorium')
@@ -86,8 +84,8 @@ masses = np.array([20e3])
 np.savetxt(base_dir + '/masses.txt', masses)
 
 for mass in masses:
-    U_device = anp.generate_device('U', mass)
-    Th_device = anp.generate_device('Th', mass)
+    U_device = anp.generate_device('U', mass, Li6_enrichment=7.5)
+    Th_device = anp.generate_device('Th', mass, Li6_enrichment=7.5)
 
     setup_device(U_device)
     setup_device(Th_device)
