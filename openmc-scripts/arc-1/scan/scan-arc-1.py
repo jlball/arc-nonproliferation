@@ -5,7 +5,7 @@ import os
 import sys
 
 if sys.argv[1] is not None:
-    base_dir = str(sys.argv[1])
+    base_dir = "./" + str(sys.argv[1])
     os.mkdir(base_dir)
 else:
     raise ValueError("No base directory specified!")
@@ -74,7 +74,7 @@ def setup_device(device):
 # plots.export_to_xml()
 # openmc.plot_geometry()
 
-os.chdir("../..")
+#os.chdir("../..")
 
 # ==============================================================================
 # Scan
