@@ -352,15 +352,18 @@ np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 
 # Fit data to 1/x function:
-def fit(x, A, B):
-    return (A/x) + B
+def fit(x, A, B, C):
+    return (A/x) - C*x + B
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
 
+print(U_popt)
+print(Th_popt)
+
 fit_masses = np.linspace(1, masses[-1], num=100)
-#ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
-#ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
+ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
+ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
 
 ax.legend()
 
@@ -373,7 +376,7 @@ ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsiz
 ax.set_ylabel("Time (days)", fontsize=14)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
-fig.savefig("time_to_sq.png")
+fig.savefig("time_to_sq.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission Power
@@ -412,11 +415,13 @@ ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color='g', textcoor
 ax.set_xlim(0, masses[-1] + 5)
 ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
 
+ax.legend()
+
 ax.set_title("Fission Power in Doped FLiBe Blanket", fontsize=14)
 ax.set_ylabel("Fission Power (MW)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
-fig.savefig("fission_power.png")
+fig.savefig("fission_power.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
@@ -431,10 +436,10 @@ ax.scatter(masses, Th_purities*100, label = "U233", color='g')
 ax.legend()
 
 ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
-ax.set_ylabel("Isotopic Purity (\% fissile isotope)", fontsize=14)
+ax.set_ylabel("Isotopic Purity (percent)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
-fig.savefig("isotopic_purity.png")
+fig.savefig("isotopic_purity.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
@@ -578,8 +583,14 @@ ax.errorbar(masses, Th_TBR[:, 1, 0], yerr=Th_TBR[:, 1, 1], color="g", label="Tho
 ax.fill_between(masses, U_TBR[:, 0, 0], U_TBR[:, 1, 0], color='r', alpha=0.3)
 ax.fill_between(masses, Th_TBR[:, 0, 0], Th_TBR[:, 1, 0], color='g', alpha=0.3)
 
+
+ax.plot()
+
 ax.set_ylabel("TBR")
 ax.set_xlabel("Fertile Mass (metric tons)")
+
+ax.set_ylim(1, 1.2)
+ax.legend()
 
 ax.set_title("TBR vs. Fertile Mass at $t=0$")
 
