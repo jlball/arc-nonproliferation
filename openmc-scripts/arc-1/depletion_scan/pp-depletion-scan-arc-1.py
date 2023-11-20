@@ -431,7 +431,7 @@ ax.scatter(masses, Th_purities*100, label = "U233", color='g')
 ax.legend()
 
 ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
-ax.set_ylabel("Isotopic Purity (\% fissile isotope)", fontsize=14)
+ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
 fig.savefig("isotopic_purity.png")
