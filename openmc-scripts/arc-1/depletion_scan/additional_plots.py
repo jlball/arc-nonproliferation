@@ -6,6 +6,7 @@ from scipy.stats import linregress
 import matplotlib.colors as colors
 import matplotlib.cm as cm
 import openmc
+import openmc.plotter as plotter
 
 
 # ====================================================
@@ -176,6 +177,18 @@ for dopant in dopants:
     energy_groups = openmc.mgxs.EnergyGroups(openmc.mgxs.GROUP_STRUCTURES['CCFE-709'])
     energy_bins = energy_groups.group_edges
     flux_energies = 0.5*(energy_bins[1:] + energy_bins[:-1])
+
+    ax_xs = ax.twinx()
+    ax_xs.spines["top"].set_color("None")
+
+    if dopant == "U":
+        xs_energies, xs_data = plotter.calculate_cexs("U238", ["capture"])
+    if dopant == "Th":
+        xs_energies, xs_data = plotter.calculate_cexs("Th232", ["capture"])
+
+    ax_xs.plot(xs_energies, xs_data[0], color="grey", alpha=0.4)
+    ax_xs.set_yscale("log")
+    ax_xs.set_ylabel("Cross Section (barns)")
 
     for i, enrichment in enumerate(Li6_enrichments):
         ax.step(flux_energies, flux_spectrum[i, 0, 0, :, 1], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))

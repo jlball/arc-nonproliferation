@@ -1,5 +1,6 @@
 import openmc
 import matplotlib.pyplot as plt
+import matplotlib.colors as colors
 import numpy as np
 import sys
 from arc_nonproliferation.postprocess import *
@@ -33,7 +34,7 @@ for i, mass in enumerate(masses):
     """ Extract time to 1 SQ for Uranium """
     os.chdir(base_dir + "/Uranium/" + str(mass))
     sp = openmc.StatePoint('statepoint.10.h5')
-    U_tally = sp.get_tally(name='Li Tally')
+    U_tally = sp.get_tally(name='Mesh')
 
     U_r_mesh, U_z_mesh, U_abs_mesh = get_RZ_cyl_mesh_data(U_tally, "(n,gamma)", volume_norm=False)
     os.chdir("../../..")
@@ -61,7 +62,12 @@ except:
 
 fig, ax = plt.subplots()
 
-cf = ax.contourf(U_r_mesh, U_z_mesh, U_abs_mesh)
+norm = colors.LogNorm(vmin=1e-9, vmax=U_abs_mesh.max())
+
+levels = np.linspace(0, 4e-6, num=100)
+cf = ax.contourf(U_r_mesh[1:, 1:], U_z_mesh[1:, 1:], U_abs_mesh, levels=levels, norm=norm)
 ax.set_aspect(1)
+
+fig.colorbar(cf)
 
 fig.savefig("U_n_gamma_2D.png", dpi=300)
