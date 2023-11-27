@@ -337,6 +337,8 @@ th_color = 'g'
 
 dpi = 300
 
+title_y = 1.05
+
 #Change into dedicated directory for figures or create figures directory
 try:
     os.chdir(base_dir + "/figures")
@@ -351,8 +353,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker=u_marker, color=u_color)
-ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker=th_marker, color=th_color)
+ax.scatter(masses, U_time_to_SQ/24, label="U-238", marker=u_marker, color=u_color)
+ax.scatter(masses, Th_time_to_SQ/24, label="Th-232", marker=th_marker, color=th_color)
 
 ax.set_ylim(10, 200)
 
@@ -367,8 +369,8 @@ U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
 
 fit_masses = np.linspace(1, masses[-1], num=100)
-ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
-ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
+ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color=u_color)
+ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color=th_color)
 
 ax.legend()
 
@@ -377,7 +379,7 @@ ax.set_ylim(10, np.max(Th_time_to_SQ/24) + 100)
 
 ax.set_yscale("log")
 
-ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
+ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14, y=title_y)
 ax.set_ylabel("Time (days)", fontsize=14)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
@@ -401,11 +403,13 @@ for i, mass in enumerate(masses):
     Th_res = linregress(Th_time_steps, Th_fission_powers[i, ])
     Th_fission_power_at_SQ[i] = Th_res.intercept + Th_res.slope*Th_time_to_SQ[i]
 
-ax.scatter(masses, U_fission_powers[:, 0], marker=u_marker, c=u_color, s=4, label='At t = 0')
-ax.scatter(masses, Th_fission_powers[:, 0], marker=th_marker, c=th_color, s=4, label='At t = 0')
+size = 6
 
-ax.scatter(masses, U_fission_power_at_SQ, marker=u_marker, c=u_color, s=4, label='After 1 SQ bred')
-ax.scatter(masses, Th_fission_power_at_SQ, marker=th_marker, c=th_color, s=4, label='After 1 SQ bred')
+ax.scatter(masses, U_fission_powers[:, 0], marker=u_marker, c=u_color, s=size, label='U-238')
+ax.scatter(masses, Th_fission_powers[:, 0], marker=th_marker, c=th_color, s=size, label='Th-232')
+
+ax.scatter(masses, U_fission_power_at_SQ, marker=u_marker, c=u_color, s=size)
+ax.scatter(masses, Th_fission_power_at_SQ, marker=th_marker, c=th_color, s=size)
 
 ax.fill_between(masses, U_fission_powers[:, 0], U_fission_power_at_SQ, color=u_color, alpha=0.3)
 ax.fill_between(masses, Th_fission_powers[:, 0], Th_fission_power_at_SQ, color=th_color, alpha=0.3)
@@ -420,7 +424,9 @@ ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color=th_color, tex
 ax.set_xlim(0, masses[-1] + 5)
 ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
 
-ax.set_title("Fission Power in Doped FLiBe Blanket", fontsize=14)
+ax.legend()
+
+ax.set_title("Fission Power in Doped FLiBe Blanket", fontsize=14, y=title_y)
 ax.set_ylabel("Fission Power (MW)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
@@ -436,11 +442,11 @@ ax.spines["right"].set_color("None")
 ax.scatter(masses, U_purities*100, label = "Pu-239", marker=u_marker, color=u_color)
 ax.scatter(masses, Th_purities*100, label = "U-233", marker=th_marker, color=th_color)
 
-ax.set_ybound(upper=100)
+ax.set_ylim(99.5, 100)
 
 ax.legend()
 
-ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
+ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14, y=title_y)
 ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
@@ -579,8 +585,11 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_TBR[:, 0, 0], marker=u_marker, color=u_color, label="Uranium")
-ax.scatter(masses, Th_TBR[:, 0, 0], marker=th_marker, color=th_color, label="Thorium")
+ax.scatter(masses, U_TBR[:, 0, 0], marker=u_marker, color=u_color, label="U-238")
+ax.scatter(masses, Th_TBR[:, 0, 0], marker=th_marker, color=th_color, label="Th-232")
+
+#ax.plot(masses, U_TBR[:, 0, 0], color=u_color, alpha=0.3)
+#ax.plot(masses, Th_TBR[:, 0, 0], color=th_color, alpha=0.3)
 
 #ax.errorbar(masses, U_TBR[:, 1, 0], yerr=U_TBR[:, 1, 1], color="r", label="Uranium")
 #ax.errorbar(masses, Th_TBR[:, 1, 0], yerr=Th_TBR[:, 1, 1], color="g", label="Thorium")
@@ -588,10 +597,14 @@ ax.scatter(masses, Th_TBR[:, 0, 0], marker=th_marker, color=th_color, label="Tho
 #ax.fill_between(masses, U_TBR[:, 0, 0], U_TBR[:, 1, 0], color='r', alpha=0.3)
 #ax.fill_between(masses, Th_TBR[:, 0, 0], Th_TBR[:, 1, 0], color='g', alpha=0.3)
 
+ax.set_ylim(1, 1.2)
+
 ax.set_ylabel("TBR")
 ax.set_xlabel("Fertile Mass (metric tons)")
 
-ax.set_title("TBR vs. Fertile Mass at $t=0$")
+ax.legend()
+
+ax.set_title("TBR vs. Fertile Mass at $t=0$", y=title_y)
 
 fig.savefig("fertile_tbr.png", dpi=dpi)
 
