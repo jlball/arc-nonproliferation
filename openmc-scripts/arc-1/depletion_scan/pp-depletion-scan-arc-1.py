@@ -339,6 +339,8 @@ dpi = 300
 
 title_y = 1.05
 
+fontdict = {"size":16}
+
 #Change into dedicated directory for figures or create figures directory
 try:
     os.chdir(base_dir + "/figures")
@@ -379,9 +381,9 @@ ax.set_ylim(10, np.max(Th_time_to_SQ/24) + 100)
 
 ax.set_yscale("log")
 
-ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14, y=title_y)
-ax.set_ylabel("Time (days)", fontsize=14)
-ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
+ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontdict=fontdict, y=title_y)
+ax.set_ylabel("Time (days)", fontdict=fontdict)
+ax.set_xlabel("Mass of Fertile Material (metric tons)", fontdict=fontdict)
 
 fig.savefig("time_to_sq.png", dpi=dpi)
 
@@ -426,9 +428,9 @@ ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
 
 ax.legend()
 
-ax.set_title("Fission Power in Doped FLiBe Blanket", fontsize=14, y=title_y)
-ax.set_ylabel("Fission Power (MW)", fontsize=14)
-ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
+ax.set_title("Fission Power in Doped FLiBe Blanket", fontdict=fontdict, y=title_y)
+ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
+ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("fission_power.png", dpi=dpi)
 
@@ -446,9 +448,9 @@ ax.set_ylim(99.5, 100)
 
 ax.legend()
 
-ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14, y=title_y)
-ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontsize=14)
-ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
+ax.set_title("Isotopic Purity vs. Fertile Inventory", fontdict=fontdict, y=title_y)
+ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontdict=fontdict)
+ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("isotopic_purity.png", dpi=dpi)
 
@@ -599,12 +601,11 @@ ax.scatter(masses, Th_TBR[:, 0, 0], marker=th_marker, color=th_color, label="Th-
 
 ax.set_ylim(1, 1.2)
 
-ax.set_ylabel("TBR")
-ax.set_xlabel("Fertile Mass (metric tons)")
-
 ax.legend()
 
-ax.set_title("TBR vs. Fertile Mass at $t=0$", y=title_y)
+ax.set_title("TBR vs. Fertile Mass at $t=0$", fontdict=fontdict, y=title_y)
+ax.set_ylabel("TBR", fontdict=fontdict)
+ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("fertile_tbr.png", dpi=dpi)
 
