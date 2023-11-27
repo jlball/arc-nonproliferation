@@ -335,6 +335,8 @@ th_marker = 's'
 u_color = 'r'
 th_color = 'g'
 
+dpi = 300
+
 #Change into dedicated directory for figures or create figures directory
 try:
     os.chdir(base_dir + "/figures")
@@ -365,8 +367,8 @@ U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
 
 fit_masses = np.linspace(1, masses[-1], num=100)
-#ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
-#ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
+ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color='r')
+ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color='g')
 
 ax.legend()
 
@@ -379,7 +381,7 @@ ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsiz
 ax.set_ylabel("Time (days)", fontsize=14)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
-fig.savefig("time_to_sq.png")
+fig.savefig("time_to_sq.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission Power
@@ -422,7 +424,7 @@ ax.set_title("Fission Power in Doped FLiBe Blanket", fontsize=14)
 ax.set_ylabel("Fission Power (MW)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
-fig.savefig("fission_power.png")
+fig.savefig("fission_power.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
@@ -434,13 +436,15 @@ ax.spines["right"].set_color("None")
 ax.scatter(masses, U_purities*100, label = "Pu-239", marker=u_marker, color=u_color)
 ax.scatter(masses, Th_purities*100, label = "U-233", marker=th_marker, color=th_color)
 
+ax.set_ybound(upper=100)
+
 ax.legend()
 
 ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
 ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
-fig.savefig("isotopic_purity.png", dpi=300)
+fig.savefig("isotopic_purity.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
@@ -487,7 +491,7 @@ ax.set_yscale('log')
 
 ax.legend()
 
-fig.savefig("Th_flux_spectra.png", dpi=300)
+fig.savefig("Th_flux_spectra.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum Evolution
@@ -589,7 +593,7 @@ ax.set_xlabel("Fertile Mass (metric tons)")
 
 ax.set_title("TBR vs. Fertile Mass at $t=0$")
 
-fig.savefig("fertile_tbr.png", dpi=300)
+fig.savefig("fertile_tbr.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
@@ -620,7 +624,7 @@ for i, mass in enumerate(masses):
 
     ax.legend()
 
-    fig.savefig(str(mass) + "_metric_tons.png", dpi=300)
+    fig.savefig(str(mass) + "_metric_tons.png", dpi=dpi)
 
 print("Completed Post Processing")
 
