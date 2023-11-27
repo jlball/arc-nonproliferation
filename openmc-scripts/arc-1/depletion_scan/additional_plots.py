@@ -67,14 +67,18 @@ for dopant in dopants:
     norm = colors.Normalize(vmin=-0.5*masses[-1], vmax=1.1*masses[-1])
     enrichment_norm = colors.Normalize(vmin=-0.5*Li6_enrichments[-1], vmax=1.1*Li6_enrichments[-1])
 
+    width_in = 7
+    height_in = 7
+
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Time to 1 SQ
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
-    fontdict = {"size":14}
+    fontdict = {"size":18}
 
     for i, t_SQ in enumerate(time_to_sq):
         ax.scatter(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), s=15)
@@ -90,15 +94,16 @@ for dopant in dopants:
 
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("Time to 1 SQ (days)", fontdict=fontdict)
-    ax.set_title("Li-6 Enrichment impact on time to 1 SQ")
+    ax.set_title("Time to 1 SQ", fontdict=fontdict)
     
-
     fig.savefig(f"{dopant}_time_to_sq.png", dpi=300)
+    fig.savefig(f"{dopant}_time_to_sq.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # TBR
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
@@ -113,15 +118,18 @@ for dopant in dopants:
 
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("TBR", fontdict=fontdict)
+    ax.set_title("Tritium Breeding Ratio", fontdict=fontdict)
 
     ax.set_ylim(0.9, 1.25)
 
     fig.savefig(f"{dopant}_TBR.png", dpi=300)
+    fig.savefig(f"{dopant}_TBR.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Isotopic Purity
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
@@ -137,16 +145,18 @@ for dopant in dopants:
 
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("Percent Fissile Isotope (percent)", fontdict=fontdict)
+    ax.set_title("Isotopic Purity", fontdict=fontdict)
 
     ax.set_ylim(98.9, 100)
 
     fig.savefig(f"{dopant}_isotopic_purity.png", dpi=300)
-
+    fig.savefig(f"{dopant}_isotopic_purity.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Fission Power
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
@@ -162,10 +172,12 @@ for dopant in dopants:
 
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
+    ax.set_title("Fission Power at $t_{SQ}$", fontdict=fontdict)
 
     ax.set_ylim(0, 120)
-
+    
     fig.savefig(f"{dopant}_fission_Power_t_sq.png", dpi=300)
+    fig.savefig(f"{dopant}_fission_Power_t_sq.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Flux Spectrum
@@ -204,6 +216,7 @@ for dopant in dopants:
     ax.set_ylim(1e-5, 1e1)
 
     fig.savefig(f"{dopant}_flux_spectrum.png", dpi=300)
+    fig.savefig(f"{dopant}_flux_spectrum.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # (n, gamma)

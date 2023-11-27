@@ -67,8 +67,11 @@ for dopant in dopants:
     #cs_purity = ax.contour(X, Y, isotopic_purity, colors='purple')
     #ax.clabel(cs_purity, inline=True, fontsize=10)
 
-    ax.set_xlabel("Li6 Enrichment (percent)")
-    ax.set_ylabel("Fertile Mass (Metric Tons)")
-    ax.set_title(f"{dopant} Proliferation Plot")
+    fontsize=14
+
+    ax.set_xlabel("Li6 Enrichment (percent)", fontsize=fontsize)
+    ax.set_ylabel("Fertile Mass (Metric Tons)", fontsize=fontsize)
+    ax.set_title(f"{dopant} Proliferation Plot", fontsize=fontsize)
 
     fig.savefig(f"{dopant}_proliferation_plot.png", dpi=300)
+    fig.savefig(f"{dopant}_proliferation_plot.svg")

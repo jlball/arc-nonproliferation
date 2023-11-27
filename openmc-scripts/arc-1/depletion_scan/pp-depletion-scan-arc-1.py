@@ -425,8 +425,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_purities*100, label = "Pu239", color='r')
-ax.scatter(masses, Th_purities*100, label = "U233", color='g')
+ax.scatter(masses, U_purities*100, label = "Pu-239", color='r')
+ax.scatter(masses, Th_purities*100, label = "U-233", color='g')
 
 ax.legend()
 
@@ -434,7 +434,7 @@ ax.set_title("Isotopic Purity vs. Fertile Inventory", fontsize=14)
 ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontsize=14)
 ax.set_xlabel("Fertile Mass (metric tons)", fontsize=14)
 
-fig.savefig("isotopic_purity.png")
+fig.savefig("isotopic_purity.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
