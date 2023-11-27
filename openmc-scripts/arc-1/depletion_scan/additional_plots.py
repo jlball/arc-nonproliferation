@@ -68,7 +68,11 @@ for dopant in dopants:
     enrichment_norm = colors.Normalize(vmin=-0.5*Li6_enrichments[-1], vmax=1.1*Li6_enrichments[-1])
 
     width_in = 7
-    height_in = 7
+    height_in = 5
+
+    fontdict = {"size":16}
+
+    tick_font_size = 12
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Time to 1 SQ
@@ -78,8 +82,7 @@ for dopant in dopants:
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
-    fontdict = {"size":18}
-
+    
     for i, t_SQ in enumerate(time_to_sq):
         ax.scatter(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), s=15)
         ax.plot(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), alpha=0.5)
@@ -92,9 +95,11 @@ for dopant in dopants:
     ax.set_yscale("log")
     ax.set_ylim(7, 3000)
 
+    ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
+
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("Time to 1 SQ (days)", fontdict=fontdict)
-    ax.set_title("Time to 1 SQ", fontdict=fontdict)
+    ax.set_title("Time to 1 SQ ($t_{SQ}$)", fontdict=fontdict)
     
     fig.savefig(f"{dopant}_time_to_sq.png", dpi=300)
     fig.savefig(f"{dopant}_time_to_sq.svg")
@@ -119,6 +124,8 @@ for dopant in dopants:
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("TBR", fontdict=fontdict)
     ax.set_title("Tritium Breeding Ratio", fontdict=fontdict)
+
+    ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
 
     ax.set_ylim(0.9, 1.25)
 
@@ -147,8 +154,11 @@ for dopant in dopants:
     ax.set_ylabel("Percent Fissile Isotope (percent)", fontdict=fontdict)
     ax.set_title("Isotopic Purity", fontdict=fontdict)
 
+    ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
+
     ax.set_ylim(98.9, 100)
 
+    #fig.tight_layout()
     fig.savefig(f"{dopant}_isotopic_purity.png", dpi=300)
     fig.savefig(f"{dopant}_isotopic_purity.svg")
 
@@ -173,6 +183,8 @@ for dopant in dopants:
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
     ax.set_title("Fission Power at $t_{SQ}$", fontdict=fontdict)
+
+    ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
 
     ax.set_ylim(0, 120)
     

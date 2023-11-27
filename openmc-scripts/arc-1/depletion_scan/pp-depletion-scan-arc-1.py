@@ -329,6 +329,12 @@ print("Loaded reaction spectra data in "  + str(round(time.perf_counter() - init
 
 masses = masses / 1e3 #convert from kg to metric tons
 
+u_marker = 'o'
+th_marker = 's'
+
+u_color = 'r'
+th_color = 'g'
+
 #Change into dedicated directory for figures or create figures directory
 try:
     os.chdir(base_dir + "/figures")
@@ -343,8 +349,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker='o', color='r')
-ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker='s', color='g')
+ax.scatter(masses, U_time_to_SQ/24, label="$^{238}$U", marker=u_marker, color=u_color)
+ax.scatter(masses, Th_time_to_SQ/24, label="$^{232}$Th", marker=th_marker, color=th_color)
 
 ax.set_ylim(10, 200)
 
@@ -393,21 +399,21 @@ for i, mass in enumerate(masses):
     Th_res = linregress(Th_time_steps, Th_fission_powers[i, ])
     Th_fission_power_at_SQ[i] = Th_res.intercept + Th_res.slope*Th_time_to_SQ[i]
 
-ax.scatter(masses, U_fission_powers[:, 0], c='r', s=4, label='At t = 0')
-ax.scatter(masses, Th_fission_powers[:, 0], c='g', s=4, label='At t = 0')
+ax.scatter(masses, U_fission_powers[:, 0], marker=u_marker, c=u_color, s=4, label='At t = 0')
+ax.scatter(masses, Th_fission_powers[:, 0], marker=th_marker, c=th_color, s=4, label='At t = 0')
 
-ax.scatter(masses, U_fission_power_at_SQ, c='r', s=4, label='After 1 SQ bred')
-ax.scatter(masses, Th_fission_power_at_SQ, c='g', s=4, label='After 1 SQ bred')
+ax.scatter(masses, U_fission_power_at_SQ, marker=u_marker, c=u_color, s=4, label='After 1 SQ bred')
+ax.scatter(masses, Th_fission_power_at_SQ, marker=th_marker, c=th_color, s=4, label='After 1 SQ bred')
 
-ax.fill_between(masses, U_fission_powers[:, 0], U_fission_power_at_SQ, color='r', alpha=0.3)
-ax.fill_between(masses, Th_fission_powers[:, 0], Th_fission_power_at_SQ, color='g', alpha=0.3)
+ax.fill_between(masses, U_fission_powers[:, 0], U_fission_power_at_SQ, color=u_color, alpha=0.3)
+ax.fill_between(masses, Th_fission_powers[:, 0], Th_fission_power_at_SQ, color=th_color, alpha=0.3)
 
 text_offset = 5
-ax.annotate("t = $t_{SQ}$", (masses[-1], U_fission_power_at_SQ[-1]), color='r', textcoords='offset points', xytext=(text_offset, 0))
-ax.annotate("t = 0", (masses[-1], U_fission_powers[-1, 0]), color='r', textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = $t_{SQ}$", (masses[-1], U_fission_power_at_SQ[-1]), color=u_color, textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = 0", (masses[-1], U_fission_powers[-1, 0]), color=u_color, textcoords='offset points', xytext=(text_offset, 0))
 
-ax.annotate("t = $t_{SQ}$", (masses[-1], Th_fission_power_at_SQ[-1]), color='g', textcoords='offset points', xytext=(text_offset, 0))
-ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color='g', textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = $t_{SQ}$", (masses[-1], Th_fission_power_at_SQ[-1]), color=th_color, textcoords='offset points', xytext=(text_offset, 0))
+ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color=th_color, textcoords='offset points', xytext=(text_offset, 0))
 
 ax.set_xlim(0, masses[-1] + 5)
 ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
@@ -425,8 +431,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_purities*100, label = "Pu-239", color='r')
-ax.scatter(masses, Th_purities*100, label = "U-233", color='g')
+ax.scatter(masses, U_purities*100, label = "Pu-239", marker=u_marker, color=u_color)
+ax.scatter(masses, Th_purities*100, label = "U-233", marker=th_marker, color=th_color)
 
 ax.legend()
 
@@ -569,14 +575,14 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.errorbar(masses, U_TBR[:, 0, 0], yerr=U_TBR[:, 0, 1], color="r", label="Uranium")
-ax.errorbar(masses, Th_TBR[:, 0, 0], yerr=Th_TBR[:, 0, 1], color="g", label="Thorium")
+ax.scatter(masses, U_TBR[:, 0, 0], marker=u_marker, color=u_color, label="Uranium")
+ax.scatter(masses, Th_TBR[:, 0, 0], marker=th_marker, color=th_color, label="Thorium")
 
-ax.errorbar(masses, U_TBR[:, 1, 0], yerr=U_TBR[:, 1, 1], color="r", label="Uranium")
-ax.errorbar(masses, Th_TBR[:, 1, 0], yerr=Th_TBR[:, 1, 1], color="g", label="Thorium")
+#ax.errorbar(masses, U_TBR[:, 1, 0], yerr=U_TBR[:, 1, 1], color="r", label="Uranium")
+#ax.errorbar(masses, Th_TBR[:, 1, 0], yerr=Th_TBR[:, 1, 1], color="g", label="Thorium")
 
-ax.fill_between(masses, U_TBR[:, 0, 0], U_TBR[:, 1, 0], color='r', alpha=0.3)
-ax.fill_between(masses, Th_TBR[:, 0, 0], Th_TBR[:, 1, 0], color='g', alpha=0.3)
+#ax.fill_between(masses, U_TBR[:, 0, 0], U_TBR[:, 1, 0], color='r', alpha=0.3)
+#ax.fill_between(masses, Th_TBR[:, 0, 0], Th_TBR[:, 1, 0], color='g', alpha=0.3)
 
 ax.set_ylabel("TBR")
 ax.set_xlabel("Fertile Mass (metric tons)")

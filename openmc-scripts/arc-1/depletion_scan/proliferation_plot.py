@@ -46,7 +46,7 @@ for dopant in dopants:
 
     X, Y = np.meshgrid(Li6_enrichments, masses)
 
-    cf = ax.contourf(X, Y, time_to_sq, levels=np.logspace(np.log10(time_to_sq.min()), np.log10(time_to_sq.max()), num=1000), norm=colors.LogNorm(vmin=time_to_sq.min(), vmax=time_to_sq.max()), cmap=cm.cividis)
+    cf = ax.contourf(X, Y, time_to_sq, levels=np.logspace(np.log10(time_to_sq.min()), np.log10(time_to_sq.max()), num=1000), norm=colors.LogNorm(vmin=time_to_sq.min(), vmax=time_to_sq.max()), cmap=cm.plasma)
 
     formatter = LogFormatter(10, labelOnlyBase=False, minor_thresholds=(0.0, 0.1)) 
     cbar = fig.colorbar(cf, label="Time to SQ (days)", ticks=[1, 10, 100, 1000], format=formatter)
