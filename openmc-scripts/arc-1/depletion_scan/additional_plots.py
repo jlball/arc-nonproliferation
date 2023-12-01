@@ -59,13 +59,13 @@ for dopant in dopants:
 
     if dopant == 'U':
         plt_color ='r'
-        plt_cm = cm.Reds
+        plt_cm = cm.Oranges
     else:
         plt_color = 'g'
-        plt_cm = cm.Greens
+        plt_cm = cm.Purples
 
     norm = colors.Normalize(vmin=-0.5*masses[-1], vmax=1.1*masses[-1])
-    enrichment_norm = colors.Normalize(vmin=-0.5*Li6_enrichments[-1], vmax=1.1*Li6_enrichments[-1])
+    enrichment_norm = colors.LogNorm(vmin=0.1*Li6_enrichments[0], vmax=1.1*Li6_enrichments[-1])
 
     width_in = 7
     height_in = 5
@@ -195,6 +195,7 @@ for dopant in dopants:
     # Flux Spectrum
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in, height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
@@ -212,14 +213,15 @@ for dopant in dopants:
 
     ax_xs.plot(xs_energies, xs_data[0], color="grey", alpha=0.4)
     ax_xs.set_yscale("log")
-    ax_xs.set_ylabel("Cross Section (barns)")
+    ax_xs.set_ylim(1e-4, 1e4)
+    ax_xs.set_ylabel("Cross Section (barns)", fontdict=fontdict)
 
     for i, enrichment in enumerate(Li6_enrichments):
         ax.step(flux_energies, flux_spectrum[i, 0, 0, :, 1], label=f"{enrichment} %", color=plt_cm(enrichment_norm(enrichment)))
 
-    ax.set_xlabel("Neutron Energy (eV)")
-    ax.set_ylabel("Average Flux (arb. units)")
-    ax.set_title("Average Flux in BLanket Tank")
+    ax.set_xlabel("Neutron Energy (eV)", fontdict=fontdict)
+    ax.set_ylabel("Average Flux (arb. units)", fontdict=fontdict)
+    ax.set_title("Average Flux in Blanket Tank", fontdict=fontdict)
 
     ax.set_yscale("log")
     ax.set_xscale("log")

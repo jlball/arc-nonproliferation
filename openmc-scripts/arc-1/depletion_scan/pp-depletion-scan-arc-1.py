@@ -332,8 +332,8 @@ masses = masses / 1e3 #convert from kg to metric tons
 u_marker = 'o'
 th_marker = 's'
 
-u_color = 'r'
-th_color = 'g'
+u_color = 'tab:orange'
+th_color = 'tab:purple'
 
 dpi = 300
 
@@ -364,8 +364,8 @@ np.save("U_time_to_SQ_depletion", U_time_to_SQ)
 np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 
 # Fit data to 1/x function:
-def fit(x, A, B):
-    return (A/x) + B
+def fit(x, A, B, C):
+    return (A/x) - B*x + C
 
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
