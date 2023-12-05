@@ -224,45 +224,45 @@ print("Loaded isotopic purity data in "  + str(round(time.perf_counter() - init_
 #plt.show()
 
 # # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# # Decay Photon Spectrum
-# init_time = time.perf_counter()
+# Decay Photon Spectrum
+init_time = time.perf_counter()
 
-# U_decay_spectra_channels = []
-# U_decay_spectra_blanket = []
+U_decay_spectra_channels = []
+U_decay_spectra_blanket = []
 
-# Th_decay_spectra_channels = []
-# Th_decay_spectra_blanket = []
+Th_decay_spectra_channels = []
+Th_decay_spectra_blanket = []
 
-# for i in range(0, num_steps):
-#     """ Uranium """
-#     os.chdir(base_dir + "/Uranium/" + str(mass))
+for i in range(0, num_steps):
+    """ Uranium """
+    os.chdir(base_dir + "/Uranium/" + str(mass))
 
-#     U_results = Results('depletion_results.h5')
-#     U_mats = U_results.export_to_materials(i)
+    U_results = Results('depletion_results.h5')
+    U_mats = U_results.export_to_materials(i)
 
-#     flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
-#     flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
+    flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
+    flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
 
-#     U_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
-#     U_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+    U_decay_spectra_channels.append(flibe_mat_channels.get_decay_photon_energy(units="Bq/cm3"))
+    U_decay_spectra_blanket.append(flibe_mat_blanket.get_decay_photon_energy(units="Bq/cm3"))
 
-#     os.chdir('../../..')
+    os.chdir('../../..')
 
-#     """ Thorium """
-#     os.chdir(base_dir + "/Thorium/" + str(mass))
+    """ Thorium """
+    os.chdir(base_dir + "/Thorium/" + str(mass))
 
-#     Th_results = Results('depletion_results.h5')
-#     Th_mats = Th_results.export_to_materials(i)
+    Th_results = Results('depletion_results.h5')
+    Th_mats = Th_results.export_to_materials(i)
 
-#     flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
-#     flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
+    flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
+    flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
 
-#     Th_decay_spectra_channels.append(flibe_mat_channels.decay_photon_energy)
-#     Th_decay_spectra_blanket.append(flibe_mat_blanket.decay_photon_energy)
+    Th_decay_spectra_channels.append(flibe_mat_channels.get_decay_photon_energy(units="Bq/cm3"))
+    Th_decay_spectra_blanket.append(flibe_mat_blanket.get_decay_photon_energy(units="Bq/cm3"))
 
-#     os.chdir('../../..')
+    os.chdir('../../..')
 
-# print("Loaded decay photon data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
+print("Loaded decay photon data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
@@ -540,45 +540,53 @@ fig.savefig("Th_flux_spectra.png", dpi=dpi)
 
 # Uranium
 
-# fig, axs = plt.subplots(1, 2)
+fig, axs = plt.subplots(1, 2)
 
-# for ax in axs:
-#     ax.spines["top"].set_color("None")
-#     ax.spines["right"].set_color("None")
+for ax in axs:
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
 
-#     ax.set_yscale("log")
+    ax.set_yscale("log")
 
-#     ax.set_ylim(1e15, 1e19)
-#     ax.set_xlim(0, 3)
-#     ax.set_xlabel("Photon Energy (MeV)")
+    ax.set_ylim(1e15, 1e19)
+    ax.set_xlim(0, 3)
+    ax.set_xlabel("Photon Energy (MeV)")
 
-# for i in range(0, num_steps):
-#     axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
-#     axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
+
+
+for i in range(0, num_steps):
+    axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
+    axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
     
-# axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
-# axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
+axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
+axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
 
-# fig.set_size_inches(10, 4)
-# fig.savefig("U_decay_spectra.png")
+fig.set_size_inches(10, 4)
+fig.savefig("U_decay_spectra.png", dpi=dpi)
 
 #Thorium:
 
-# fig, ax = plt.subplots()
-# ax.spines["top"].set_color("None")
-# ax.spines["right"].set_color("None")
+fig, axs = plt.subplots(1, 2)
 
-# for i, dist in enumerate(Th_decay_spectra):
-#     ax.step(dist.x, dist.p, label = str("Step " + str(int(i))))
+for ax in axs:
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
 
-# ax.set_yscale("log")
+    ax.set_yscale("log")
 
-# ax.set_title("Gamma spectrum at $t_{SQ}$ in a Thorium doped blanket")
-# ax.set_xlabel("Photon Energy (eV)")
+    ax.set_ylim(1e15, 1e19)
+    ax.set_xlim(0, 3)
+    ax.set_xlabel("Photon Energy (MeV)")
 
-# ax.set_ylim(1e15, 1e22)
+for i in range(0, num_steps):
+    axs[0].step(Th_decay_spectra_channels[i].x/1e6, Th_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
+    axs[1].step(Th_decay_spectra_blanket[i].x/1e6, Th_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
+    
+axs[0].set_title("Gamma spectrum in a Thorium doped cooling channel")
+axs[1].set_title("Gamma spectrum in a Thorium doped blanket")
 
-# fig.savefig("Th_decay_spectra.png", dpi=300)
+fig.set_size_inches(10, 4)
+fig.savefig("Th_decay_spectra.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # TBR
