@@ -7,6 +7,7 @@ from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
+from scipy.interpolate import interp1d
 import time
 import pickle
 
@@ -35,6 +36,9 @@ masses = np.loadtxt(base_dir + '/masses.txt')
 U_time_to_SQ = np.empty(len(masses))
 Th_time_to_SQ = np.empty(len(masses))
 
+U_tsq_idx = np.empty(len(masses))
+Th_tsq_idx = np.empty(len(masses))
+
 """ Iterate through each mass simulated and compute time to SQ"""
 for i, mass in enumerate(masses):
 
@@ -42,7 +46,7 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
-    U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
+    U_tsq_idx[i], U_time_to_SQ[i] = extract_time_to_sq('U', U_results)
 
     #While we're here, get the number of depletion steps:
     U_time_steps = U_results.get_times()
@@ -54,7 +58,7 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_time_to_SQ[i] = extract_time_to_sq('Th', Th_results)
+    Th_tsq_idx[i], Th_time_to_SQ[i] = extract_time_to_sq('Th', Th_results)
 
     Th_time_steps = Th_results.get_times()
 
@@ -233,18 +237,19 @@ U_decay_spectra_blanket = []
 Th_decay_spectra_channels = []
 Th_decay_spectra_blanket = []
 
-for i in range(0, num_steps):
+for i, mass in enumerate(masses):
     """ Uranium """
     os.chdir(base_dir + "/Uranium/" + str(mass))
 
     U_results = Results('depletion_results.h5')
-    U_mats = U_results.export_to_materials(i)
+    U_mats = U_results.export_to_materials(int(U_tsq_idx[i]))
 
-    flibe_mat_channels = get_material_by_name(U_mats, "doped flibe channels")
-    flibe_mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
+    # Get materials at time step just before and just after t_SQ
+    mat_channels = get_material_by_name(U_mats, "doped flibe channels")
+    mat_blanket = get_material_by_name(U_mats, "doped flibe blanket")
 
-    U_decay_spectra_channels.append(flibe_mat_channels.get_decay_photon_energy(units="Bq/cm3"))
-    U_decay_spectra_blanket.append(flibe_mat_blanket.get_decay_photon_energy(units="Bq/cm3"))
+    U_decay_spectra_channels.append(mat_channels.get_decay_photon_energy(units="Bq/cm3"))
+    U_decay_spectra_blanket.append(mat_blanket.get_decay_photon_energy(units="Bq/cm3"))
 
     os.chdir('../../..')
 
@@ -252,7 +257,7 @@ for i in range(0, num_steps):
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_mats = Th_results.export_to_materials(i)
+    Th_mats = Th_results.export_to_materials(int(Th_tsq_idx[i]))
 
     flibe_mat_channels = get_material_by_name(Th_mats, "doped flibe channels")
     flibe_mat_blanket = get_material_by_name(Th_mats, "doped flibe blanket")
@@ -323,6 +328,77 @@ for i, mass in enumerate(masses):
 
 print("Loaded reaction spectra data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Decay Heat
+init_time = time.perf_counter()
+
+U_decay_heats = np.empty(len(masses))
+Th_decay_heats = np.empty(len(masses))
+
+""" Uranium """
+for i, mass in enumerate(masses):
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+
+    idx = np.abs(U_fissile_masses[i] - anp.sig_quantity).argmin()
+
+    if U_fissile_masses[i, idx] < anp.sig_quantity:
+        U_mats_pre_tsq = U_results.export_to_materials(idx)
+        U_mats_post_tsq = U_results.export_to_materials(idx+1)
+    else:
+        U_mats_pre_tsq = U_results.export_to_materials(idx-1)
+        U_mats_post_tsq = U_results.export_to_materials(idx)
+
+    # Get materials at time step just before and just after t_SQ
+    mat_channels_pre_tsq = get_material_by_name(U_mats_pre_tsq, "doped flibe channels")
+    mat_blanket_pre_tsq = get_material_by_name(U_mats_pre_tsq, "doped flibe blanket")
+
+    mat_channels_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe channels")
+    mat_blanket_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe blanket")
+
+    decay_heat_pre_tsq =  mat_channels_pre_tsq.get_decay_heat() + mat_blanket_pre_tsq.get_decay_heat()
+    decay_heat_post_tsq =  mat_channels_post_tsq.get_decay_heat() + mat_blanket_post_tsq.get_decay_heat()
+
+    if U_fissile_masses[i, idx] < anp.sig_quantity:
+        U_decay_heats[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx:idx+2], [decay_heat_pre_tsq, decay_heat_post_tsq])
+    else:
+        U_decay_heats[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx-1:idx+1], [decay_heat_pre_tsq, decay_heat_post_tsq])
+
+    os.chdir('../../..')
+
+""" Thorium """
+for i, mass in enumerate(masses):
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    idx = np.abs(Th_fissile_masses[i] - anp.sig_quantity).argmin()
+
+    if Th_fissile_masses[i, idx] < anp.sig_quantity:
+        Th_mats_pre_tsq = Th_results.export_to_materials(idx)
+        Th_mats_post_tsq = Th_results.export_to_materials(idx+1)
+    else:
+        Th_mats_pre_tsq = Th_results.export_to_materials(idx-1)
+        Th_mats_post_tsq = Th_results.export_to_materials(idx)
+
+    # Get materials at time step just before and just after t_SQ
+    mat_channels_pre_tsq = get_material_by_name(Th_mats_pre_tsq, "doped flibe channels")
+    mat_blanket_pre_tsq = get_material_by_name(Th_mats_pre_tsq, "doped flibe blanket")
+
+    mat_channels_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe channels")
+    mat_blanket_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe blanket")
+
+    decay_heat_pre_tsq =  mat_channels_pre_tsq.get_decay_heat() + mat_blanket_pre_tsq.get_decay_heat()
+    decay_heat_post_tsq =  mat_channels_post_tsq.get_decay_heat() + mat_blanket_post_tsq.get_decay_heat()
+
+    if Th_fissile_masses[i, idx] < anp.sig_quantity:
+        Th_decay_heats[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx:idx+2], [decay_heat_pre_tsq, decay_heat_post_tsq])
+    else:
+        Th_decay_heats[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx-1:idx+1], [decay_heat_pre_tsq, decay_heat_post_tsq])
+
+    os.chdir('../../..')
+
+print("Loaded decay heat data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 # ====================================================
 # Plotting
 # ====================================================
@@ -548,18 +624,19 @@ for ax in axs:
 
     ax.set_yscale("log")
 
-    ax.set_ylim(1e15, 1e19)
-    ax.set_xlim(0, 3)
+    #ax.set_ylim(1e15, 1e19)
+    #ax.set_xlim(0, 3)
     ax.set_xlabel("Photon Energy (MeV)")
+    ax.set_ylabel("Bq/cm3/metric ton")
 
-
-
-for i in range(0, num_steps):
-    axs[0].step(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
-    axs[1].step(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
+for i, mass in enumerate(masses):
+    axs[0].scatter(U_decay_spectra_channels[i].x/1e6, U_decay_spectra_channels[i].p/mass, label = f"{mass} Metric Tons", s=1)
+    axs[1].scatter(U_decay_spectra_blanket[i].x/1e6, U_decay_spectra_blanket[i].p/mass, label = f"{mass} Metric Tons", s=1)
     
 axs[0].set_title("Gamma spectrum in a Uranium doped cooling channel")
 axs[1].set_title("Gamma spectrum in a Uranium doped blanket")
+
+#ax.legend()
 
 fig.set_size_inches(10, 4)
 fig.savefig("U_decay_spectra.png", dpi=dpi)
@@ -574,11 +651,11 @@ for ax in axs:
 
     ax.set_yscale("log")
 
-    ax.set_ylim(1e15, 1e19)
-    ax.set_xlim(0, 3)
+    #ax.set_ylim(1e15, 1e19)
+    #ax.set_xlim(0, 3)
     ax.set_xlabel("Photon Energy (MeV)")
 
-for i in range(0, num_steps):
+for i in range(0, len(masses)):
     axs[0].step(Th_decay_spectra_channels[i].x/1e6, Th_decay_spectra_channels[i].p, label = str("Step " + str(int(i))))
     axs[1].step(Th_decay_spectra_blanket[i].x/1e6, Th_decay_spectra_blanket[i].p, label = str("Step " + str(int(i))))
     
@@ -650,6 +727,26 @@ for i, mass in enumerate(masses):
 
 print("Completed Post Processing")
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Decay Heat
+
+fig, ax = plt.subplots()
+
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.scatter(masses, U_decay_heats/1e6, label="U-238", color=u_color, marker=u_marker)
+ax.scatter(masses, Th_decay_heats/1e6, label="Th-238", color=th_color, marker=th_marker)
+
+ax.set_ylim(0, 3.5)
+ax.legend()
+
+ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
+ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
+ax.set_ylabel("Decay Heat (MW)", fontdict=fontdict)
+
+fig.savefig("decay_heat.png", dpi=dpi)
+
 # ====================================================
 # Data Storage
 # ====================================================
@@ -663,7 +760,8 @@ U_data_dict ={"time_steps":U_time_steps,
               "tbr_t_SQ":U_TBR[:, 1, 0],
               "flux_spectrum":U_flux_spectra,
               "fissile_mass":U_fissile_masses,
-              "reaction_spectra":U_reaction_spectra}
+              "reaction_spectra":U_reaction_spectra,
+              "decay_heat":U_decay_heats}
 
 Th_data_dict ={"time_steps":Th_time_steps,
               "time_to_sq":Th_time_to_SQ,
@@ -674,7 +772,8 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "tbr_t_SQ":Th_TBR[:, 1, 0],
               "flux_spectrum":Th_flux_spectra,
               "fissile_mass":Th_fissile_masses,
-              "reaction_spectra":Th_reaction_spectra}
+              "reaction_spectra":Th_reaction_spectra,
+              "decay_heat":Th_decay_heats}
 
 os.chdir("../..")
 

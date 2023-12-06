@@ -182,6 +182,8 @@ def extract_time_to_sq(dopant, results):
 
     Returns
     -------
+    int, the index of the timestep just after t_SQ. used for later interpolation of relevant quantities at t_SQ
+
     float, the time in hours at which 1 SQ of fissile material is present in the blanket
     """
 
@@ -198,10 +200,12 @@ def extract_time_to_sq(dopant, results):
 
     if fissile_masses[idx] > anp.sig_quantity:
         time_to_sq = np.interp(anp.sig_quantity, [fissile_masses[idx-1], fissile_masses[idx]], [time_steps[idx-1], time_steps[idx]])
+        
     else:
         time_to_sq = np.interp(anp.sig_quantity, [fissile_masses[idx], fissile_masses[idx+1]], [time_steps[idx], time_steps[idx+1]])
 
-    return time_to_sq
+    return idx, time_to_sq
+    
 
 def extract_decay_heat(results):
     """
@@ -237,6 +241,8 @@ def extract_isotopic_purity(dopant, results):
         "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
     results : openmc.Results
         the depletion results file to analyse
+    idx : int
+        the index of the timestep just after t_SQ
 
     Returns
     -------
@@ -245,6 +251,7 @@ def extract_isotopic_purity(dopant, results):
     """
 
     materials = results.export_to_materials(-1)
+
     doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels')
     doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket') 
 

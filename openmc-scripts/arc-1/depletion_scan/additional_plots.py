@@ -35,6 +35,7 @@ for dopant in dopants:
     tbr_t_0 = np.empty((len(masses), len(Li6_enrichments)))
     flux_spectrum = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2))
     reaction_spectra = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2, 2))
+    decay_heat = np.empty((len(Li6_enrichments), len(masses)))
 
     for i, enrichment in enumerate(Li6_enrichments_str):
         with open(folder_prefix + enrichment + f'/data/{dopant}_data_dict.pkl', 'rb') as file:
@@ -46,6 +47,7 @@ for dopant in dopants:
             tbr_t_0[:, i] = data_dict["tbr_t0"]
             flux_spectrum[i] = data_dict["flux_spectrum"]
             reaction_spectra[i] = data_dict["reaction_spectra"]
+            decay_heat[i] = data_dict["decay_heat"]
 
 
 # ====================================================
@@ -273,5 +275,22 @@ for dopant in dopants:
     ax.set_xlim(1e-2, 20e6)
 
     fig.savefig(f"{dopant}_fission_spectrum.png")
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Decay Heat
+
+    fig, ax = plt.subplots()
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, enrichment in enumerate(Li6_enrichments):
+        ax.scatter(masses, decay_heat[i]/1e6, color=plt_cm(enrichment_norm(enrichment)), s = 15)
+        ax.plot(masses, decay_heat[i]/1e6, color=plt_cm(enrichment_norm(enrichment)), alpha=0.3)
+
+    ax.set_xlabel("Fertile Mass (Metric Tons)")
+    ax.set_ylabel("Decay Heat (MW)")
+    ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$")
+
+    fig.savefig(f"{dopant}_decay_heat.png", dpi=300)
 
     os.chdir("../..")
