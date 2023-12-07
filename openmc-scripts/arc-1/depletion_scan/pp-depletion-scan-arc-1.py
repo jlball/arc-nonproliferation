@@ -399,6 +399,29 @@ for i, mass in enumerate(masses):
     os.chdir('../../..')
 
 print("Loaded decay heat data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Tl-208 activity
+init_time = time.perf_counter()
+
+Tl_activites = np.empty(len(masses))
+
+for i, mass in enumerate(masses):
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    idx = np.abs(Th_fissile_masses[i] - anp.sig_quantity).argmin()
+
+    activities = extract_activity(Th_results, "Tl208")
+
+    if Th_fissile_masses[i, idx] < anp.sig_quantity:
+        tsq_act = np.interp(Th_time_to_SQ[i], Th_time_steps[idx:idx+2], activities[idx, idx+2])
+    else:
+        tsq_act = np.interp(Th_time_to_SQ[i], Th_time_steps[idx-1:idx+1], activities[idx-1, idx+1])
+
+    Tl_activites[i] = tsq_act
+
+print("Loaded Tl-208 activity data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 # ====================================================
 # Plotting
 # ====================================================
@@ -746,6 +769,21 @@ ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Decay Heat (MW)", fontdict=fontdict)
 
 fig.savefig("decay_heat.png", dpi=dpi)
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Tl-208 Act
+
+fig, ax = plt.subplots()
+
+ax.spines["top"].set_color("None")
+ax.spines["right"].set_color("None")
+
+ax.scatter(masses, Tl_activites, color=th_color, marker=th_marker)
+
+ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
+ax.set_ylabel("Activity (Bq)")
+
+fig.savefig("Tl-208_activity.png", dpi=dpi)
 
 # ====================================================
 # Data Storage

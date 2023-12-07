@@ -287,3 +287,30 @@ def extract_isotopic_purity(dopant, results):
             total_atoms = total_atoms + atoms[nuclide]
         return atoms['U233']/total_atoms
     
+def extract_activity(results, nuclide):
+    timesteps = results.get_times()
+
+    activities = np.empty(len(timesteps))
+
+    for i, step in enumerate(timesteps):
+        materials = results.export_to_materials(i)
+
+        doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels')
+        doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
+
+        try:
+            channels_act = doped_flibe_channels.get_activity(by_nuclide=True)
+            blanket_act = doped_flibe_blanket.get_activity(by_nuclide=True)
+
+            total_act = channels_act[nuclide] + blanket_act[nuclide]
+        except:
+            total_act = 0
+
+        activities[i] = total_act
+    
+    return activities
+
+
+# def mass_attenuation_coeff():
+
+# def extract_surface_dose_rate(material):
