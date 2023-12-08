@@ -86,8 +86,7 @@ for wppm in wppms:
     # Generate fluxes and microxs from model
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
                                                             [U_device.channel, U_device.blanket],
-                                                            run_kwargs = {"threads":20,
-                                                                        "particles":int(2e4)})
+                                                            run_kwargs = {"particles":int(2e4)})
 
     # Save flux and microxs to disk so transport calculation does not need to be rerun in future
     flux_file = open('U_flux', 'ab')
