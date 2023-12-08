@@ -92,7 +92,7 @@ def get_tetrafluoride_mass(mass, dopant):
 
     return tetrafluoride_mass
 
-def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None):
+def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None, dopant_mass_units="kg"):
     """
     Return openmc material doped with specified fertile material
 
@@ -126,12 +126,19 @@ def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe'
     else:
         raise ValueError("Invalid dopant passed into blanket liquid function")
 
-    if volume == None:
-        raise ValueError("Volume of blanket specified as None")
+    if dopant_mass_units == "kg":
+        if volume == None:
+            raise ValueError("Volume of blanket specified as None")
+        else:
+            flibe_mass = flibe.density * volume
+            tetrafluoride_mass = get_tetrafluoride_mass(dopant_mass, dopant)
+            tetrafluoride_weight_percent = tetrafluoride_mass / (flibe_mass + tetrafluoride_mass)
+            
+    elif dopant_mass_units == "wppm":
+        tetrafluoride_weight_percent = dopant_mass/1e6
+    
     else:
-        flibe_mass = flibe.density * volume
-        tetrafluoride_mass = get_tetrafluoride_mass(dopant_mass, dopant)
-        tetrafluoride_weight_percent = tetrafluoride_mass / flibe_mass
+        raise ValueError("Invalid units given for dopant mass argument")
 
     doped_mat = openmc.Material.mix_materials([tetrafluoride, flibe], [tetrafluoride_weight_percent, 1 - tetrafluoride_weight_percent], 'wo', name=name)
     doped_mat.volume = volume

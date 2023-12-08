@@ -46,7 +46,7 @@ for dopant in dopants:
 
     X, Y = np.meshgrid(Li6_enrichments, masses)
 
-    cf = ax.contourf(X, Y, time_to_sq, levels=np.logspace(np.log10(time_to_sq.min()), np.log10(time_to_sq.max()), num=1000), norm=colors.LogNorm(vmin=time_to_sq.min(), vmax=time_to_sq.max()), cmap=cm.cividis)
+    cf = ax.contourf(X, Y, time_to_sq, levels=np.logspace(np.log10(time_to_sq.min()), np.log10(time_to_sq.max()), num=1000), norm=colors.LogNorm(vmin=time_to_sq.min(), vmax=time_to_sq.max()), cmap=cm.plasma)
 
     formatter = LogFormatter(10, labelOnlyBase=False, minor_thresholds=(0.0, 0.1)) 
     cbar = fig.colorbar(cf, label="Time to SQ (days)", ticks=[1, 10, 100, 1000], format=formatter)
@@ -67,8 +67,11 @@ for dopant in dopants:
     #cs_purity = ax.contour(X, Y, isotopic_purity, colors='purple')
     #ax.clabel(cs_purity, inline=True, fontsize=10)
 
-    ax.set_xlabel("Li6 Enrichment (percent)")
-    ax.set_ylabel("Fertile Mass (Metric Tons)")
-    ax.set_title(f"{dopant} Proliferation Plot")
+    fontsize=14
+
+    ax.set_xlabel("Li6 Enrichment (percent)", fontsize=fontsize)
+    ax.set_ylabel("Fertile Mass (Metric Tons)", fontsize=fontsize)
+    ax.set_title(f"{dopant} Proliferation Plot", fontsize=fontsize)
 
     fig.savefig(f"{dopant}_proliferation_plot.png", dpi=300)
+    fig.savefig(f"{dopant}_proliferation_plot.svg")
