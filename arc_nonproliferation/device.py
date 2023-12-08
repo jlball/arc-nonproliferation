@@ -191,8 +191,7 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
                                         name="doped flibe blanket")
         
     elif dopant_mass_units == 'wppm':
-        doped_flibe = make_impure_flibe(dopant, 
-                                        dopant_mass, 
+        doped_flibe = make_impure_flibe(dopant_mass, 
                                         name="doped flibe blanket")
 
     else:

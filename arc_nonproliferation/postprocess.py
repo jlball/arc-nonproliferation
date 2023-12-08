@@ -132,7 +132,7 @@ def get_material_by_name(materials, name):
         if mat.name == name:
             return mat
 
-def get_masses_from_mats(nuclide, results):
+def get_masses_from_mats(nuclide, results, density=False):
     """
     Returns mass of either Pu-239 or U-233 at each timestep from a depletion 
     results object. 
@@ -159,7 +159,10 @@ def get_masses_from_mats(nuclide, results):
         doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
         doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels') 
 
-        mass = doped_flibe_blanket.get_mass(nuclide=nuclide) + doped_flibe_channels.get_mass(nuclide=nuclide)
+        if density:
+            mass = doped_flibe_blanket.get_mass_density(nuclide=nuclide) + doped_flibe_channels.get_mass_density(nuclide=nuclide)
+        else:
+            mass = doped_flibe_blanket.get_mass(nuclide=nuclide) + doped_flibe_channels.get_mass(nuclide=nuclide)
 
         masses[i] = mass / 1000 # Convert from grams to kg
 

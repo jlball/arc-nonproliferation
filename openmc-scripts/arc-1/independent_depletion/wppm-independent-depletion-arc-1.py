@@ -36,7 +36,6 @@ if sys.argv[1] is not None:
     print("OpenMC output saved to:", base_dir)
 
     os.mkdir(base_dir + '/Uranium')
-    os.mkdir(base_dir + '/Thorium')
 
 """ allows for enrichment to specified, defaults to natual """
 if sys.argv[2] is not None:
@@ -61,9 +60,8 @@ def setup_device(device):
 wppms = np.array([50, 100, 150, 200]) #kg of fertile material
 np.savetxt(base_dir + '/masses.txt', wppms) # Store masses for later use in post processing
 
-
 """ DEPLETION SETTINGS """
-num_steps = 500
+num_steps = 50
 time_steps = [3650 / num_steps] * num_steps
 source_rates = [anp.Device.neutron_source_rate] * num_steps
 
@@ -72,8 +70,7 @@ openmc.config['chain_file'] = anp.constants.chain_file
 for wppm in wppms:
     """ Generate blankets doped to specified mass """
 
-    U_device = setup_device(anp.generate_device("U", wppm, Li6_enrichment = Li6_enrichment))
-    Th_device = setup_device(anp.generate_device("Th", wppm, Li6_enrichment = Li6_enrichment))
+    U_device = setup_device(anp.generate_device("U", wppm, Li6_enrichment = Li6_enrichment, dopant_mass_units="wppm"))
 
     """ Run Uranium depletion calculation """
     print(f"~~~~~~~~~~~~~~~~~~ FERTILE MASS: {wppm} wppm DOPANT: Uranium-238 ~~~~~~~~~~~~~~~~~~")
