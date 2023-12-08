@@ -291,6 +291,8 @@ for dopant in dopants:
     ax.set_ylabel("Decay Heat (MW)")
     ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$")
 
+    #ax.set_yscale("log")
+
     fig.savefig(f"{dopant}_decay_heat.png", dpi=300)
 
     os.chdir("../..")
