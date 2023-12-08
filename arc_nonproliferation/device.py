@@ -191,12 +191,9 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
                                         name="doped flibe blanket")
         
     elif dopant_mass_units == 'wppm':
-        doped_flibe = make_doped_flibe(dopant, 
+        doped_flibe = make_impure_flibe(dopant, 
                                         dopant_mass, 
-                                        volume=flibe_volume + channels_volume, 
-                                        Li6_enrichment=Li6_enrichment, 
-                                        name="doped flibe blanket",
-                                        dopant_mass_units="wppm")
+                                        name="doped flibe blanket")
 
     else:
         raise ValueError("Invalid units specified for dopant mass")
