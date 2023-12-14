@@ -47,8 +47,8 @@ else:
 def setup_device(device):
     """ Run settings """
     device.settings.photon_transport = False
-    device.settings.particles = int(1e3)
-    device.settings.batches = 10
+    device.settings.particles = int(1e4)
+    device.settings.batches = 100
     device.settings.survival_biasing = True
 
     return device
@@ -62,7 +62,7 @@ np.savetxt(base_dir + '/masses.txt', wppms) # Store masses for later use in post
 
 """ DEPLETION SETTINGS """
 num_steps = 50
-time_steps = [3650 / num_steps] * num_steps
+time_steps = [30 *365 / num_steps] * num_steps
 source_rates = [anp.Device.neutron_source_rate] * num_steps
 
 openmc.config['chain_file'] = anp.constants.chain_file
@@ -82,8 +82,7 @@ for wppm in wppms:
 
     # Generate fluxes and microxs from model
     U_flux, U_micro_xs = openmc.deplete.get_microxs_and_flux(U_device,
-                                                            [U_device.channel, U_device.blanket],
-                                                            run_kwargs = {"particles":int(2e4)})
+                                                            [U_device.channel, U_device.blanket])
 
     # Save flux and microxs to disk so transport calculation does not need to be rerun in future
     flux_file = open('U_flux', 'ab')
