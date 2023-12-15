@@ -331,7 +331,7 @@ def get_element_mass(material, element):
 
     return mass
 
-def contact_dose_rate(material):
+def extract_contact_dose_rate(material):
     # Data in this file retrieved from: https://physics.nist.gov/PhysRefData/XrayMassCoef/ComTab/air.html 
     # It has units of cm^2/g
     air_mu_en = np.loadtxt("/home/jlball/arc-nonproliferation/data/air_muen.txt")

@@ -171,7 +171,10 @@ def make_impure_flibe(wppm, name='doped_flibe'):
 
     impure_Be = openmc.Material.mix_materials([beryllium, uranium], [1 - weight_fraction, weight_fraction], 'wo')
 
-    impure_flibe = openmc.Material.mix_materials([fluorine, lithium, impure_Be], [4/7, 2/7, 1/7], "ao", name=name)
+    Be_fluoride = openmc.Material.mix_materials([impure_Be, fluorine], [1, 2], "ao")
+    Li_fluoride = openmc.Material.add_elements_from_formula("LiF")
+
+    impure_flibe = openmc.Material.mix_materials([Be_fluoride, Li_fluoride], [1, 2], "ao", name=name)
 
     impure_flibe.set_density("g/cm3", 1.94)
 

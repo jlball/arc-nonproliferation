@@ -288,6 +288,7 @@ for dopant in dopants:
     # Decay Heat
 
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
@@ -295,51 +296,56 @@ for dopant in dopants:
         ax.scatter(Li6_enrichments, decay_heat[:, i]/1e6, color=plt_cm(norm(mass)), s = 15)
         ax.plot(Li6_enrichments, decay_heat[:, i]/1e6, color=plt_cm(norm(mass)), alpha=0.3)
 
-    ax.set_xlabel("Li-6 Enrichment (percent)")
-    ax.set_ylabel("Decay Heat (MW)")
-    ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$")
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("Decay Heat (MW)", fontdict=fontdict)
+    #ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$")
 
     #ax.set_yscale("log")
 
     fig.savefig(f"{dopant}_decay_heat.png", dpi=300)
+    fig.savefig(f"{dopant}_decay_heat.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # U232 Content
 
     if dopant == "Th":
         fig, ax = plt.subplots()
+        fig.set_size_inches(width_in,height_in)
         ax.spines["top"].set_color("None")
         ax.spines["right"].set_color("None")
 
         for i, mass in enumerate(masses):
             ax.scatter(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), s=15)
-            ax.plot(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), alpha=0.3)
+            ax.plot(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), alpha=0.5)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)")
-        ax.set_ylabel("U-232 content (appm)")
-        ax.set_title("U-232 content in bred U-233 at $t = t_{SQ}$")
+        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_ylabel("U-232 content (appm)", fontdict=fontdict)
+        #ax.set_title("U-232 content in bred U-233 at $t = t_{SQ}$")
 
         #ax.set_yscale("log")
         ax.set_ylim(0, 1.05*np.max(U232_content*1e6))
 
         fig.savefig("Th_U232_content.png", dpi=300)
+        fig.savefig("Th_U232_content.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Contact dose rate
         
     fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
     for i, mass in enumerate(masses):
             ax.scatter(Li6_enrichments, contact_dose_rate[:, i], color=plt_cm(norm(mass)), s=15)
-            ax.plot(Li6_enrichments, contact_dose_rate[:, i], color=plt_cm(norm(mass)), alpha=0.3)
+            ax.plot(Li6_enrichments, contact_dose_rate[:, i], color=plt_cm(norm(mass)), alpha=0.5)
 
-    ax.set_xlabel("Li-6 Enrichment (percent)")
-    ax.set_ylabel("Contact dose rate (Sv/hr)")
-    ax.set_title("Contact dose rate at $t = t_{SQ}$")
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("Contact dose rate (Sv/hr)", fontdict=fontdict)
+    #ax.set_title("Contact dose rate at $t = t_{SQ}$")
 
     fig.savefig(f"{dopant}_contact_dose_rate.png", dpi=300)
+    fig.savefig(f"{dopant}_contact_dose_rate.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Exit directory

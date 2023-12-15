@@ -433,8 +433,8 @@ for i, mass in enumerate(masses):
     mat_channels_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe channels")
     mat_blanket_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe blanket")
 
-    dose_pre_tsq =  contact_dose_rate(mat_channels_pre_tsq) + contact_dose_rate(mat_blanket_pre_tsq)
-    dose_post_tsq =  contact_dose_rate(mat_channels_post_tsq) + contact_dose_rate(mat_blanket_post_tsq)
+    dose_pre_tsq =  extract_contact_dose_rate(mat_channels_pre_tsq) + extract_contact_dose_rate(mat_blanket_pre_tsq)
+    dose_post_tsq =  extract_contact_dose_rate(mat_channels_post_tsq) + extract_contact_dose_rate(mat_blanket_post_tsq)
 
     if U_fissile_masses[i, idx] < anp.sig_quantity:
         U_dose_rates[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx:idx+2], [dose_pre_tsq, dose_post_tsq])
@@ -464,8 +464,8 @@ for i, mass in enumerate(masses):
     mat_channels_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe channels")
     mat_blanket_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe blanket")
 
-    dose_pre_tsq =  contact_dose_rate(mat_channels_pre_tsq) + contact_dose_rate(mat_blanket_pre_tsq)
-    dose_post_tsq =  contact_dose_rate(mat_channels_post_tsq) + contact_dose_rate(mat_blanket_post_tsq)
+    dose_pre_tsq =  extract_contact_dose_rate(mat_channels_pre_tsq) + extract_contact_dose_rate(mat_blanket_pre_tsq)
+    dose_post_tsq =  extract_contact_dose_rate(mat_channels_post_tsq) + extract_contact_dose_rate(mat_blanket_post_tsq)
 
     if Th_fissile_masses[i, idx] < anp.sig_quantity:
         Th_dose_rates[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx:idx+2], [dose_pre_tsq, dose_post_tsq])
@@ -858,6 +858,8 @@ ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker)
 ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Dose Rate (Sv/hr)", fontdict=fontdict)
+
+ax.set_ylim(0, 1.1*np.max(U_dose_rates))
 
 fig.savefig("contact_dose_rate.png", dpi=dpi)
 
