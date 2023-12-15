@@ -841,7 +841,7 @@ ax.set_title("U-232 content in 1 SQ of U-233", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Concentration (appm)", fontdict=fontdict)
 
-ax.set_ylim(0, 1.05*np.max(U232_content*1e6))
+ax.set_ylim(0, 1.05*np.max(U232_contents*1e6))
 
 fig.savefig("U232_content.png", dpi=dpi)
 
@@ -852,13 +852,14 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_dose_rates, color=u_color, marker=u_marker)
-ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker)
+ax.scatter(masses, U_dose_rates, color=u_color, marker=u_marker, label="U-238")
+ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker, label="Th-232")
 
 ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Dose Rate (Sv/hr)", fontdict=fontdict)
 
+ax.legend()
 ax.set_ylim(0, 1.1*np.max(U_dose_rates))
 
 fig.savefig("contact_dose_rate.png", dpi=dpi)

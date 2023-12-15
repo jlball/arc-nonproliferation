@@ -148,7 +148,7 @@ for i, mass in enumerate(masses):
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Contact dose rate
     
-dose_rate_steps = 5
+dose_rate_steps = 25
 contact_dose_rate = np.empty((len(masses), dose_rate_steps))
 dose_rate_times = np.empty(dose_rate_steps)
 for i, mass in enumerate(masses):
@@ -160,8 +160,8 @@ for i, mass in enumerate(masses):
     for j in range(0, dose_rate_steps):
         start_time = time.perf_counter()
 
-        mats = U_results.export_to_materials(j*10)
-        dose_rate_times[j] = time_steps[j*10]
+        mats = U_results.export_to_materials(j*2)
+        dose_rate_times[j] = time_steps[j*2]
 
         channel_mat = get_material_by_name(mats, "doped flibe channels")
         blanket_mat = get_material_by_name(mats, "doped flibe blanket")
@@ -173,6 +173,13 @@ for i, mass in enumerate(masses):
 # ====================================================
 # Plotting
 # ====================================================
+
+width_in = 7
+height_in = 5
+
+fontdict = {"size":16}
+
+tick_font_size = 12
 
 #Change into dedicated directory for figures or create figures directory
 try:
@@ -194,7 +201,7 @@ fig_tot, ax_tot = plt.subplots()
 ax_tot.spines["top"].set_color("None")
 ax_tot.spines["right"].set_color("None")
 
-fig_tot.set_size_inches(8, 5)
+fig_tot.set_size_inches(width_in, height_in)
 
 U_cm = mpl.cm.Reds
 Th_cm = mpl.cm.Greens
@@ -242,7 +249,7 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-fig.set_size_inches(8, 5)
+fig.set_size_inches(width_in, height_in)
 
 for i, mass in enumerate(masses):
     U_color = U_cm.__call__(norm(mass))
@@ -263,16 +270,16 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-fig.set_size_inches(8, 5)
+fig.set_size_inches(width_in, height_in)
 
 for i, mass in enumerate(masses):
     U_color = U_cm.__call__(norm(mass))
     ax.plot(dose_rate_times/365, contact_dose_rate[i], label=mass, color=U_color)
     ax.annotate(f"{mass} wppm", (dose_rate_times[-1]/365, contact_dose_rate[i, -1]), color=U_color, textcoords="offset points", xytext=(5, 0))
 
-    ax.set_xlabel("Time (years)")
-    ax.set_ylabel("Contact dose rate (Sv/hr)")
-    ax.set_title("Contact dose rate in impure FLiBe")
+    ax.set_xlabel("Time (years)", fontdict=fontdict)
+    ax.set_ylabel("Contact dose rate (Sv/hr)", fontdict=fontdict)
+    ax.set_title("Contact dose rate in impure FLiBe", fontdict=fontdict)
 
 fig.tight_layout()
 fig.savefig("contact_dose_rate.png", dpi=300)
