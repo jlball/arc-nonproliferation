@@ -17,3 +17,5 @@ chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
 
 Np239_half_life = 2.356 #days
 Pa233_half_life = 26.98 #days
+
+atomic_mass_unit_grams = 1.66054e-24 #grams/amu

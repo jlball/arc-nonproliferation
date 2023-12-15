@@ -37,6 +37,9 @@ for dopant in dopants:
     reaction_spectra = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2, 2))
     decay_heat = np.empty((len(Li6_enrichments), len(masses)))
 
+    if dopant == "Th":
+        U232_content = np.empty((len(Li6_enrichments), len(masses)))
+
     for i, enrichment in enumerate(Li6_enrichments_str):
         with open(folder_prefix + enrichment + f'/data/{dopant}_data_dict.pkl', 'rb') as file:
             data_dict = pickle.load(file)
@@ -48,6 +51,9 @@ for dopant in dopants:
             flux_spectrum[i] = data_dict["flux_spectrum"]
             reaction_spectra[i] = data_dict["reaction_spectra"]
             decay_heat[i] = data_dict["decay_heat"]
+
+            if dopant == "Th":
+                U232_content[i] = data_dict["U232_content"]
 
 
 # ====================================================
@@ -283,11 +289,11 @@ for dopant in dopants:
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
 
-    for i, enrichment in enumerate(Li6_enrichments):
-        ax.scatter(masses, decay_heat[i]/1e6, color=plt_cm(enrichment_norm(enrichment)), s = 15)
-        ax.plot(masses, decay_heat[i]/1e6, color=plt_cm(enrichment_norm(enrichment)), alpha=0.3)
+    for i, mass in enumerate(masses):
+        ax.scatter(Li6_enrichments, decay_heat[:, i]/1e6, color=plt_cm(norm(mass)), s = 15)
+        ax.plot(Li6_enrichments, decay_heat[:, i]/1e6, color=plt_cm(norm(mass)), alpha=0.3)
 
-    ax.set_xlabel("Fertile Mass (Metric Tons)")
+    ax.set_xlabel("Li-6 Enrichment (percent)")
     ax.set_ylabel("Decay Heat (MW)")
     ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$")
 
@@ -295,4 +301,27 @@ for dopant in dopants:
 
     fig.savefig(f"{dopant}_decay_heat.png", dpi=300)
 
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # U232 Content
+
+    if dopant == "Th":
+        fig, ax = plt.subplots()
+        ax.spines["top"].set_color("None")
+        ax.spines["right"].set_color("None")
+
+        for i, mass in enumerate(masses):
+            ax.scatter(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), s=15)
+            ax.plot(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), alpha=0.3)
+
+        ax.set_xlabel("Li-6 Enrichment (percent)")
+        ax.set_ylabel("U-232 content (appm)")
+        ax.set_title("U-232 content in bred U-233 at $t = t_{SQ}$")
+
+        #ax.set_yscale("log")
+        ax.set_ylim(0, 1.05*np.max(U232_content*1e6))
+
+        fig.savefig("Th_U232_content.png", dpi=300)
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Exit directory
     os.chdir("../..")

@@ -191,6 +191,7 @@ init_time = time.perf_counter()
 
 U_purities = np.empty(len(masses))
 Th_purities = np.empty(len(masses))
+U232_contents = np.empty(len(masses))
 
 #fig, ax = plt.subplots()
 for i, mass in enumerate(masses):
@@ -213,11 +214,14 @@ for i, mass in enumerate(masses):
     os.chdir(base_dir + "/Thorium/" + str(mass))
 
     Th_results = Results('depletion_results.h5')
-    Th_purity = extract_isotopic_purity("Th", Th_results)
+    Th_purity, U232_content = extract_isotopic_purity("Th", Th_results)
 
     # Use linear fit to extract purity at t_SQ
     Th_purity_fit = linregress(Th_time_steps[1:], y=Th_purity[1:])
     Th_purities[i] = Th_purity_fit.slope * (Th_time_to_SQ[i]/24) + Th_purity_fit.intercept
+
+    U232_fit = linregress(Th_time_steps[1:], y=U232_content[1:])
+    U232_contents[i] = U232_fit.slope * (Th_time_to_SQ[i]/24) + U232_fit.intercept
 
     os.chdir('../../..')
 
@@ -400,28 +404,6 @@ for i, mass in enumerate(masses):
 
 print("Loaded decay heat data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
-# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# Tl-208 activity
-init_time = time.perf_counter()
-
-Tl_activites = np.empty(len(masses))
-
-for i, mass in enumerate(masses):
-    os.chdir(base_dir + "/Thorium/" + str(mass))
-
-    Th_results = Results('depletion_results.h5')
-    idx = np.abs(Th_fissile_masses[i] - anp.sig_quantity).argmin()
-
-    activities = extract_activity(Th_results, "Tl208")
-
-    if Th_fissile_masses[i, idx] < anp.sig_quantity:
-        tsq_act = np.interp(Th_time_to_SQ[i], Th_time_steps[idx:idx+2], activities[idx, idx+2])
-    else:
-        tsq_act = np.interp(Th_time_to_SQ[i], Th_time_steps[idx-1:idx+1], activities[idx-1, idx+1])
-
-    Tl_activites[i] = tsq_act
-
-print("Loaded Tl-208 activity data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 # ====================================================
 # Plotting
 # ====================================================
@@ -774,19 +756,22 @@ ax.set_ylabel("Decay Heat (MW)", fontdict=fontdict)
 fig.savefig("decay_heat.png", dpi=dpi)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# Tl-208 Act
+# U-232 Content of U-233
 
 fig, ax = plt.subplots()
 
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.scatter(masses, Tl_activites, color=th_color, marker=th_marker)
+ax.scatter(masses, U232_contents*1e6, color=th_color, marker=th_marker)
 
+ax.set_title("U-232 content in 1 SQ of U-233", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
-ax.set_ylabel("Activity (Bq)")
+ax.set_ylabel("Concentration (appm)", fontdict=fontdict)
 
-fig.savefig("Tl-208_activity.png", dpi=dpi)
+ax.set_ylim(0, 1.05*np.max(U232_content*1e6))
+
+fig.savefig("U232_content.png", dpi=dpi)
 
 # ====================================================
 # Data Storage
@@ -814,7 +799,8 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "flux_spectrum":Th_flux_spectra,
               "fissile_mass":Th_fissile_masses,
               "reaction_spectra":Th_reaction_spectra,
-              "decay_heat":Th_decay_heats}
+              "decay_heat":Th_decay_heats,
+              "U232_content":U232_contents}
 
 os.chdir("../..")
 

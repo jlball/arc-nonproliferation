@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import uncertainties
 from numpy.polynomial.polynomial import Polynomial
 from scipy.optimize import curve_fit, root
+from scipy.interpolate import interp1d
 import os
 
 """
@@ -275,6 +276,7 @@ def extract_isotopic_purity(dopant, results):
         return atoms['Pu239']/total_atoms
     
     """ ~~~~~~~ Thorium -> Uranium ~~~~~~ """
+    # Returns both U233 content AND U232 content
     if dopant == 'Th':
         U_nuclides = doped_flibe_blanket.get_nuclides(element="U")
         atoms = {}
@@ -288,7 +290,7 @@ def extract_isotopic_purity(dopant, results):
                 num_atoms_channels = 0
             atoms[nuclide] = num_atoms_channels + num_atoms_blanket
             total_atoms = total_atoms + atoms[nuclide]
-        return atoms['U233']/total_atoms
+        return atoms['U233']/total_atoms, atoms["U232"]/total_atoms
     
 def extract_activity(results, nuclide):
     timesteps = results.get_times()
@@ -313,6 +315,58 @@ def extract_activity(results, nuclide):
     
     return activities
 
+
+def get_element_mass(material, element):
+
+    mass = 0
+    if len(element) == 1:
+        for nuc in material.nuclides:
+            if nuc.name[0] == element and nuc.name[1:].isnumeric(): #Checks to make sure that we only test 1 letter elements
+                mass += material.get_mass(nuclide=nuc.name)
+
+    elif len(element) == 2 and not nuc.name[1:].isnumeric():
+        for nuc in material.nuclides:
+            if nuc.name[0:2] == element:
+                mass += material.get_mass(nuclide=nuc.name)
+
+    return mass
+
+def contact_dose_rate(material):
+    # Data in this file retrieved from: https://physics.nist.gov/PhysRefData/XrayMassCoef/ComTab/air.html 
+    # It has units of cm^2/g
+    air_mu_en = np.loadtxt("/home/jlball/arc-nonproliferation/data/air_muen.txt")
+    air_mu_en_energies = air_mu_en[:, 0]
+    air_mu_en = air_mu_en[:, 2]
+    air_mu_en_interp = interp1d(air_mu_en_energies, air_mu_en)
+
+    decay_photon_dist = material.get_decay_photon_energy(units="Bq")
+    mu_material = np.zeros(decay_photon_dist.x.shape)
+
+    elements = material.get_elements()
+    for element in elements:
+        photon_data = openmc.data.IncidentPhoton.from_hdf5(f"/home/jlball/xs_data/endfb80_hdf5/photon/{element}.h5")
+
+        reactions = photon_data.reactions
+        rxn_keys = photon_data.reactions.keys()
+        total_xs_data = np.zeros(decay_photon_dist.x.shape)
+
+        for rxn_key in rxn_keys:
+            total_xs_data += reactions[rxn_key].xs(decay_photon_dist.x) * 1e-24 # Convert from barns to cm^2
+
+        try:
+            mu = total_xs_data / (openmc.data.atomic_weight(element) * anp.atomic_mass_unit_grams)
+            element_mass = get_element_mass(material, element)
+            mu_material += (element_mass / material.get_mass()) * mu
+            #print(element_mass)
+        except:
+            continue
+
+    C = 3.6e9 * (1.602e-19)
+    dose = 0
+    for i, energy in enumerate(decay_photon_dist.x):
+        dose +=  C * (air_mu_en_interp(energy/1e6)/mu_material[i]) * ((decay_photon_dist.p[i] * (energy/1e6))/(material.get_mass()/1e3))
+
+    return dose
 
 # def mass_attenuation_coeff():
 
