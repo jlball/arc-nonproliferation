@@ -520,15 +520,17 @@ np.save("Th_time_to_SQ_depletion", Th_time_to_SQ)
 def fit(x, A, B, C):
     return (A/x) - B*x + C
 
-U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ)
-Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ)
+U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ/24)
+Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ/24)
 
-print(U_popt)
-print(Th_popt)
+print("U-238 -> Pu-239 fit parameters:")
+print(f"A:{U_popt[0]}, B:{U_popt[1]}, C:{U_popt[2]}")
+print("Th-232 -> U-233 fit parameters:")
+print(f"A:{Th_popt[0]}, B:{Th_popt[1]}, C:{Th_popt[2]}")
 
 fit_masses = np.linspace(1, masses[-1], num=100)
-ax.plot(fit_masses, fit(fit_masses, *U_popt)/24, alpha=0.3, color=u_color)
-ax.plot(fit_masses, fit(fit_masses, *Th_popt)/24, alpha=0.3, color=th_color)
+ax.plot(fit_masses, fit(fit_masses, *U_popt), alpha=0.3, color=u_color)
+ax.plot(fit_masses, fit(fit_masses, *Th_popt), alpha=0.3, color=th_color)
 
 ax.legend()
 
