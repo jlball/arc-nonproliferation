@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import uncertainties
 from numpy.polynomial.polynomial import Polynomial
 from scipy.optimize import curve_fit, root
+from scipy.interpolate import interp1d
 import os
 
 """
@@ -132,7 +133,7 @@ def get_material_by_name(materials, name):
         if mat.name == name:
             return mat
 
-def get_masses_from_mats(nuclide, results):
+def get_masses_from_mats(nuclide, results, density=False):
     """
     Returns mass of either Pu-239 or U-233 at each timestep from a depletion 
     results object. 
@@ -159,7 +160,10 @@ def get_masses_from_mats(nuclide, results):
         doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
         doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels') 
 
-        mass = doped_flibe_blanket.get_mass(nuclide=nuclide) + doped_flibe_channels.get_mass(nuclide=nuclide)
+        if density:
+            mass = doped_flibe_blanket.get_mass_density(nuclide=nuclide) + doped_flibe_channels.get_mass_density(nuclide=nuclide)
+        else:
+            mass = doped_flibe_blanket.get_mass(nuclide=nuclide) + doped_flibe_channels.get_mass(nuclide=nuclide)
 
         masses[i] = mass / 1000 # Convert from grams to kg
 
@@ -182,6 +186,8 @@ def extract_time_to_sq(dopant, results):
 
     Returns
     -------
+    int, the index of the timestep just after t_SQ. used for later interpolation of relevant quantities at t_SQ
+
     float, the time in hours at which 1 SQ of fissile material is present in the blanket
     """
 
@@ -198,10 +204,12 @@ def extract_time_to_sq(dopant, results):
 
     if fissile_masses[idx] > anp.sig_quantity:
         time_to_sq = np.interp(anp.sig_quantity, [fissile_masses[idx-1], fissile_masses[idx]], [time_steps[idx-1], time_steps[idx]])
+        
     else:
         time_to_sq = np.interp(anp.sig_quantity, [fissile_masses[idx], fissile_masses[idx+1]], [time_steps[idx], time_steps[idx+1]])
 
-    return time_to_sq
+    return idx, time_to_sq
+    
 
 def extract_decay_heat(results):
     """
@@ -237,6 +245,8 @@ def extract_isotopic_purity(dopant, results):
         "U" for U-238 -> Pu-239, "Th" for Th-232 -> U233
     results : openmc.Results
         the depletion results file to analyse
+    idx : int
+        the index of the timestep just after t_SQ
 
     Returns
     -------
@@ -245,6 +255,7 @@ def extract_isotopic_purity(dopant, results):
     """
 
     materials = results.export_to_materials(-1)
+
     doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels')
     doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket') 
 
@@ -265,6 +276,7 @@ def extract_isotopic_purity(dopant, results):
         return atoms['Pu239']/total_atoms
     
     """ ~~~~~~~ Thorium -> Uranium ~~~~~~ """
+    # Returns both U233 content AND U232 content
     if dopant == 'Th':
         U_nuclides = doped_flibe_blanket.get_nuclides(element="U")
         atoms = {}
@@ -278,5 +290,84 @@ def extract_isotopic_purity(dopant, results):
                 num_atoms_channels = 0
             atoms[nuclide] = num_atoms_channels + num_atoms_blanket
             total_atoms = total_atoms + atoms[nuclide]
-        return atoms['U233']/total_atoms
+        return atoms['U233']/total_atoms, atoms["U232"]/total_atoms
     
+def extract_activity(results, nuclide):
+    timesteps = results.get_times()
+
+    activities = np.empty(len(timesteps))
+
+    for i, step in enumerate(timesteps):
+        materials = results.export_to_materials(i)
+
+        doped_flibe_channels = get_material_by_name(materials, 'doped flibe channels')
+        doped_flibe_blanket = get_material_by_name(materials, 'doped flibe blanket')
+
+        try:
+            channels_act = doped_flibe_channels.get_activity(by_nuclide=True)
+            blanket_act = doped_flibe_blanket.get_activity(by_nuclide=True)
+
+            total_act = channels_act[nuclide] + blanket_act[nuclide]
+        except:
+            total_act = 0
+
+        activities[i] = total_act
+    
+    return activities
+
+
+def get_element_mass(material, element):
+
+    mass = 0
+    if len(element) == 1:
+        for nuc in material.nuclides:
+            if nuc.name[0] == element and nuc.name[1:].isnumeric(): #Checks to make sure that we only test 1 letter elements
+                mass += material.get_mass(nuclide=nuc.name)
+
+    elif len(element) == 2 and not nuc.name[1:].isnumeric():
+        for nuc in material.nuclides:
+            if nuc.name[0:2] == element:
+                mass += material.get_mass(nuclide=nuc.name)
+
+    return mass
+
+def extract_contact_dose_rate(material):
+    # Data in this file retrieved from: https://physics.nist.gov/PhysRefData/XrayMassCoef/ComTab/air.html 
+    # It has units of cm^2/g
+    air_mu_en = np.loadtxt("/home/jlball/arc-nonproliferation/data/air_muen.txt")
+    air_mu_en_energies = air_mu_en[:, 0]
+    air_mu_en = air_mu_en[:, 2]
+    air_mu_en_interp = interp1d(air_mu_en_energies, air_mu_en)
+
+    decay_photon_dist = material.get_decay_photon_energy(units="Bq")
+    mu_material = np.zeros(decay_photon_dist.x.shape)
+
+    elements = material.get_elements()
+    for element in elements:
+        photon_data = openmc.data.IncidentPhoton.from_hdf5(f"/home/jlball/xs_data/endfb80_hdf5/photon/{element}.h5")
+
+        reactions = photon_data.reactions
+        rxn_keys = photon_data.reactions.keys()
+        total_xs_data = np.zeros(decay_photon_dist.x.shape)
+
+        for rxn_key in rxn_keys:
+            total_xs_data += reactions[rxn_key].xs(decay_photon_dist.x) * 1e-24 # Convert from barns to cm^2
+
+        try:
+            mu = total_xs_data / (openmc.data.atomic_weight(element) * anp.atomic_mass_unit_grams)
+            element_mass = get_element_mass(material, element)
+            mu_material += (element_mass / material.get_mass()) * mu
+            #print(element_mass)
+        except:
+            continue
+
+    C = 3.6e9 * (1.602e-19)
+    dose = 0
+    for i, energy in enumerate(decay_photon_dist.x):
+        dose +=  C * (air_mu_en_interp(energy/1e6)/mu_material[i]) * ((decay_photon_dist.p[i] * (energy/1e6))/(material.get_mass()/1e3))
+
+    return dose
+
+# def mass_attenuation_coeff():
+
+# def extract_surface_dose_rate(material):

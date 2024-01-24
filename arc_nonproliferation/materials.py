@@ -54,15 +54,35 @@ vcrti.add_element('Cu',4/1e6,percent_type='wo')
 vcrti.add_element('V',1-0.04-0.04-(56+181+103+7+17+0.5+119+280+0.5+80+13+4)/1e6,percent_type='wo')
 vcrti.set_density('g/cm3',6.05) #This density value is sus and needs a good source
 
-"""Uranium tetrafluroide"""
+""" Uranium tetrafluroide """
 uf4 = openmc.Material()
 uf4.add_elements_from_formula('UF4')
 uf4.set_density('g/cm3', 6.7)
 
-"""Thorium tetrafluoride"""
+""" Thorium tetrafluoride """
 thf4 = openmc.Material()
 thf4.add_elements_from_formula('ThF4')
 thf4.set_density('g/cm3', 6.3)
+
+""" Beryllium """
+beryllium = openmc.Material()
+beryllium.add_element("Be", 1.0)
+beryllium.set_density('g/cm3', 1.85)
+
+""" Fluorine """
+fluorine = openmc.Material()
+fluorine.add_element("F", 1.0)
+fluorine.set_density("g/cm3", 0.001696)
+
+""" Lithium """
+lithium = openmc.Material()
+lithium.add_element("Li", 1.0)
+lithium.set_density("g/cm3", 0.534)
+
+""" Uranium """
+uranium = openmc.Material()
+uranium.add_element("U", 1.0)
+uranium.set_density('g/cm3', 19.1)
 
 def get_tetrafluoride_mass(mass, dopant):
     """
@@ -92,7 +112,7 @@ def get_tetrafluoride_mass(mass, dopant):
 
     return tetrafluoride_mass
 
-def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None):
+def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe', volume=None, dopant_mass_units="kg"):
     """
     Return openmc material doped with specified fertile material
 
@@ -126,18 +146,40 @@ def make_doped_flibe(dopant, dopant_mass, Li6_enrichment=7.4, name='doped_flibe'
     else:
         raise ValueError("Invalid dopant passed into blanket liquid function")
 
-    if volume == None:
-        raise ValueError("Volume of blanket specified as None")
+    if dopant_mass_units == "kg":
+        if volume == None:
+            raise ValueError("Volume of blanket specified as None")
+        else:
+            flibe_mass = flibe.density * volume
+            tetrafluoride_mass = get_tetrafluoride_mass(dopant_mass, dopant)
+            tetrafluoride_weight_percent = tetrafluoride_mass / (flibe_mass + tetrafluoride_mass)
+            
+    elif dopant_mass_units == "wppm":
+        tetrafluoride_weight_percent = dopant_mass/1e6
+    
     else:
-        flibe_mass = flibe.density * volume
-        tetrafluoride_mass = get_tetrafluoride_mass(dopant_mass, dopant)
-        tetrafluoride_weight_percent = tetrafluoride_mass / flibe_mass
+        raise ValueError("Invalid units given for dopant mass argument")
 
     doped_mat = openmc.Material.mix_materials([tetrafluoride, flibe], [tetrafluoride_weight_percent, 1 - tetrafluoride_weight_percent], 'wo', name=name)
     doped_mat.volume = volume
     doped_mat.depletable = True
     return doped_mat
 
-
-
+def make_impure_flibe(wppm, name='doped_flibe'):
     
+    weight_fraction = wppm/1e6
+
+    impure_Be = openmc.Material.mix_materials([beryllium, uranium], [1 - weight_fraction, weight_fraction], 'wo')
+
+    Be_fluoride = openmc.Material.mix_materials([impure_Be, fluorine], [1/3, 2/3], "ao")
+    Be_fluoride.density("g/cm3", 1.99)
+
+    Li_fluoride = openmc.Material()
+    Li_fluoride.add_elements_from_formula("LiF")
+    Li_fluoride.set_density("g/cm3", 2.64)
+
+    impure_flibe = openmc.Material.mix_materials([Be_fluoride, Li_fluoride], [1/3, 2/3], "ao", name=name)
+
+    impure_flibe.set_density("g/cm3", 1.94)
+
+    return impure_flibe

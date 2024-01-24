@@ -123,7 +123,7 @@ class Device(openmc.model.Model):
         print("WARNING: Cell with name:", name, "not found. returning None.")
         return None
 
-def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt', blanket_file="arc_blanket.txt"):
+def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt', blanket_file="arc_blanket.txt", dopant_mass_units="kg"):
     """
     Generates a device object with specified fertile inventory and Li-6 enrichment.
 
@@ -182,12 +182,21 @@ def generate_device(dopant, dopant_mass, Li6_enrichment=7.5, vv_file='arc_vv.txt
     flibe_volume = vol_calc_load.volumes[8].n
     channels_volume = vol_calc_load.volumes[5].n
 
-    doped_flibe = make_doped_flibe(dopant, 
-                                    dopant_mass, 
-                                    volume=flibe_volume + channels_volume, 
-                                    Li6_enrichment=Li6_enrichment, 
-                                    name="doped flibe blanket")
-    
+
+    if dopant_mass_units == "kg":
+        doped_flibe = make_doped_flibe(dopant, 
+                                        dopant_mass, 
+                                        volume=flibe_volume + channels_volume, 
+                                        Li6_enrichment=Li6_enrichment, 
+                                        name="doped flibe blanket")
+        
+    elif dopant_mass_units == 'wppm':
+        doped_flibe = make_impure_flibe(dopant_mass, 
+                                        name="doped flibe blanket")
+
+    else:
+        raise ValueError("Invalid units specified for dopant mass")
+        
     device.doped_flibe = doped_flibe
 
     doped_flibe_channels = doped_flibe.clone()
