@@ -48,15 +48,16 @@ for dopant in dopants:
 
     cf = ax.contourf(X, Y, time_to_sq, levels=np.logspace(np.log10(time_to_sq.min()), np.log10(time_to_sq.max()), num=1000), norm=colors.LogNorm(vmin=time_to_sq.min(), vmax=time_to_sq.max()), cmap=cm.plasma)
 
+    fontsize=14
     formatter = LogFormatter(10, labelOnlyBase=False, minor_thresholds=(0.0, 0.1)) 
     cbar = fig.colorbar(cf, label="Time to SQ (days)", ticks=[1, 10, 100, 1000], format=formatter)
 
     # Time to 1 SQ
-    cs_t_sq = ax.contour(X, Y, time_to_sq, levels=[14, 30, 90, 180, 365], colors="yellow")
+    cs_t_sq = ax.contour(X, Y, time_to_sq, levels=[14, 30, 90, 180, 365], colors="white", alpha=0.7, linestyles ="dashed")
     ax.clabel(cs_t_sq, inline=True, fontsize=10)
 
     # Fission Power
-    cs_fission_power = ax.contour(X, Y, fission_power_t_sq, levels=[10, 25, 50, 75, 100], colors="magenta")
+    cs_fission_power = ax.contour(X, Y, fission_power_t_sq, levels=[10, 25, 50, 75, 100], colors="yellow")
     ax.clabel(cs_fission_power, inline=True, fontsize=10)
 
     # TBR
@@ -67,9 +68,7 @@ for dopant in dopants:
     #cs_purity = ax.contour(X, Y, isotopic_purity, colors='purple')
     #ax.clabel(cs_purity, inline=True, fontsize=10)
 
-    fontsize=14
-
-    ax.set_xlabel("Li6 Enrichment (percent)", fontsize=fontsize)
+    ax.set_xlabel("Li6 Enrichment (%)", fontsize=fontsize)
     ax.set_ylabel("Fertile Mass (Metric Tons)", fontsize=fontsize)
     ax.set_title(f"{dopant} Proliferation Plot", fontsize=fontsize)
 

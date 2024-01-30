@@ -17,41 +17,32 @@ fusion_power = 500 #MW
 total_neutron_rate = fusion_power * neutrons_per_MJ
 
 """ Load masses and initialisze final output arrays """
-masses = np.loadtxt(base_dir + '/masses.txt')
-print(masses)
-U_time_to_SQ = np.empty(len(masses))
-Th_time_to_SQ = np.empty(len(masses))
+mass = np.loadtxt(base_dir + '/masses.txt')
 
 # ====================================================
 # TBR
 # ====================================================
 
-U_tbr = np.empty(len(masses))
-Th_tbr = np.empty(len(masses))
 
-for i, mass in enumerate(masses):
+""" Extract time to 1 SQ for Uranium """
+os.chdir(base_dir + "/Uranium/" + str(mass))
+sp = openmc.StatePoint('statepoint.100.h5')
+U_tally = sp.get_tally(name='Mesh Filter')
 
-    """ Extract time to 1 SQ for Uranium """
-    os.chdir(base_dir + "/Uranium/" + str(mass))
-    sp = openmc.StatePoint('statepoint.10.h5')
-    U_tally = sp.get_tally(name='Mesh')
+U_r_mesh, U_z_mesh, U_abs_mesh = get_RZ_cyl_mesh_data(U_tally, "(n,gamma)", volume_norm=False)
+os.chdir("../../..")
 
-    U_r_mesh, U_z_mesh, U_abs_mesh = get_RZ_cyl_mesh_data(U_tally, "(n,gamma)", volume_norm=False)
-    os.chdir("../../..")
+""" Extract time to 1 SQ for Thorium """
+os.chdir(base_dir + "/Thorium/" + str(mass))
+sp = openmc.StatePoint('statepoint.100.h5')
+Th_tally = sp.get_tally(name='Li Tally')
 
-    """ Extract time to 1 SQ for Thorium """
-    os.chdir(base_dir + "/Thorium/" + str(mass))
-    sp = openmc.StatePoint('statepoint.10.h5')
-    Th_tally = sp.get_tally(name='Li Tally')
-
-    Th_r_mesh, Th_z_mesh, Th_abs_mesh = get_RZ_cyl_mesh_data(Th_tally, "(n,gamma)", volume_norm=False)
-    os.chdir("../../..")
+Th_r_mesh, Th_z_mesh, Th_abs_mesh = get_RZ_cyl_mesh_data(Th_tally, "(n,gamma)", volume_norm=False)
+os.chdir("../../..")
 
 # ====================================================
 # Plotting
 # ====================================================
-
-masses = masses/1e3
 
 #Change into dedicated directory for figures or create figures directory
 try:
