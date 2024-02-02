@@ -16,7 +16,7 @@ coupled depletion, independent depletion)
 
 """
 
-def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
+def get_RZ_cyl_mesh_data(tally, score, value='mean', filters=[], filter_bins = [], volume_norm=True):
     """
     Parse out a set of 3 2D np arrays for easy plotting of 
     2D R/Z cylindrical Mesh tallies.
@@ -44,7 +44,8 @@ def get_RZ_cyl_mesh_data(tally, score, value='mean', volume_norm=True):
     z_points = len(mesh.z_grid)
 
     # Reshape the data into a 2 axis numpy array of R/Z flux values
-    slice = tally.get_slice(scores=[score])
+    slice = tally.get_slice(scores=[score], filters=filters, filter_bins=filter_bins)
+    print(f"slice shape:{slice.shape}")
     data = slice.get_reshaped_data(value=value)
     data = data.reshape((z_points-1, r_points-1))
 

@@ -29,16 +29,16 @@ os.chdir(base_dir + "/Uranium/" + str(mass))
 sp = openmc.StatePoint('statepoint.100.h5')
 U_tally = sp.get_tally(name='Mesh Filter')
 
-U_r_mesh, U_z_mesh, U_abs_mesh = get_RZ_cyl_mesh_data(U_tally, "(n,gamma)", volume_norm=False)
+U_r_mesh, U_z_mesh, U_abs_mesh = get_RZ_cyl_mesh_data(U_tally, "(n,gamma)", volume_norm=False, filters=[openmc.CellFilter], filter_bins=[(0, 1)])
 os.chdir("../../..")
 
-""" Extract time to 1 SQ for Thorium """
-os.chdir(base_dir + "/Thorium/" + str(mass))
-sp = openmc.StatePoint('statepoint.100.h5')
-Th_tally = sp.get_tally(name='Li Tally')
+# """ Extract time to 1 SQ for Thorium """
+# os.chdir(base_dir + "/Thorium/" + str(mass))
+# sp = openmc.StatePoint('statepoint.100.h5')
+# Th_tally = sp.get_tally(name='Li Tally')
 
-Th_r_mesh, Th_z_mesh, Th_abs_mesh = get_RZ_cyl_mesh_data(Th_tally, "(n,gamma)", volume_norm=False)
-os.chdir("../../..")
+# Th_r_mesh, Th_z_mesh, Th_abs_mesh = get_RZ_cyl_mesh_data(Th_tally, "(n,gamma)", volume_norm=False)
+# os.chdir("../../..")
 
 # ====================================================
 # Plotting

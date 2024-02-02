@@ -16,7 +16,7 @@ os.mkdir(base_dir + '/Thorium')
 def setup_device(device):
     device.settings.photon_transport = False
     device.settings.batches = 100
-    device.settings.particles = int(5e4)
+    device.settings.particles = int(5e3)
     device.settings.survival_biasing = True
 
     """ Cell Filter """
@@ -28,9 +28,9 @@ def setup_device(device):
     energy_filter = openmc.EnergyFilter.from_group_structure("CCFE-709")
 
     """ Mesh Filter """
-    mesh = openmc.CylindricalMesh()
-    mesh.r_grid = np.linspace(200, 700, num=500)
-    mesh.z_grid = np.linspace(-400, 400, num=800)
+    r_grid = np.linspace(200, 700, num=500)
+    z_grid = np.linspace(-400, 400, num=800)
+    mesh = openmc.CylindricalMesh(r_grid=r_grid, z_grid=z_grid)
     mesh.phi_grid = np.array([0, 2 * np.pi])
 
     mesh_filter = openmc.MeshFilter(mesh)
@@ -50,7 +50,7 @@ def setup_device(device):
     device.add_tally("Fertile Tally", ['fission','(n,gamma)'], filters=[energy_filter, cell_filter], nuclides=[fertile_nuclide])
 
     """ Mesh Tally """
-    device.add_tally("Mesh Filter", ['fission','(n,gamma)'], filters=[mesh_filter], nuclides=[fertile_nuclide])
+    device.add_tally("Mesh Filter", ['fission','(n,gamma)'], filters=[mesh_filter, cell_filter], nuclides=[fertile_nuclide])
 
     return device
 
