@@ -11,6 +11,14 @@ from scipy.interpolate import interp1d
 import time
 import pickle
 
+"""
+This script processes the output of a single simulation run by depletion-scan-arc-1.py. It extracts relevant quantities and generates plots in the 
+figures subfolder of the main simulation directory. This script must be run on a simulation output before higher level scripts like Li6_plot.py and 
+proliferation_plot.py can be run.
+
+"""
+
+
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
 else:
