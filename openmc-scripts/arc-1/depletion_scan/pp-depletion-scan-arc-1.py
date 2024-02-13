@@ -18,7 +18,6 @@ proliferation_plot.py can be run.
 
 """
 
-
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
 else:

@@ -8,6 +8,11 @@ import matplotlib.cm as cm
 import openmc
 import openmc.plotter as plotter
 
+"""
+This script generates plots which depict the variation of six quantities with Li-6 enrichment, from the output of simulations carried out with the 
+depletion-scan-arc-1.py script. Each simulation folder should end with the Li-6 enrichment level of the simulated blanket in percent, with some specified prefix. 
+By default this script is setup to run on the data used in the ARC nonproliferation publication. 
+"""
 
 # ====================================================
 # Data loading

@@ -369,6 +369,75 @@ def extract_contact_dose_rate(material):
 
     return dose
 
+def lin_interp_material(results, material_name, time, time_units='d'):
+    """
+        Linearly interpolates between two materials at given timesteps in a depletion calculation
+        to a new material at an intermediate timestep linearly.
+
+        Parameters
+        ----------
+        results : openmc.deplete.Results
+            depletion results object from the depletion calculation
+        material_name : str
+            list of material names to linearly interpolate
+        time : float
+            time at which to compute the new material composition
+
+        Returns
+        -------
+        openmc.Material: new material
+    """
+    times = results.get_times(time_units=time_units)
+    idx = np.abs(times - time).argmin() 
+
+    if  times[idx] > time:
+        mats_0 = results.export_to_materials(idx-1)
+        mats_1 = results.export_to_materials(idx)
+
+        time_0 = times[idx-1]
+        time_1 = times[idx]
+
+    if times[idx] < time:
+        mats_0 = results.export_to_materials(idx)
+        mats_1 = results.export_to_materials(idx+1)
+
+        time_0 = times[idx]
+        time_1 = times[idx+1]
+
+    else:
+        raise ValueError("Time specified is not within depletion interval")
+
+    mat_0 = get_material_by_name(mats_0, material_name)
+    mat_1 = get_material_by_name(mats_1, material_name)
+
+    if mat_0.get_nuclides() == mat_1.get_nuclides():
+        nuclides = mat_0.get_nuclides()
+
+        mat_0_nucs = mat_0.get_nuclide_densities()
+        mat_1_nucs = mat_1.get_nuclide_densities()
+
+        new_mat = openmc.Material()
+
+        # Linearaly interpolate each nuclide in the material:
+        for nuclide in nuclides:
+            percent = np.interp(time, [time_0, time_1], [mat_0_nucs[nuclide][1], mat_1_nucs[nuclide][1]])
+
+            # Ensure that we are pulling the name nuclide from each material and using the same percent type
+            assert mat_0_nucs[nuclide][2] == mat_1_nucs[nuclide][2]
+            assert mat_0_nucs[nuclide][0] == mat_1_nucs[nuclide][0]
+        
+            new_mat.add_nuclide(nuclide, percent, percent_type=mat_0_nucs[nuclide][2])
+
+        assert mat_0.density_units == mat_1.density_units
+        density = np.interp(time, [time_0, time_1], [mat_0.density, mat_1.density])
+
+        new_mat.set_density(mat_0.density_units, density)
+        return new_mat
+    
+    else:
+        raise NotImplementedError("No support yet for materials with different nuclide compositions")
+
+
 # def mass_attenuation_coeff():
 
 # def extract_surface_dose_rate(material):
