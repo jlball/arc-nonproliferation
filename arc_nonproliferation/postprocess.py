@@ -390,6 +390,9 @@ def lin_interp_material(results, material_name, time, time_units='d'):
     times = results.get_times(time_units=time_units)
     idx = np.abs(times - time).argmin() 
 
+    print(idx)
+    print(times[idx] > time)
+    print(times[idx] < time)
     if  times[idx] > time:
         mats_0 = results.export_to_materials(idx-1)
         mats_1 = results.export_to_materials(idx)
@@ -397,15 +400,15 @@ def lin_interp_material(results, material_name, time, time_units='d'):
         time_0 = times[idx-1]
         time_1 = times[idx]
 
-    if times[idx] < time:
+    elif times[idx] < time:
         mats_0 = results.export_to_materials(idx)
         mats_1 = results.export_to_materials(idx+1)
 
         time_0 = times[idx]
         time_1 = times[idx+1]
-
     else:
-        raise ValueError("Time specified is not within depletion interval")
+        print("VALUE ERROR")
+        #raise ValueError("Time specified is not within depletion interval")
 
     mat_0 = get_material_by_name(mats_0, material_name)
     mat_1 = get_material_by_name(mats_1, material_name)
@@ -428,10 +431,10 @@ def lin_interp_material(results, material_name, time, time_units='d'):
         
             new_mat.add_nuclide(nuclide, percent, percent_type=mat_0_nucs[nuclide][2])
 
-        assert mat_0.density_units == mat_1.density_units
-        density = np.interp(time, [time_0, time_1], [mat_0.density, mat_1.density])
+        # assert mat_0.density_units == mat_1.density_units
+        # density = np.interp(time, [time_0, time_1], [mat_0.density, mat_1.density])
 
-        new_mat.set_density(mat_0.density_units, density)
+        # new_mat.set_density(mat_0.density_units, density)
         return new_mat
     
     else:
