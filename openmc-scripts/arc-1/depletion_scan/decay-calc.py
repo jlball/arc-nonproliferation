@@ -15,6 +15,8 @@ source_rates = np.zeros(len(decay_time_steps))
 
 openmc.config['chain_file'] = chain_file
 
+dopants = ["U", "Th"]
+
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
 else:
@@ -22,56 +24,60 @@ else:
 
 masses = np.loadtxt(base_dir + "/masses.txt")
 
-with open(f'{base_dir}/data/U_data_dict.pkl', 'rb') as file:
-    data_dict = pickle.load(file)
+for dopant in dopants:
+    with open(f'{base_dir}/data/{dopant}_data_dict.pkl', 'rb') as file:
+        data_dict = pickle.load(file)
 
-    U_time_to_sq = data_dict["time_to_sq"]/24
+        time_to_sq = data_dict["time_to_sq"]/24
 
-#
-#  Uranium
-#
+    if dopant == "U":
+        os.chdir(f"{base_dir}/Uranium")
+    elif dopant == "Th":
+        os.chdir(f"{base_dir}/Thorium")
+    else:
+        raise ValueError("Invalid dopant type")
 
-os.chdir(f"{base_dir}/Uranium")
+    for i, mass in enumerate(masses):
+        os.chdir(f"{mass}")
 
-for i, mass in enumerate(masses):
-    os.chdir(f"{mass}")
+        results = Results("depletion_results.h5")
 
-    results = Results("depletion_results.h5")
+        # Linearly interpolate material compositions to t_SQ
+        blanket_mat = lin_interp_material(results, "doped flibe blanket", time_to_sq[i])
+        channel_mat = lin_interp_material(results, "doped flibe channels", time_to_sq[i])
 
-    # Linearly interpolate material compositions to t_SQ
-    blanket_mat = lin_interp_material(results, "doped flibe blanket", U_time_to_sq[i])
-    channel_mat = lin_interp_material(results, "doped flibe channels", U_time_to_sq[i])
+        # Create or enter subdirectory for decay calc
+        try:
+            os.chdir(cooldow_folder_name)
+        except:
+            os.mkdir(cooldow_folder_name)
+            os.chdir(cooldow_folder_name)
 
-    # Create or enter subdirectory for decay calc
-    try:
-        os.chdir(cooldow_folder_name)
-    except:
-        os.mkdir(cooldow_folder_name)
-        os.chdir(cooldow_folder_name)
+        # Perform decay only depletion calc
 
-    # Perform decay only depletion calc
+        device = generate_device("U", 0, Li6_enrichment=7.5)
 
-    device = generate_device("U", 0, Li6_enrichment=7.5)
+        # Set new material volumes
+        channel_mat.volume = device.channel.fill.volume
+        blanket_mat.volume = device.channel.fill.volume
 
-    # Set new material volumes
-    channel_mat.volume = device.channel.fill.volume
-    blanket_mat.volume = device.channel.fill.volume
+        device.channel.fill = channel_mat
+        device.blanket.fill = blanket_mat
 
-    device.channel.fill = channel_mat
-    device.blanket.fill = blanket_mat
+        device.build()
 
-    device.build()
+        operator = IndependentOperator(openmc.Materials([device.channel.fill, device.blanket.fill]),
+                                        fluxes=np.zeros(2),
+                                        micros=[openmc.deplete.MicroXS(np.zeros((0,0)), [], []), openmc.deplete.MicroXS(np.zeros((0,0)), [], [])],
+                                        normalization_mode="source-rate")
 
-    operator = IndependentOperator(openmc.Materials([device.channel.fill, device.blanket.fill]),
-                                    fluxes=np.zeros(2),
-                                    micros=[openmc.deplete.MicroXS(np.zeros((0,0)), [], []), openmc.deplete.MicroXS(np.zeros((0,0)), [], [])],
-                                    normalization_mode="source-rate")
+        integrator = PredictorIntegrator(operator, 
+                                            decay_time_steps, 
+                                            source_rates=source_rates,
+                                            timestep_units='d')
+        
+        integrator.integrate()
 
-    integrator = PredictorIntegrator(operator, 
-                                        decay_time_steps, 
-                                        source_rates=source_rates,
-                                        timestep_units='d')
+        os.chdir("../..")
     
-    integrator.integrate()
-
     os.chdir("../..")

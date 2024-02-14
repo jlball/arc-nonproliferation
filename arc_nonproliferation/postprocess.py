@@ -390,9 +390,9 @@ def lin_interp_material(results, material_name, time, time_units='d'):
     times = results.get_times(time_units=time_units)
     idx = np.abs(times - time).argmin() 
 
-    print(idx)
-    print(times[idx] > time)
-    print(times[idx] < time)
+    # print(idx)
+    # print(times[idx] > time)
+    # print(times[idx] < time)
     if  times[idx] > time:
         mats_0 = results.export_to_materials(idx-1)
         mats_1 = results.export_to_materials(idx)
