@@ -16,7 +16,7 @@ openmc.config['chain_file'] = chain_file
 
 dopants = ["U", "Th"]
 
-use_stored_data = False
+use_stored_data = True
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -67,8 +67,6 @@ if __name__ == "__main__":
                 Th_mats.append(Th_results.export_to_materials(j))
             os.chdir("../../..")
 
-            
-
             U_blanket_dose_rates, Th_blanket_dose_rates = 0, 0
             U_channel_dose_rates, Th_channel_dose_rates = 0, 0
 
@@ -112,10 +110,10 @@ if __name__ == "__main__":
             pickle.dump(dose_rate_dict, file)
 
     else:
-        with open("dose_rate_dict.pkl", 'wb') as file:
+        with open(f"{base_dir}/data/dose_rate_dict.pkl", 'rb') as file:
             dose_rate_dict = pickle.load(file)
 
-
+        print(dose_rate_dict)
         try:
             os.chdir("figures")
         except:
@@ -138,8 +136,9 @@ if __name__ == "__main__":
             ax.set_xscale("log")
 
             fig.savefig(f"{dopant}_contact_dose_rate_decay.png", dpi=300)
+            print(f"Saved {dopant} fig")
 
-            os.chdir("../..")
+        os.chdir("../..")
 
 
 
