@@ -59,7 +59,7 @@ for dopant in dopants:
     cbar = fig.colorbar(cf, label="Time to SQ (days)", ticks=[1, 10, 100, 1000], format=formatter)
 
     # Time to 1 SQ
-    cs_t_sq = ax.contour(X, Y, time_to_sq, levels=[14, 30, 90, 180, 365], colors="white", alpha=0.7, linestyles ="dashed")
+    cs_t_sq = ax.contour(X, Y, time_to_sq, levels=[14, 30, 90, 180, 365], colors="white", linestyles="dashed", alpha=0.7)
     ax.clabel(cs_t_sq, inline=True, fontsize=10)
 
     # Fission Power
