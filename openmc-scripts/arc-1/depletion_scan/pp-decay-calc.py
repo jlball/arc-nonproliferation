@@ -1,6 +1,8 @@
 import openmc
 from openmc.deplete import Results
 import matplotlib.pyplot as plt
+import matplotlib.cm as cm
+import matplotlib.colors as colors
 import numpy as np
 import sys
 from arc_nonproliferation.postprocess import *
@@ -16,7 +18,7 @@ openmc.config['chain_file'] = chain_file
 
 dopants = ["U", "Th"]
 
-use_stored_data = True
+use_stored_data = False
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
@@ -75,6 +77,10 @@ if __name__ == "__main__":
             U_dose_rates[i] = np.asarray(U_blanket_result.get()) + np.asarray(U_channel_result.get())
             Th_dose_rates[i] = np.asarray(Th_blanket_result.get()) + np.asarray(Th_channel_result.get())
 
+            if mass == masses[2]:
+                with open("U_blanket_mats.pkl", 'wb') as file:
+                    pickle.dump(U_blanket_mats, file)
+
         dose_rate_dict["U"] = U_dose_rates
         dose_rate_dict["Th"] = Th_dose_rates
         dose_rate_dict["time_steps"] = time_steps
@@ -94,19 +100,28 @@ if __name__ == "__main__":
             dose_rate_dict = pickle.load(file)
 
     try:
-        os.chdir("figures")
+        os.chdir(f"{base_dir}/figures")
     except:
-        os.mkdir("figures")
-        os.chdir("figures")
+        os.mkdir(f"{base_dir}/figures")
+        os.chdir(f"{base_dir}/figures")
 
     for dopant in dopants:
         dose_rates = dose_rate_dict[dopant]
         time_steps = dose_rate_dict["time_steps"]
 
+        if dopant == 'U':
+            plt_color ='r'
+            plt_cm = cm.Oranges
+        else:
+            plt_color = 'g'
+            plt_cm = cm.Purples
+
+        norm = colors.Normalize(vmin=-0.5*masses[-1], vmax=1.1*masses[-1])
+
         fig, ax = plt.subplots()
 
         for i, dose_rate in enumerate(dose_rates):
-            ax.plot(time_steps, dose_rates[i])
+            ax.plot(time_steps, dose_rates[i], color=plt_cm(norm(masses[i])), label=int(masses[i]/1e3))
 
         ax.set_xlabel("Time (days)")
         ax.set_ylabel("Contact Dose Rate (Sv/hr)")
@@ -118,9 +133,9 @@ if __name__ == "__main__":
             ax.set_title("Decay of contact dose rate in Thorium fueled FLiBe")
 
         ax.set_xscale("log")
+        ax.legend()
 
         fig.savefig(f"{dopant}_contact_dose_rate_decay.png", dpi=300)
-        print(f"Saved {dopant} fig")
 
     os.chdir("../..")
 

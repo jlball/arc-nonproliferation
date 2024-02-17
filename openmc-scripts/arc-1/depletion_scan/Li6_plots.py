@@ -96,7 +96,6 @@ for dopant in dopants:
     fig.set_size_inches(width_in,height_in)
     ax.spines["top"].set_color("None")
     ax.spines["right"].set_color("None")
-
     
     for i, t_SQ in enumerate(time_to_sq):
         ax.scatter(Li6_enrichments, t_SQ, color=plt_cm(norm(masses[i])), s=15)
@@ -327,7 +326,7 @@ for dopant in dopants:
         ax.set_ylabel("U-232 content (appm)", fontdict=fontdict)
         #ax.set_title("U-232 content in bred U-233 at $t = t_{SQ}$")
 
-        #ax.set_yscale("log")
+        ax.set_yscale("log")
         ax.set_ylim(0, 1.05*np.max(U232_content*1e6))
 
         fig.savefig("Th_U232_content.png", dpi=300)

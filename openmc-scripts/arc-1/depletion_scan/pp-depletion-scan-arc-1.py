@@ -527,10 +527,17 @@ def fit(x, A, B, C):
 U_popt, U_pcov = curve_fit(fit, masses, U_time_to_SQ/24)
 Th_popt, Th_pcov = curve_fit(fit, masses, Th_time_to_SQ/24)
 
+U_perr = np.sqrt(np.diag(U_pcov))
+Th_perr = np.sqrt(np.diag(Th_pcov))
+
 print("U-238 -> Pu-239 fit parameters:")
 print(f"A:{U_popt[0]}, B:{U_popt[1]}, C:{U_popt[2]}")
+print("Standard Deviations:")
+print(f"A:{U_perr[0]}, B:{U_perr[1]}, C:{U_perr[2]}")
 print("Th-232 -> U-233 fit parameters:")
 print(f"A:{Th_popt[0]}, B:{Th_popt[1]}, C:{Th_popt[2]}")
+print("Standard Deviations:")
+print(f"A:{Th_perr[0]}, B:{Th_perr[1]}, C:{Th_perr[2]}")
 
 fit_masses = np.linspace(1, masses[-1], num=100)
 ax.plot(fit_masses, fit(fit_masses, *U_popt), alpha=0.3, color=u_color)
