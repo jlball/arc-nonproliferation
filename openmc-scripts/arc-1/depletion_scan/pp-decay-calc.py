@@ -12,7 +12,7 @@ import pickle
 import multiprocessing as mp
 
 cooldow_folder_name = "dose_rate_cooldown"
-num_timesteps = 51
+num_timesteps = 9
 
 openmc.config['chain_file'] = chain_file
 
@@ -77,9 +77,9 @@ if __name__ == "__main__":
             U_dose_rates[i] = np.asarray(U_blanket_result.get()) + np.asarray(U_channel_result.get())
             Th_dose_rates[i] = np.asarray(Th_blanket_result.get()) + np.asarray(Th_channel_result.get())
 
-            if mass == masses[2]:
-                with open("U_blanket_mats.pkl", 'wb') as file:
-                    pickle.dump(U_blanket_mats, file)
+            # if mass == masses[2]:
+            #     with open("U_blanket_mats.pkl", 'wb') as file:
+            #         pickle.dump(U_blanket_mats, file)
 
         dose_rate_dict["U"] = U_dose_rates
         dose_rate_dict["Th"] = Th_dose_rates

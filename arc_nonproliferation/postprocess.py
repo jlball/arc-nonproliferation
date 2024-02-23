@@ -338,10 +338,18 @@ def extract_contact_dose_rate(material):
     air_mu_en = np.loadtxt("/home/jlball/arc-nonproliferation/data/air_muen.txt")
     air_mu_en_energies = air_mu_en[:, 0]
     air_mu_en = air_mu_en[:, 2]
-    air_mu_en_interp = interp1d(air_mu_en_energies, air_mu_en)
 
-    decay_photon_dist = material.get_decay_photon_energy(units="Bq")
-    mu_material = np.zeros(decay_photon_dist.x.shape)
+    air_mu_en_bins = (0.5*(air_mu_en_energies[1:] + air_mu_en_energies[:-1]))
+    air_mu_en_bins = np.append(air_mu_en_bins, 25)
+    air_mu_en_bins = np.insert(air_mu_en_bins, 0, 0)
+
+    air_mu_en_bin_centers = 0.5*(air_mu_en_bins[1:] + air_mu_en_bins[:-1])
+
+    decay_photon_dist = material.get_decay_photon_energy(units="Bq/g", clip_tolerance=1e-2)
+    binned_photon_dist = np.histogram(decay_photon_dist.x/1e6, bins=air_mu_en_bins, weights=decay_photon_dist.p)[0]
+    binned_photon_dist = 1000 * binned_photon_dist #convert from Bq/g to Bq/kg
+
+    mu_material = np.zeros(len(air_mu_en_bin_centers))
 
     elements = material.get_elements()
     for element in elements:
@@ -349,10 +357,11 @@ def extract_contact_dose_rate(material):
 
         reactions = photon_data.reactions
         rxn_keys = photon_data.reactions.keys()
-        total_xs_data = np.zeros(decay_photon_dist.x.shape)
+        total_xs_data = np.zeros(len(air_mu_en_bin_centers))
 
         for rxn_key in rxn_keys:
-            total_xs_data += reactions[rxn_key].xs(decay_photon_dist.x) * 1e-24 # Convert from barns to cm^2
+            total_xs_data += reactions[rxn_key].xs(air_mu_en_bin_centers*1e6) # convert bin centers to units of eV 
+            total_xs_data = total_xs_data * 1e-24 # Convert from barns to cm^2
 
         try:
             mu = total_xs_data / (openmc.data.atomic_weight(element) * anp.atomic_mass_unit_grams)
@@ -362,10 +371,11 @@ def extract_contact_dose_rate(material):
         except:
             continue
 
+        #print(mu_material)
     C = 3.6e9 * (1.602e-19)
     dose = 0
-    for i, energy in enumerate(decay_photon_dist.x):
-        dose +=  C * (air_mu_en_interp(energy/1e6)/mu_material[i]) * ((decay_photon_dist.p[i] * (energy/1e6))/(material.get_mass()/1e3))
+    for i, energy in enumerate(air_mu_en_bin_centers):
+        dose +=  C * (air_mu_en[i]/mu_material[i]) * ((binned_photon_dist[i] * energy))
 
     return dose
 
