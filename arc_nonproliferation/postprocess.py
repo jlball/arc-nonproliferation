@@ -325,12 +325,35 @@ def get_element_mass(material, element):
             if nuc.name[0] == element and nuc.name[1:].isnumeric(): #Checks to make sure that we only test 1 letter elements
                 mass += material.get_mass(nuclide=nuc.name)
 
-    elif len(element) == 2 and not nuc.name[1:].isnumeric():
+    elif len(element) == 2:
         for nuc in material.nuclides:
-            if nuc.name[0:2] == element:
+            if nuc.name[0:2] == element and not nuc.name[1:].isnumeric():
                 mass += material.get_mass(nuclide=nuc.name)
 
     return mass
+
+def get_mass_attenuation(material, energies):
+    elements = material.get_elements()
+    mu_material = np.zeros(len(energies))
+    for element in elements:
+        photon_data = openmc.data.IncidentPhoton.from_hdf5(f"/home/jlball/xs_data/endfb80_hdf5/photon/{element}.h5")
+
+        reactions = photon_data.reactions
+        rxn_keys = photon_data.reactions.keys()
+        total_xs_data = np.zeros(len(energies))
+
+        for rxn_key in rxn_keys:
+            total_xs_data += reactions[rxn_key].xs(energies)
+
+        total_xs_data = total_xs_data * 1e-24 # Convert from barns to cm^2
+
+        try:
+            mu = total_xs_data / (openmc.data.atomic_weight(element) * anp.atomic_mass_unit_grams)
+            element_mass = get_element_mass(material, element)
+            mu_material += (element_mass / material.get_mass()) * mu
+        except:
+            continue
+    return mu_material
 
 def extract_contact_dose_rate(material):
     # Data in this file retrieved from: https://physics.nist.gov/PhysRefData/XrayMassCoef/ComTab/air.html 
@@ -345,33 +368,12 @@ def extract_contact_dose_rate(material):
 
     air_mu_en_bin_centers = 0.5*(air_mu_en_bins[1:] + air_mu_en_bins[:-1])
 
-    decay_photon_dist = material.get_decay_photon_energy(units="Bq/g", clip_tolerance=1e-2)
+    decay_photon_dist = material.get_decay_photon_energy(units="Bq/g", clip_tolerance=1e-6)
     binned_photon_dist = np.histogram(decay_photon_dist.x/1e6, bins=air_mu_en_bins, weights=decay_photon_dist.p)[0]
     binned_photon_dist = 1000 * binned_photon_dist #convert from Bq/g to Bq/kg
 
-    mu_material = np.zeros(len(air_mu_en_bin_centers))
+    mu_material = get_mass_attenuation(material, air_mu_en_bin_centers*1e6)
 
-    elements = material.get_elements()
-    for element in elements:
-        photon_data = openmc.data.IncidentPhoton.from_hdf5(f"/home/jlball/xs_data/endfb80_hdf5/photon/{element}.h5")
-
-        reactions = photon_data.reactions
-        rxn_keys = photon_data.reactions.keys()
-        total_xs_data = np.zeros(len(air_mu_en_bin_centers))
-
-        for rxn_key in rxn_keys:
-            total_xs_data += reactions[rxn_key].xs(air_mu_en_bin_centers*1e6) # convert bin centers to units of eV 
-            total_xs_data = total_xs_data * 1e-24 # Convert from barns to cm^2
-
-        try:
-            mu = total_xs_data / (openmc.data.atomic_weight(element) * anp.atomic_mass_unit_grams)
-            element_mass = get_element_mass(material, element)
-            mu_material += (element_mass / material.get_mass()) * mu
-            #print(element_mass)
-        except:
-            continue
-
-        #print(mu_material)
     C = 3.6e9 * (1.602e-19)
     dose = 0
     for i, energy in enumerate(air_mu_en_bin_centers):

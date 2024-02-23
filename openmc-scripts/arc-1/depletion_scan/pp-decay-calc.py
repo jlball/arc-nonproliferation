@@ -18,7 +18,7 @@ openmc.config['chain_file'] = chain_file
 
 dopants = ["U", "Th"]
 
-use_stored_data = False
+use_stored_data = True
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
