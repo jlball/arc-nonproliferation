@@ -368,8 +368,16 @@ def extract_contact_dose_rate(material):
 
     air_mu_en_bin_centers = 0.5*(air_mu_en_bins[1:] + air_mu_en_bins[:-1])
 
-    decay_photon_dist = material.get_decay_photon_energy(units="Bq/g", clip_tolerance=1e-6)
-    binned_photon_dist = np.histogram(decay_photon_dist.x/1e6, bins=air_mu_en_bins, weights=decay_photon_dist.p)[0]
+    decay_photon_dist = material.get_decay_photon_energy(units="Bq/g")
+
+    try:
+        dist_x = decay_photon_dist.x
+        dist_p = decay_photon_dist.p
+    except:
+        dist_x = decay_photon_dist.distribution[1].x
+        dist_p = decay_photon_dist.distribution[1].p
+
+    binned_photon_dist = np.histogram(dist_x/1e6, bins=air_mu_en_bins, weights=dist_p)[0]
     binned_photon_dist = 1000 * binned_photon_dist #convert from Bq/g to Bq/kg
 
     mu_material = get_mass_attenuation(material, air_mu_en_bin_centers*1e6)

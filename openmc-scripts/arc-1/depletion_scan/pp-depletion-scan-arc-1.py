@@ -550,11 +550,12 @@ ax.set_ylim(10, np.max(Th_time_to_SQ/24) + 100)
 
 ax.set_yscale("log")
 
-ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontdict=fontdict)
+#ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontdict=fontdict)
 ax.set_ylabel("Time (days)", fontdict=fontdict)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontdict=fontdict)
 
 fig.savefig("time_to_sq.png", dpi=dpi)
+fig.savefig("time_to_sq.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fission Power
@@ -595,15 +596,12 @@ ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color=th_color, tex
 ax.set_xlim(0, masses[-1] + 5)
 ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
 
-ax.set_title("Fission Power in Doped FLiBe Blanket", fontdict=fontdict)
-ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
-ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
-
-ax.set_title("Fission Power in Doped FLiBe Blanket", fontdict=fontdict, y=title_y)
+#ax.set_title("Fission Power in Doped FLiBe Blanket", fontdict=fontdict)
 ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("fission_power.png", dpi=dpi)
+fig.savefig("fission_power.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Isotopic Purity
@@ -619,11 +617,12 @@ ax.set_ylim(99.5, 100)
 
 ax.legend()
 
-ax.set_title("Isotopic Purity vs. Fertile Inventory", fontdict=fontdict, y=title_y)
+#ax.set_title("Isotopic Purity vs. Fertile Inventory", fontdict=fontdict, y=title_y)
 ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("isotopic_purity.png", dpi=dpi)
+fig.savefig("isotopic_purity.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Flux Spectrum
@@ -788,11 +787,12 @@ ax.set_title("TBR vs. Fertile Mass at $t=0$", fontdict=fontdict)
 
 ax.legend()
 
-ax.set_title("TBR vs. Fertile Mass at $t=0$", fontdict=fontdict, y=title_y)
+#ax.set_title("TBR vs. Fertile Mass at $t=0$", fontdict=fontdict, y=title_y)
 ax.set_ylabel("TBR", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("fertile_tbr.png", dpi=dpi)
+fig.savefig("fertile_tbr.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
@@ -841,11 +841,12 @@ ax.scatter(masses, Th_decay_heats/1e6, label="Th-238", color=th_color, marker=th
 ax.set_ylim(0, 3.5)
 ax.legend()
 
-ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
+#ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Decay Heat (MW)", fontdict=fontdict)
 
 fig.savefig("decay_heat.png", dpi=dpi)
+fig.savefig("decay_heat.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # U-232 Content of U-233
@@ -857,13 +858,14 @@ ax.spines["right"].set_color("None")
 
 ax.scatter(masses, U232_contents*1e6, color=th_color, marker=th_marker)
 
-ax.set_title("U-232 content in 1 SQ of U-233", fontdict=fontdict)
+#ax.set_title("U-232 content in 1 SQ of U-233", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Concentration (appm)", fontdict=fontdict)
 
 ax.set_ylim(0, 1.05*np.max(U232_contents*1e6))
 
 fig.savefig("U232_content.png", dpi=dpi)
+fig.savefig("U232_content.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Contact Dose Rate
@@ -875,7 +877,7 @@ ax.spines["right"].set_color("None")
 ax.scatter(masses, U_dose_rates, color=u_color, marker=u_marker, label="U-238")
 ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker, label="Th-232")
 
-ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
+#ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
 ax.set_ylabel("Dose Rate (Sv/hr)", fontdict=fontdict)
 
@@ -883,6 +885,7 @@ ax.legend()
 ax.set_ylim(0, 1.1*np.max(U_dose_rates))
 
 fig.savefig("contact_dose_rate.png", dpi=dpi)
+fig.savefig("contact_dose_rate.pdf")
 
 # ====================================================
 # Data Storage
