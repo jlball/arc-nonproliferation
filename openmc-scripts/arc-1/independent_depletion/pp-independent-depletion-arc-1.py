@@ -214,11 +214,12 @@ ax.set_ylim(10, np.max(Th_time_to_SQ/24) + 100)
 
 ax.set_yscale("log")
 
-ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
+#ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontsize=14)
 ax.set_ylabel("Time (days)", fontsize=14)
 ax.set_xlabel("Mass of Fertile Material (metric tons)", fontsize=14)
 
 fig.savefig("time_to_sq.png", dpi=300)
+fig.savefig("time_to_sq.pdf", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Fissile Mass
@@ -262,7 +263,7 @@ for i, mass in enumerate(masses):
 
 ax_tot.set_xlabel("Time (days)")
 ax_tot.set_ylabel("Mass (kg)")
-ax_tot.set_title("Fissile Mass vs. Time")
+#ax_tot.set_title("Fissile Mass vs. Time")
 
 ax_tot.set_yscale("linear")
 

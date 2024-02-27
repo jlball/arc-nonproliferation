@@ -4,10 +4,11 @@ __pycache__/
 *$py.class
 
 #
-*.xml
+#*.xml
 *.pkl
-*.h5
+#*.h5
 *.out
+*.Identifier
 
 # C extensions
 *.so

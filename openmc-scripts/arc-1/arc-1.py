@@ -4,54 +4,19 @@ import numpy as np
 import os
 import sys
 
-device = anp.Device()
-
 # ==============================================================================
 # Geometry
 # ==============================================================================
 
-""" PFCs and Vacuum Vessel """
-
-vv_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/arc_vv.txt")
-
-pfc_polygon = openmc.model.Polygon(vv_points, basis='rz')
-vv_inner_edge = pfc_polygon.offset(0.3) #PFC
-vv_channel_inner = vv_inner_edge.offset(1.0) #VV
-channel_outer = vv_channel_inner.offset(2.0) #FLiBe channels
-vv_channel_outer = channel_outer.offset(3.0) #Channel shell
-
-""" Blanket and Outer Blanket Tank """
-
-blanket_points = np.loadtxt("/home/jlball/arc-nonproliferation/data/arc_blanket.txt")
-
-blanket_inner = openmc.model.Polygon(blanket_points, basis='rz')
-blanket_outer = blanket_inner.offset(2) #Blanket tank outer
-
-regions = openmc.model.subdivide([pfc_polygon,
-                                  vv_inner_edge, vv_channel_inner,
-                                  channel_outer, vv_channel_outer,
-                                  blanket_inner, blanket_outer])
-
-plasma, pfc, vv, channel, tank_inner, salt, tank_outer, outside = regions
-
-doped_mat = anp.doped_flibe('U', 5e4, volume=1e8)
-
-device.plasma = openmc.Cell(region=plasma, fill=None, name='plasma')
-device.pfc = openmc.Cell(region=pfc, fill=anp.tungsten, name='PFC')
-device.vv = openmc.Cell(region=vv, fill=anp.vcrti_VV, name='VV')
-device.channel = openmc.Cell(region=channel, fill=doped_mat, name='channels')
-device.tank_inner = openmc.Cell(region=tank_inner, fill=anp.vcrti_BI, name='tank inner')
-device.blanket = openmc.Cell(region=salt, fill=doped_mat, name='blanket')
-device.tank_outer = openmc.Cell(region=tank_outer, fill=anp.vcrti_BO, name='tank outer')
-device.domain.region = device.domain.region & outside
+device = anp.generate_device("U", 20)
 
 # Plotting
 plot = openmc.Plot()
 plot.filename = 'geometry_plot'
 plot.basis = 'xz'
-plot.origin = (450, 0, 0)
-plot.width = (600, 600)
-plot.pixels = (2000, 2000)
+plot.origin = (350, 0, 0)
+plot.width = (700, 800)
+plot.pixels = (plot.width[0]*10, plot.width[1]*10)
 plot.color_by = 'cell'
 
 plots = openmc.Plots([plot])
@@ -73,18 +38,18 @@ device.settings.source = source
 # ==============================================================================
 # Tallies
 # ==============================================================================
-""" Cylindrical Mesh Tally """
-mesh = openmc.CylindricalMesh()
-mesh.r_grid = np.linspace(25, 200, num=25)
-mesh.z_grid = np.linspace(-200, 200, num=50)
-mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
-mesh_filter = openmc.MeshFilter(mesh)
+# """ Cylindrical Mesh Tally """
+# mesh = openmc.CylindricalMesh()
+# mesh.r_grid = np.linspace(25, 200, num=25)
+# mesh.z_grid = np.linspace(-200, 200, num=50)
+# mesh.phi_grid = np.array([0, (2 * np.pi)/(18 * 2)])
+# mesh_filter = openmc.MeshFilter(mesh)
 
-device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
+# device.add_tally('Mesh Tally', ['flux', '(n,Xt)', 'heating-local', 'absorption'], filters=[mesh_filter])
 
-""" FLiBe Tally """
-flibe_filter = openmc.MaterialFilter(doped_mat)
-device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
+# """ FLiBe Tally """
+# flibe_filter = openmc.MaterialFilter(doped_mat)
+# device.add_tally('FLiBe Tally', ['(n,Xt)', 'fission', 'kappa-fission', 'fission-q-prompt', 'fission-q-recoverable', 'heating', 'heating-local'], filters=[flibe_filter])
 
 # ==============================================================================
 # Run
@@ -96,7 +61,7 @@ device.build()
 device.export_to_xml(remove_surfs=True)
 openmc.plot_geometry()
 
-device.run(particles=int(1e3))
+#device.run(particles=int(1e3))
 
 try:
     if sys.argv[1] is not None:
