@@ -227,6 +227,8 @@ for i, mass in enumerate(masses):
     Th_purity_fit = linregress(Th_time_steps[1:], y=Th_purity[1:])
     Th_purities[i] = Th_purity_fit.slope * (Th_time_to_SQ[i]/24) + Th_purity_fit.intercept
     
+    U232_contents[i] = U232_content
+
     os.chdir('../../..')
 
 print("Loaded isotopic purity data in "  + str(round(time.perf_counter() - init_time, 2)) + "seconds.")
@@ -552,7 +554,7 @@ ax.set_yscale("log")
 
 #ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontdict=fontdict)
 ax.set_ylabel("Time (days)", fontdict=fontdict)
-ax.set_xlabel("Mass of Fertile Material (metric tons)", fontdict=fontdict)
+ax.set_xlabel("Fertile Material (metric tons)", fontdict=fontdict)
 
 fig.savefig("time_to_sq.png", dpi=dpi)
 fig.savefig("time_to_sq.pdf")
@@ -595,6 +597,8 @@ ax.annotate("t = 0", (masses[-1], Th_fission_powers[-1, 0]), color=th_color, tex
 
 ax.set_xlim(0, masses[-1] + 5)
 ax.set_ylim(0, U_fission_power_at_SQ[-1] + 10)
+
+ax.legend()
 
 #ax.set_title("Fission Power in Doped FLiBe Blanket", fontdict=fontdict)
 ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
@@ -766,11 +770,8 @@ fig, ax = plt.subplots()
 ax.spines["top"].set_color("None")
 ax.spines["right"].set_color("None")
 
-ax.plot(masses, U_TBR[:, 0, 0], color="r", alpha=0.5)
-ax.plot(masses, Th_TBR[:, 0, 0], color="g", alpha=0.5)
-
-ax.scatter(masses, U_TBR[:, 0, 0], color="r", label="U-238")
-ax.scatter(masses, Th_TBR[:, 0, 0], color="g", label="Th-232")
+ax.scatter(masses, U_TBR[:, 0, 0], color=u_color, marker=u_marker, label="U-238")
+ax.scatter(masses, Th_TBR[:, 0, 0], color=th_color, marker=th_marker, label="Th-232")
 
 #ax.errorbar(masses, U_TBR[:, 1, 0], yerr=U_TBR[:, 1, 1], color="r", label="Uranium")
 #ax.errorbar(masses, Th_TBR[:, 1, 0], yerr=Th_TBR[:, 1, 1], color="g", label="Thorium")
@@ -879,7 +880,7 @@ ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker, label="Th-23
 
 #ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
-ax.set_ylabel("Dose Rate (Sv/hr)", fontdict=fontdict)
+ax.set_ylabel("Contact Dose Rate (Sv/hr)", fontdict=fontdict)
 
 ax.legend()
 ax.set_ylim(0, 1.1*np.max(U_dose_rates))
