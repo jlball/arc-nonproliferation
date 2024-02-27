@@ -227,7 +227,8 @@ for i, mass in enumerate(masses):
     Th_purity_fit = linregress(Th_time_steps[1:], y=Th_purity[1:])
     Th_purities[i] = Th_purity_fit.slope * (Th_time_to_SQ[i]/24) + Th_purity_fit.intercept
     
-    U232_contents[i] = U232_content
+    U232_fit = linregress(Th_time_steps[1:], y=U232_content[1:])
+    U232_contents[i] = U232_fit.slope * (Th_time_to_SQ[i]/24) + U232_fit.intercept
 
     os.chdir('../../..')
 
@@ -781,16 +782,11 @@ ax.scatter(masses, Th_TBR[:, 0, 0], color=th_color, marker=th_marker, label="Th-
 
 ax.legend()
 
-ax.set_ylabel("TBR", fontdict=fontdict)
-ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
-
-ax.set_title("TBR vs. Fertile Mass at $t=0$", fontdict=fontdict)
-
-ax.legend()
-
 #ax.set_title("TBR vs. Fertile Mass at $t=0$", fontdict=fontdict, y=title_y)
 ax.set_ylabel("TBR", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
+
+ax.set_ylim(1, 1.2)
 
 fig.savefig("fertile_tbr.png", dpi=dpi)
 fig.savefig("fertile_tbr.pdf")
