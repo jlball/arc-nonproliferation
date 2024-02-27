@@ -4,10 +4,8 @@ import numpy as np
 import arc_nonproliferation as anp
 import matplotlib.pyplot as plt
 import uncertainties
-from numpy.polynomial.polynomial import Polynomial
-from scipy.optimize import curve_fit, root
-from scipy.interpolate import interp1d
-import os
+import scipy
+import h5py
 
 """
 This module houses functions which are useful for analysis of OpenMC
@@ -332,20 +330,49 @@ def get_element_mass(material, element):
 
     return mass
 
+# This function is courtesy of Colin Dunn
+def get_photon_xs(element, energies, xs_path=None):
+    datalib = openmc.data.DataLibrary.from_xml(path=xs_path)
+    xs_data = {}
+    photon_lib = datalib.get_by_material(
+                        name=element,
+                        data_type='photon')
+    hf = h5py.File(photon_lib['path'], 'r')
+
+    xs_energy = np.array(hf[element.title()]['energy'])
+    xs_data['compton_scattering'] = np.array(
+            hf[element.title()]['incoherent']['xs'])
+    xs_data['rayleigh_scattering'] = np.array(
+            hf[element.title()]['coherent']['xs'])
+    xs_data['pair_production_electron'] = np.array(
+            hf[element.title()]['pair_production_electron']['xs'])
+    xs_data['pair_production_nuclear'] = np.array(
+            hf[element.title()]['pair_production_nuclear']['xs'])
+    xs_data['photoelectric'] = np.array(
+            hf[element.title()]['photoelectric']['xs'])
+    xs_data['total'] = xs_data['compton_scattering'] \
+                     + xs_data['pair_production_nuclear'] \
+                     + xs_data['photoelectric'] \
+                     + xs_data['pair_production_electron'] \
+                     + xs_data['rayleigh_scattering']
+    f = scipy.interpolate.interp1d(xs_energy, 
+                                   xs_data['total'],
+                                   kind='linear',
+                                   bounds_error=False,
+                                   fill_value=(0,0))
+    xs = f(energies)
+
+    return xs
+
 def get_mass_attenuation(material, energies):
     elements = material.get_elements()
     mu_material = np.zeros(len(energies))
     for element in elements:
         photon_data = openmc.data.IncidentPhoton.from_hdf5(f"/home/jlball/xs_data/endfb80_hdf5/photon/{element}.h5")
+        
+        #total_xs_data = np.zeros(len(energies))
 
-        reactions = photon_data.reactions
-        rxn_keys = photon_data.reactions.keys()
-        total_xs_data = np.zeros(len(energies))
-
-        for rxn_key in rxn_keys:
-            total_xs_data += reactions[rxn_key].xs(energies)
-
-        total_xs_data = total_xs_data * 1e-24 # Convert from barns to cm^2
+        total_xs_data = get_photon_xs(element, energies) * 1e-24 # Convert from barns to cm^2
 
         try:
             mu = total_xs_data / (openmc.data.atomic_weight(element) * anp.atomic_mass_unit_grams)
