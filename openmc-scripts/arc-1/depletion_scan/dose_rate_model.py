@@ -6,14 +6,19 @@ import openmc
 
 material_thickness = 100
 
+x_len = 10
+y_len = 10
+
 surface_to_tally = 30
 tally_thickness = 1
 
+dose_tally_volume = (2*x_len) * (2*y_len) * tally_thickness #cm3
+
 # Planes:
-left_plane = openmc.XPlane(-10, boundary_type='reflective')
-right_plane = openmc.XPlane(10, boundary_type='reflective')
-top_plane = openmc.YPlane(10, boundary_type='reflective')
-bot_plane = openmc.YPlane(-10, boundary_type='reflective')
+left_plane = openmc.XPlane(-x_len, boundary_type='reflective')
+right_plane = openmc.XPlane(x_len, boundary_type='reflective')
+top_plane = openmc.YPlane(y_len, boundary_type='reflective')
+bot_plane = openmc.YPlane(-y_len, boundary_type='reflective')
 
 back_plane = openmc.ZPlane(-material_thickness, boundary_type='vacuum')
 surface_plane = openmc.ZPlane(0)
@@ -39,7 +44,7 @@ tally_cell = openmc.Cell(name="tally_cell", region=tally_reg)
 settings = openmc.Settings()
 settings.photon_transport = True
 settings.batches = 100
-settings.particles = 1e4
+settings.particles = int(1e3)
 settings.run_mode = 'fixed source'
 
 #######################################################
@@ -57,24 +62,30 @@ dose_filter = openmc.EnergyFunctionFilter(
     energies, pSv_cm2, interpolation="cubic"  # interpolation method recommended by ICRP
 )
 
-dose_tally.filters = [dose_tally, cell_filter]
+particle_filter = openmc.ParticleFilter(["photon"])
+
+dose_tally.filters = [dose_filter, cell_filter, particle_filter]
+dose_tally.scores = ["flux"]
 
 def generate_dose_rate_model(material):
     material_cell.fill = material
 
     geometry = openmc.Geometry([material_cell, gap_cell, tally_cell])
 
+    energy_spectrum = material.get_decay_photon_energy()
+
     # Setup photon source
     source = openmc.IndependentSource()
     source.angle = openmc.stats.Isotropic()
-    source.energy = material.get_decay_photon_energy()
+    source.energy = energy_spectrum
+    source.strength = energy_spectrum.integral()
     source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
     source.particle = 'photon'
 
     settings.source = source
 
     # Setup tallies
-    tallies = openmc.Tallies(dose_tally)
+    tallies = openmc.Tallies([dose_tally])
 
     model = openmc.model.Model(geometry=geometry, settings=settings, tallies=tallies)
 
