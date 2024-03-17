@@ -41,7 +41,7 @@ for dopant in dopants:
     flux_spectrum = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2))
     reaction_spectra = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2, 2))
     decay_heat = np.empty((len(Li6_enrichments), len(masses)))
-    contact_dose_rate = np.empty((len(Li6_enrichments), len(masses)))
+    dose_rate = np.empty((len(Li6_enrichments), len(masses)))
 
     if dopant == "Th":
         U232_content = np.empty((len(Li6_enrichments), len(masses)))
@@ -57,7 +57,7 @@ for dopant in dopants:
             flux_spectrum[i] = data_dict["flux_spectrum"]
             reaction_spectra[i] = data_dict["reaction_spectra"]
             decay_heat[i] = data_dict["decay_heat"]
-            contact_dose_rate[i] = data_dict["contact_dose_rate"]
+            dose_rate[i] = data_dict["dose_rate"]
 
             if dopant == "Th":
                 U232_content[i] = data_dict["U232_content"]
@@ -341,8 +341,8 @@ for dopant in dopants:
     ax.spines["right"].set_color("None")
 
     for i, mass in enumerate(masses):
-            ax.scatter(Li6_enrichments, contact_dose_rate[:, i], color=plt_cm(norm(mass)), s=15)
-            ax.plot(Li6_enrichments, contact_dose_rate[:, i], color=plt_cm(norm(mass)), alpha=0.5)
+            ax.scatter(Li6_enrichments, dose_rate[:, i], color=plt_cm(norm(mass)), s=15)
+            ax.plot(Li6_enrichments, dose_rate[:, i], color=plt_cm(norm(mass)), alpha=0.5)
 
     ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
     ax.set_ylabel("Contact dose rate (Sv/hr)", fontdict=fontdict)
