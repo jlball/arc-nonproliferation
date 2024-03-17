@@ -64,7 +64,6 @@ for dopant in dopants:
         channel_mat.name =  device.channel.fill.name
         blanket_mat.name = device.blanket.fill.name
 
-
         device.channel.fill = channel_mat
         device.blanket.fill = blanket_mat
 

@@ -14,6 +14,7 @@ U233_mass_in_kg = 3.8697142e-25 #kg mass of 1 U233 nucleus in kg, from wolfram a
 sig_quantity = 8 # kg, the same for both Pu239 and U233. Defined by the IAEA
 
 chain_file = '/home/jlball/arc-nonproliferation/data/chain_endfb71_pwr.xml'
+#chain_file = '/home/jlball/arc-nonproliferation/data/chain_tendl2019_jeff33.xml'
 
 Np239_half_life = 2.356 #days
 Pa233_half_life = 26.98 #days
