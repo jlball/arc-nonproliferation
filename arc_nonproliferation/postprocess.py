@@ -485,7 +485,31 @@ def lin_interp_material(results, material_name, time, time_units='d'):
         return new_mat
     
     else:
-        raise NotImplementedError("No support yet for materials with different nuclide compositions")
+        mat_0_nucs = mat_0.get_nuclide_densities()
+        mat_1_nucs = mat_1.get_nuclide_densities()
+
+        new_mat = openmc.Material()
+
+        if len(mat_0.get_nuclides()) > len(mat_1.get_nuclides()):
+            for nuclide in mat_0.get_nuclides():
+                if nuclide in mat_1.get_nuclides():
+                    percent = np.interp(time, [time_0, time_1], [mat_0_nucs[nuclide][1], mat_1_nucs[nuclide][1]])
+                    new_mat.add_nuclide(nuclide, percent, percent_type=mat_0_nucs[nuclide][2])
+                else:
+                    percent = np.interp(time, [time_0, time_1], [mat_0_nucs[nuclide][1], 0])
+                    new_mat.add_nuclide(nuclide, percent, percent_type=mat_0_nucs[nuclide][2])
+
+        else:
+            for nuclide in mat_1.get_nuclides():
+                if nuclide in mat_0.get_nuclides():
+                    percent = np.interp(time, [time_0, time_1], [mat_0_nucs[nuclide][1], mat_1_nucs[nuclide][1]])
+                    new_mat.add_nuclide(nuclide, percent, percent_type=mat_0_nucs[nuclide][2])
+                else:
+                    percent = np.interp(time, [time_0, time_1], [0, mat_1_nucs[nuclide][1]])
+                    new_mat.add_nuclide(nuclide, percent, percent_type=mat_1_nucs[nuclide][2])
+
+        return new_mat
+
 
 
 # def mass_attenuation_coeff():
