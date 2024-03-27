@@ -44,7 +44,7 @@ tally_cell = openmc.Cell(name="tally_cell", region=tally_reg)
 settings = openmc.Settings()
 settings.photon_transport = True
 settings.batches = 100
-settings.particles = int(1e3)
+settings.particles = int(1e2)
 settings.run_mode = 'fixed source'
 
 #######################################################
