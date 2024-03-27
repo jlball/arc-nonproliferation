@@ -511,6 +511,21 @@ def lin_interp_material(results, material_name, time, time_units='d'):
         return new_mat
 
 
+def cutoff_nuclides(mat, threshold):
+    new_mat = openmc.Material()
+    nuc_densities = mat.get_nuclide_densities()
+
+    new_mat.id = mat.id
+    new_mat.name = mat.name
+    new_mat.volume = mat.volume
+
+    for nuc in mat.get_nuclides():
+        if nuc_densities[nuc][1] > threshold:
+            new_mat.add_nuclide(nuc, nuc_densities[nuc][1], nuc_densities[nuc][2])
+
+    return new_mat
+
+
 
 # def mass_attenuation_coeff():
 

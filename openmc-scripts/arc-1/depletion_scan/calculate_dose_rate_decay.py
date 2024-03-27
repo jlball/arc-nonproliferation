@@ -51,6 +51,8 @@ for dopant in dopants:
         time_steps = results.get_times()
 
         for j, time in enumerate(time_steps):
+
+            print(f"TIME STEP {j}: {time}")
             mats = results.export_to_materials(j)
 
             # Linearly interpolate material compositions to t_SQ
@@ -59,6 +61,8 @@ for dopant in dopants:
 
             blanket_mat.volume = blanket_volume
             channel_mat.volume = channels_volume
+
+            blanket_mat = cutoff_nuclides(blanket_mat, 1e-50)
 
             # Create or enter subdirectory for decay calc
             try:
