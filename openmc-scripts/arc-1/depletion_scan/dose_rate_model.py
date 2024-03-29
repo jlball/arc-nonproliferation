@@ -1,4 +1,5 @@
 import openmc
+from arc_nonproliferation.materials import make_doped_flibe
 
 #######################################################
 # Geometry
@@ -44,7 +45,7 @@ tally_cell = openmc.Cell(name="tally_cell", region=tally_reg)
 settings = openmc.Settings()
 settings.photon_transport = True
 settings.batches = 100
-settings.particles = int(1e4)
+settings.particles = int(1e3)
 settings.run_mode = 'fixed source'
 
 #######################################################
@@ -67,8 +68,9 @@ particle_filter = openmc.ParticleFilter(["photon"])
 dose_tally.filters = [dose_filter, cell_filter, particle_filter]
 dose_tally.scores = ["flux"]
 
-def generate_dose_rate_model(material):
-    material_cell.fill = material
+def generate_dose_rate_model(material, dopant, mass):
+    flibe_mat = make_doped_flibe(dopant, mass, volume=material.volume)
+    material_cell.fill = flibe_mat
 
     geometry = openmc.Geometry([material_cell, gap_cell, tally_cell])
 

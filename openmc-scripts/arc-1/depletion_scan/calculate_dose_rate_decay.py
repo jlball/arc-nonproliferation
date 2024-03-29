@@ -41,7 +41,8 @@ for dopant in dopants:
     else:
         raise ValueError("Invalid dopant type")
 
-    dose_rates = np.zeros((len(masses), 51))
+    dose_rates = np.zeros((len(masses), 9))
+    dose_acts = np.zeros((len(masses), 9))
     for i, mass in enumerate(masses):
         os.chdir(f"{mass}")
         os.chdir(f"{cooldown_folder_name}")
@@ -50,19 +51,21 @@ for dopant in dopants:
 
         time_steps = results.get_times()
 
-        for j, time in enumerate(time_steps):
+        for j, result in enumerate(results):
 
-            print(f"TIME STEP {j}: {time}")
+            print(f"TIME STEP {j}: {time_steps[j]}")
             mats = results.export_to_materials(j)
 
             # Linearly interpolate material compositions to t_SQ
-            blanket_mat = get_material_by_name(mats, "doped flibe blanket")
+            blanket_mat = result.get_material(str(mats[1].id))
             channel_mat = get_material_by_name(mats, "doped flibe channels")
 
             blanket_mat.volume = blanket_volume
-            channel_mat.volume = channels_volume
+            #channel_mat.volume = channels_volume
 
-            blanket_mat = cutoff_nuclides(blanket_mat, 1e-50)
+            blanket_mat = cutoff_nuclides(blanket_mat, 1e-80)
+            blanket_act = blanket_mat.get_activity(units="Bq")
+            print(f"ACTIVITY: {blanket_act}")
 
             # Create or enter subdirectory for decay calc
             try:
@@ -72,7 +75,7 @@ for dopant in dopants:
                 os.chdir(f"{dose_rate_folder_name}_{j}")
 
             # Perform decay only depletion calc
-            model = generate_dose_rate_model(blanket_mat)
+            model = generate_dose_rate_model(blanket_mat, dopant, mass)
             sp_path = model.run()
 
             # Postprocess to get dose rate in Sv/hr
@@ -83,11 +86,13 @@ for dopant in dopants:
             dose_rate = dose_rate * 1E-12 # Convert from pSv/hr tp Sv/hr
 
             dose_rates[i, j] = dose_rate
+            dose_acts[i, j] = blanket_act
             os.chdir("..")
 
         os.chdir("../..")
 
     data_dict["dose_rate_cooldown"] = dose_rates
+    data_dict["dose_rate_cooldown_act"] = dose_acts
 
     os.chdir("../..")
 
