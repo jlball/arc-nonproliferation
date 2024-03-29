@@ -8,6 +8,7 @@ import pickle
 from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.device import *
 from arc_nonproliferation.constants import chain_file
+from decay_calc import decay_time_steps
 
 dose_rate_folder_name = "dose_rate_calc"
 cooldown_folder_name = "dose_rate_cooldown"
@@ -41,7 +42,7 @@ for dopant in dopants:
     else:
         raise ValueError("Invalid dopant type")
 
-    dose_rates = np.zeros((len(masses), 101))
+    dose_rates = np.zeros((len(masses), len(decay_time_steps)+1))
     for i, mass in enumerate(masses):
         os.chdir(f"{mass}")
         os.chdir(f"{cooldown_folder_name}")
