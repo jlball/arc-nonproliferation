@@ -78,14 +78,21 @@ def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
     channel_energy_spectrum = channel_material.get_decay_photon_energy()
 
     # Setup photon source
-    source = openmc.IndependentSource()
-    source.angle = openmc.stats.Isotropic()
-    source.energy = blanket_energy_spectrum + channel_energy_spectrum
-    source.strength = blanket_energy_spectrum.integral() + channel_energy_spectrum.integral()
-    source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
-    source.particle = 'photon'
+    blanket_source = openmc.IndependentSource()
+    blanket_source.angle = openmc.stats.Isotropic()
+    blanket_source.energy = blanket_energy_spectrum
+    blanket_source.strength = blanket_energy_spectrum.integral()
+    blanket_source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
+    blanket_source.particle = 'photon'
 
-    settings.source = source
+    channel_source = openmc.IndependentSource()
+    channel_source.angle = openmc.stats.Isotropic()
+    channel_source.energy = channel_energy_spectrum
+    channel_source.strength = channel_energy_spectrum.integral()
+    channel_source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
+    channel_source.particle = 'photon'
+
+    settings.source = [blanket_source, channel_source]
 
     # Setup tallies
     tallies = openmc.Tallies([dose_tally])
