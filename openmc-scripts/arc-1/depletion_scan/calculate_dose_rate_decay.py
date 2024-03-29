@@ -41,8 +41,7 @@ for dopant in dopants:
     else:
         raise ValueError("Invalid dopant type")
 
-    dose_rates = np.zeros((len(masses), 9))
-    dose_acts = np.zeros((len(masses), 9))
+    dose_rates = np.zeros((len(masses), 101))
     for i, mass in enumerate(masses):
         os.chdir(f"{mass}")
         os.chdir(f"{cooldown_folder_name}")
@@ -85,14 +84,12 @@ for dopant in dopants:
             dose_rate = dose_rate * 1E-12 # Convert from pSv/hr tp Sv/hr
 
             dose_rates[i, j] = dose_rate
-            dose_acts[i, j] = blanket_act
             os.chdir("..")
 
         os.chdir("../..")
 
     data_dict["dose_rate_cooldown"] = dose_rates
     data_dict["dose_rate_cooldown_times"] = time_steps
-    data_dict["dose_rate_cooldown_act"] = dose_acts
 
     os.chdir("../..")
 
