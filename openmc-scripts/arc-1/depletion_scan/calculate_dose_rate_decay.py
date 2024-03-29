@@ -57,15 +57,14 @@ for dopant in dopants:
             mats = results.export_to_materials(j)
 
             # Linearly interpolate material compositions to t_SQ
-            blanket_mat = result.get_material(str(mats[1].id))
-            channel_mat = get_material_by_name(mats, "doped flibe channels")
+            blanket_mat = result.get_material(str(get_material_by_name(mats, "doped flibe blanket").id))
+            channel_mat = result.get_material(str(get_material_by_name(mats, "doped flibe channels").id))
 
             blanket_mat.volume = blanket_volume
-            #channel_mat.volume = channels_volume
+            channel_mat.volume = channels_volume
 
             blanket_mat = cutoff_nuclides(blanket_mat, 1e-80)
-            blanket_act = blanket_mat.get_activity(units="Bq")
-            print(f"ACTIVITY: {blanket_act}")
+            channel_mat = cutoff_nuclides(channel_mat, 1e-80)
 
             # Create or enter subdirectory for decay calc
             try:
@@ -75,7 +74,7 @@ for dopant in dopants:
                 os.chdir(f"{dose_rate_folder_name}_{j}")
 
             # Perform decay only depletion calc
-            model = generate_dose_rate_model(blanket_mat, dopant, mass)
+            model = generate_dose_rate_model(blanket_mat, channel_mat, dopant, mass)
             sp_path = model.run()
 
             # Postprocess to get dose rate in Sv/hr
@@ -92,6 +91,7 @@ for dopant in dopants:
         os.chdir("../..")
 
     data_dict["dose_rate_cooldown"] = dose_rates
+    data_dict["dose_rate_cooldown_times"] = time_steps
     data_dict["dose_rate_cooldown_act"] = dose_acts
 
     os.chdir("../..")

@@ -68,19 +68,20 @@ particle_filter = openmc.ParticleFilter(["photon"])
 dose_tally.filters = [dose_filter, cell_filter, particle_filter]
 dose_tally.scores = ["flux"]
 
-def generate_dose_rate_model(material, dopant, mass):
-    flibe_mat = make_doped_flibe(dopant, mass, volume=material.volume)
+def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
+    flibe_mat = make_doped_flibe(dopant, mass, volume=(blanket_material.volume + channel_material.volume))
     material_cell.fill = flibe_mat
 
     geometry = openmc.Geometry([material_cell, gap_cell, tally_cell])
 
-    energy_spectrum = material.get_decay_photon_energy()
+    blanket_energy_spectrum = blanket_material.get_decay_photon_energy()
+    channel_energy_spectrum = channel_material.get_decay_photon_energy()
 
     # Setup photon source
     source = openmc.IndependentSource()
     source.angle = openmc.stats.Isotropic()
-    source.energy = energy_spectrum
-    source.strength = energy_spectrum.integral()
+    source.energy = blanket_energy_spectrum + channel_energy_spectrum
+    source.strength = blanket_energy_spectrum.integral() + channel_energy_spectrum.integral()
     source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
     source.particle = 'photon'
 
