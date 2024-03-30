@@ -42,6 +42,7 @@ for dopant in dopants:
     reaction_spectra = np.empty((len(Li6_enrichments), len(masses), num_steps, 709, 2, 2))
     decay_heat = np.empty((len(Li6_enrichments), len(masses)))
     dose_rate = np.empty((len(Li6_enrichments), len(masses)))
+    self_protecting_time = np.empty((len(Li6_enrichments), len(masses)))
 
     if dopant == "Th":
         U232_content = np.empty((len(Li6_enrichments), len(masses)))
@@ -58,6 +59,7 @@ for dopant in dopants:
             reaction_spectra[i] = data_dict["reaction_spectra"]
             decay_heat[i] = data_dict["decay_heat"]
             dose_rate[i] = data_dict["dose_rate"]
+            self_protecting_time[i] = data_dict["self_protecting_time"]
 
             if dopant == "Th":
                 U232_content[i] = data_dict["U232_content"]
@@ -350,6 +352,24 @@ for dopant in dopants:
 
     fig.savefig(f"{dopant}_contact_dose_rate.png", dpi=300)
     fig.savefig(f"{dopant}_contact_dose_rate.svg")
+
+    # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+    # Self protecting time
+
+    fig, ax = plt.subplots()
+    fig.set_size_inches(width_in,height_in)
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    for i, mass in enumerate(masses):
+            ax.scatter(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), s=15)
+            ax.plot(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), alpha=0.5)
+
+    ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+    ax.set_ylabel("Self-protecting time (days)", fontdict=fontdict)
+
+    fig.savefig(f"{dopant}_self_protecting_time.png", dpi=300)
+    fig.savefig(f"{dopant}_self_protecting_time.svg")
 
     # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
     # Exit directory
