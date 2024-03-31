@@ -92,14 +92,6 @@ for dopant in dopants:
     data_dict["dose_rate_cooldown"] = dose_rates
     data_dict["dose_rate_cooldown_times"] = time_steps
 
-    # Calculate time for dose rate to drop below 1 Sv/hr, NRC definition for self-protecting
-
-    self_protecting_times = np.zeros(len(masses))
-    for k, mass in enumerate(masses):
-        self_protecting_times[k] = np.interp(0, np.log10(dose_rates[k]), time_steps)
-
-    data_dict["self_protecting_time"] = self_protecting_times
-
     os.chdir("../..")
 
     with open(f'{base_dir}/data/{dopant}_data_dict.pkl', 'wb') as file:

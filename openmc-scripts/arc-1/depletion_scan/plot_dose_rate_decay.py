@@ -68,6 +68,9 @@ for dopant in dopants:
     for i, mass in enumerate(masses):
         ax.loglog(activities[0]/(3600*24), dose_rate_decay[i], label=f"{mass}")
 
+    ax.set_xlabel("Time (days)")
+    ax.set_ylabel("Dose rate at 30cm (Sv/hr)")
+
     ax.legend()
     fig.savefig(f"{dopant}_dose_rate_decay.png", dpi=300)
     
