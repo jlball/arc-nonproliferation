@@ -7,10 +7,10 @@ from arc_nonproliferation.materials import make_doped_flibe
 
 material_thickness = 100
 
-x_len = 10
-y_len = 10
+x_len = 100
+y_len = 100
 
-surface_to_tally = 30
+surface_to_tally = 100
 tally_thickness = 1
 
 dose_tally_volume = (2*x_len) * (2*y_len) * tally_thickness #cm3
