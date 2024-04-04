@@ -20,3 +20,17 @@ Np239_half_life = 2.356 #days
 Pa233_half_life = 26.98 #days
 
 atomic_mass_unit_grams = 1.66054e-24 #grams/amu
+
+# Plotting configuration
+u_marker = 'o'
+th_marker = 's'
+
+u_color = 'tab:orange'
+th_color = 'tab:purple'
+
+dpi = 300
+
+title_y = 1.05
+
+fontdict = {"size":16}
+

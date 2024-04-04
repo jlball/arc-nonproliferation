@@ -1,5 +1,5 @@
 import openmc
-from arc_nonproliferation.materials import make_doped_flibe
+from arc_nonproliferation.materials import make_doped_flibe, air
 
 #######################################################
 # Geometry
@@ -11,9 +11,10 @@ x_len = 100
 y_len = 100
 
 surface_to_tally = 100
-tally_thickness = 1
+tally_thickness = 10
 
 dose_tally_volume = (2*x_len) * (2*y_len) * tally_thickness #cm3
+material_volume = (2*x_len) * (2*y_len) * material_thickness #cm3
 
 # Planes:
 left_plane = openmc.XPlane(-x_len, boundary_type='reflective')
@@ -36,7 +37,7 @@ tally_reg = walls & +tally_surface & -tally_back
 # Cells:
 material_cell = openmc.Cell(name="mat_cell", region=material_reg)
 gap_cell = openmc.Cell(name="gap_cell", region=gap_reg)
-tally_cell = openmc.Cell(name="tally_cell", region=tally_reg)
+tally_cell = openmc.Cell(name="tally_cell", region=tally_reg, fill=air)
 
 #######################################################
 # Settings
@@ -65,8 +66,8 @@ dose_filter = openmc.EnergyFunctionFilter(
 
 particle_filter = openmc.ParticleFilter(["photon"])
 
-dose_tally.filters = [dose_filter, cell_filter, particle_filter]
-dose_tally.scores = ["flux"]
+dose_tally.filters = [cell_filter, particle_filter]
+dose_tally.scores = ["heating"]
 
 def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
     flibe_mat = make_doped_flibe(dopant, mass, volume=(blanket_material.volume + channel_material.volume))
@@ -74,22 +75,22 @@ def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
 
     geometry = openmc.Geometry([material_cell, gap_cell, tally_cell])
 
-    blanket_energy_spectrum = blanket_material.get_decay_photon_energy()
-    channel_energy_spectrum = channel_material.get_decay_photon_energy()
+    blanket_energy_spectrum = blanket_material.get_decay_photon_energy(volume=material_volume)
+    channel_energy_spectrum = channel_material.get_decay_photon_energy(volume=material_volume)
 
     # Setup photon source
     blanket_source = openmc.IndependentSource()
     blanket_source.angle = openmc.stats.Isotropic()
     blanket_source.energy = blanket_energy_spectrum
     blanket_source.strength = blanket_energy_spectrum.integral()
-    blanket_source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
+    blanket_source.space = openmc.stats.Box([-x_len, -y_len, -material_thickness], [x_len, y_len, 0])
     blanket_source.particle = 'photon'
 
     channel_source = openmc.IndependentSource()
     channel_source.angle = openmc.stats.Isotropic()
     channel_source.energy = channel_energy_spectrum
     channel_source.strength = channel_energy_spectrum.integral()
-    channel_source.space = openmc.stats.Box([-10, -10, -material_thickness], [10, 10, 0])
+    channel_source.space = openmc.stats.Box([-x_len, -y_len, -material_thickness], [x_len, y_len, 0])
     channel_source.particle = 'photon'
 
     settings.source = [blanket_source, channel_source]
@@ -99,4 +100,4 @@ def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
 
     model = openmc.model.Model(geometry=geometry, settings=settings, tallies=tallies)
 
-    return model 
+    return model, settings.batches*settings.particles

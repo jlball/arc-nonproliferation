@@ -10,6 +10,7 @@ from scipy.stats import linregress
 from scipy.interpolate import interp1d
 import time
 import pickle
+import os
 
 """
 This script processes the output of a single simulation run by depletion-scan-arc-1.py. It extracts relevant quantities and generates plots in the 
@@ -488,18 +489,6 @@ print("Loaded contat dose rate data in "  + str(round(time.perf_counter() - init
 # ====================================================
 
 masses = masses / 1e3 #convert from kg to metric tons
-
-u_marker = 'o'
-th_marker = 's'
-
-u_color = 'tab:orange'
-th_color = 'tab:purple'
-
-dpi = 300
-
-title_y = 1.05
-
-fontdict = {"size":16}
 
 #Change into dedicated directory for figures or create figures directory
 try:

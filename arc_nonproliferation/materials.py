@@ -9,6 +9,16 @@ material.
 
 """
 
+""" Air """
+# From PNNL Material Compendium
+air = openmc.Material(name="air")
+air.add_element("C", 0.000150, percent_type="ao")
+air.add_element("O", 0.210750, percent_type="ao")
+air.add_element("N", 0.784429, percent_type="ao")
+air.add_element("Ar", 0.004671, percent_type="ao")
+
+air.set_density("g/cm3", 0.001205)
+
 """ TUNGSTEN """
 tungsten = openmc.Material(name='W')
 tungsten.add_element('O',5/1e6,percent_type='wo')
