@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <materials>
-  <material id="1" name="W">
+  <material id="2" name="W">
     <density units="g/cm3" value="19.3"/>
     <nuclide name="O16" wo="4.986734364047163e-06"/>
     <nuclide name="O17" wo="2.0134221871284552e-09"/>

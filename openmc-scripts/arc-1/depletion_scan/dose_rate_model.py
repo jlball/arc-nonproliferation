@@ -11,7 +11,7 @@ x_len = 100
 y_len = 100
 
 surface_to_tally = 100
-tally_thickness = 10
+tally_thickness = 1
 
 dose_tally_volume = (2*x_len) * (2*y_len) * tally_thickness #cm3
 material_volume = (2*x_len) * (2*y_len) * material_thickness #cm3
@@ -29,7 +29,7 @@ tally_surface = openmc.ZPlane(surface_to_tally)
 tally_back = openmc.ZPlane(surface_to_tally + tally_thickness, boundary_type='vacuum')
 
 # Regions:
-walls = +left_plane & -right_plane & -top_plane & + bot_plane
+walls = +left_plane & -right_plane & -top_plane & +bot_plane
 material_reg = walls & +back_plane & -surface_plane
 gap_reg = walls & +surface_plane & -tally_surface
 tally_reg = walls & +tally_surface & -tally_back
@@ -46,7 +46,7 @@ tally_cell = openmc.Cell(name="tally_cell", region=tally_reg, fill=air)
 settings = openmc.Settings()
 settings.photon_transport = True
 settings.batches = 100
-settings.particles = int(1e4)
+settings.particles = int(5e4)
 settings.run_mode = 'fixed source'
 
 #######################################################
@@ -66,11 +66,11 @@ dose_filter = openmc.EnergyFunctionFilter(
 
 particle_filter = openmc.ParticleFilter(["photon"])
 
-dose_tally.filters = [cell_filter, particle_filter]
-dose_tally.scores = ["heating"]
+dose_tally.filters = [cell_filter, particle_filter, dose_filter]
+dose_tally.scores = ["flux"]
 
-def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
-    flibe_mat = make_doped_flibe(dopant, mass, volume=(blanket_material.volume + channel_material.volume))
+def generate_dose_rate_model(blanket_material, channel_material, simulation_material):
+    flibe_mat = simulation_material
     material_cell.fill = flibe_mat
 
     geometry = openmc.Geometry([material_cell, gap_cell, tally_cell])
@@ -100,4 +100,4 @@ def generate_dose_rate_model(blanket_material, channel_material, dopant, mass):
 
     model = openmc.model.Model(geometry=geometry, settings=settings, tallies=tallies)
 
-    return model, settings.batches*settings.particles
+    return model, dose_tally_volume
