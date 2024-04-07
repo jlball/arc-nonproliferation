@@ -69,14 +69,17 @@ for dopant in dopants:
 
     #When this func is zero, dose rate is 1 Sv/hr, NRC self protecting limit
     def interp_log_dose_decay(time, mass_idx):
-        return np.interp(time, time_steps, np.log10(dose_rate_decay[int(mass_idx)]))
+        if time > 0:
+            return np.interp(time, time_steps, np.log10(dose_rate_decay[int(mass_idx)]))
+        else:
+            return np.log10(dose_rate_decay[int(mass_idx)][0]) - 100 * time
 
     self_protecting_times = np.zeros(len(masses))
     for i, mass in enumerate(masses):
         if np.max(dose_rate_decay[i]) < 1:
             self_protecting_times[i] = 0
         else:
-            res = root(interp_log_dose_decay, np.array([5]), args=(i))
+            res = root(interp_log_dose_decay, np.array([10]), args=(i))
             self_protecting_times[i] = res.x
 
     data_dict["self_protecting_time"] = self_protecting_times
@@ -100,6 +103,8 @@ for dopant in dopants:
 
     for i, mass in enumerate(plot_masses):
         ax.loglog(activities[0]/(3600*24), dose_rate_decay[i], label=f"{mass}", color=plt_cm(norm(mass)))
+
+    ax.hlines([1], activities[0][0]/(3600*24), activities[0][-1]/(3600*24), color="red", linestyles="dashed")
 
     ax.set_xlabel("Time (days)", fontdict=fontdict)
     ax.set_ylabel("Dose rate at 1 m (Sv/hr)", fontdict=fontdict)

@@ -369,6 +369,8 @@ if __name__ == "__main__":
         ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
         ax.set_ylabel("Self-protecting time (days)", fontdict=fontdict)
 
+        ax.set_yscale("log")
+
         fig.savefig(f"{dopant}_self_protecting_time.png", dpi=300)
         fig.savefig(f"{dopant}_self_protecting_time.svg")
 
