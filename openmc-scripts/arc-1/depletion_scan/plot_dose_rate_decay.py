@@ -73,8 +73,11 @@ for dopant in dopants:
 
     self_protecting_times = np.zeros(len(masses))
     for i, mass in enumerate(masses):
-        res = root(interp_log_dose_decay, np.array([5]), args=(i))
-        self_protecting_times[i] = res.x
+        if np.max(dose_rate_decay[i]) < 1:
+            self_protecting_times[i] = 0
+        else:
+            res = root(interp_log_dose_decay, np.array([5]), args=(i))
+            self_protecting_times[i] = res.x
 
     data_dict["self_protecting_time"] = self_protecting_times
 
