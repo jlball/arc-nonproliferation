@@ -519,8 +519,14 @@ def cutoff_nuclides(mat, threshold):
     new_mat.name = mat.name
     new_mat.volume = mat.volume
 
+    no_data_nucs = ["Be8", "O14", "Ne16", "Ge73_m1", "Y89_m1", "Zr99", "Nb93_m1", "Nb95_m1", "Nb99", "Nb99_m1", "Tc97", "Tc97_m1"]
+
     for nuc in mat.get_nuclides():
-        if nuc_densities[nuc][1] > threshold:
+        skip_nuc = False
+        for no_dat_nuc in no_data_nucs:
+            if nuc == no_dat_nuc:
+                skip_nuc = True
+        if nuc_densities[nuc][1] > threshold and not skip_nuc:
             new_mat.add_nuclide(nuc, nuc_densities[nuc][1], nuc_densities[nuc][2])
 
     return new_mat

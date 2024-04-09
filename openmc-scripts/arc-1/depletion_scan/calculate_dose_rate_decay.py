@@ -8,6 +8,7 @@ import pickle
 from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.device import *
 from arc_nonproliferation.constants import chain_file
+from arc_nonproliferation.materials import make_doped_flibe, air
 from decay_calc import decay_time_steps
 
 dose_rate_folder_name = "dose_rate_calc"
@@ -63,8 +64,8 @@ for dopant in dopants:
             blanket_mat.volume = blanket_volume
             channel_mat.volume = channels_volume
 
-            blanket_mat = cutoff_nuclides(blanket_mat, 1e-80)
-            channel_mat = cutoff_nuclides(channel_mat, 1e-80)
+            blanket_mat = cutoff_nuclides(blanket_mat, 1e-200)
+            channel_mat = cutoff_nuclides(channel_mat, 1e-200)
 
             # Create or enter subdirectory for decay calc
             try:
@@ -74,16 +75,15 @@ for dopant in dopants:
                 os.chdir(f"{dose_rate_folder_name}_{j}")
 
             # Perform decay only depletion calc
-            model = generate_dose_rate_model(blanket_mat, channel_mat, dopant, mass)
+            model, dose_tally_volume = generate_dose_rate_model(blanket_mat, channel_mat, make_doped_flibe(dopant, mass, volume=blanket_volume+channels_volume))
             sp_path = model.run()
 
             # Postprocess to get dose rate in Sv/hr
             sp = openmc.StatePoint(sp_path)
 
             tally = sp.get_tally(name="dose_tally")
-            dose_rate = tally.get_values()[0][0][0]/dose_tally_volume # Normalize by volume
-            dose_rate = dose_rate * 1E-12 # Convert from pSv/hr tp Sv/hr
-
+            dose_rate = (tally.get_values()[0][0][0])/dose_tally_volume # Normalize by the tally volume
+            dose_rate = dose_rate * 1E-12 # convert from pSV/hr to Sv/hr
             dose_rates[i, j] = dose_rate
             os.chdir("..")
 
