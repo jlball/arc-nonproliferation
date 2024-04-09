@@ -10,6 +10,7 @@ from scipy.stats import linregress
 from scipy.interpolate import interp1d
 import time
 import pickle
+import os
 
 """
 This script processes the output of a single simulation run by depletion-scan-arc-1.py. It extracts relevant quantities and generates plots in the 
@@ -517,6 +518,8 @@ ax.spines["right"].set_color("None")
 
 ax.scatter(masses, U_time_to_SQ/24, label="U-238", marker=u_marker, color=u_color)
 ax.scatter(masses, Th_time_to_SQ/24, label="Th-232", marker=th_marker, color=th_color)
+
+ax.hlines([14, 182.5], 0, 50, colors='red', linestyles="dashed", alpha=0.6)
 
 ax.set_ylim(10, 200)
 

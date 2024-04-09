@@ -7,6 +7,7 @@ from arc_nonproliferation.postprocess import *
 from arc_nonproliferation.constants import *
 from scipy.optimize import curve_fit
 from scipy.stats import linregress
+import os
 
 if sys.argv[1] is not None:
     base_dir = './' + sys.argv[1]
