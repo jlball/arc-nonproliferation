@@ -31,6 +31,8 @@ figure_folder = 'pub_figures'
 norm = colors.Normalize(vmin=-0.5*masses[-1], vmax=1.1*masses[-1])
 enrichment_norm = colors.LogNorm(vmin=0.1*Li6_enrichments[0], vmax=1.1*Li6_enrichments[-1])
 
+x_axis_label = "Li-6 Enrichment (%)"
+
 if __name__ == "__main__":
 
     try:
@@ -114,7 +116,7 @@ if __name__ == "__main__":
 
         ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Time to 1 SQ (days)", fontdict=fontdict)
         ax.set_title("Time to 1 SQ ($t_{SQ}$)", fontdict=fontdict)
         
@@ -138,7 +140,7 @@ if __name__ == "__main__":
 
         #ax.set_yscale("log")
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("TBR", fontdict=fontdict)
         ax.set_title("Tritium Breeding Ratio", fontdict=fontdict)
 
@@ -167,9 +169,9 @@ if __name__ == "__main__":
             #text_offset = (10, -4)
             #ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], purity[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
-        ax.set_ylabel("Percent Fissile Isotope (percent)", fontdict=fontdict)
-        ax.set_title("Isotopic Purity", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
+        ax.set_ylabel("Fissile Isotope Fraction (%)", fontdict=fontdict)
+        #ax.set_title("Isotopic Purity", fontdict=fontdict)
 
         ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
 
@@ -197,7 +199,7 @@ if __name__ == "__main__":
             #text_offset = (10, -4)
             #ax.annotate(f"{masses[i]} Tons", (Li6_enrichments[-1], power[-1]), color=plt_cm(norm(masses[i])), textcoords='offset points', xytext=text_offset)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
         ax.set_title("Fission Power at $t_{SQ}$", fontdict=fontdict)
 
@@ -303,7 +305,7 @@ if __name__ == "__main__":
             ax.scatter(Li6_enrichments, decay_heat[:, i]/1e6, color=plt_cm(norm(mass)), s = 15)
             ax.plot(Li6_enrichments, decay_heat[:, i]/1e6, color=plt_cm(norm(mass)), alpha=0.3)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Decay Heat (MW)", fontdict=fontdict)
         #ax.set_title("Decay Heat vs. Fertile Mass at $t = t_{SQ}$")
 
@@ -325,7 +327,7 @@ if __name__ == "__main__":
                 ax.scatter(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), s=15)
                 ax.plot(Li6_enrichments, U232_content[:, i]*1e6, color=plt_cm(norm(mass)), alpha=0.5)
 
-            ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+            ax.set_xlabel(x_axis_label, fontdict=fontdict)
             ax.set_ylabel("U-232 content (appm)", fontdict=fontdict)
             #ax.set_title("U-232 content in bred U-233 at $t = t_{SQ}$")
 
@@ -347,7 +349,7 @@ if __name__ == "__main__":
                 ax.scatter(Li6_enrichments, dose_rate[:, i], color=plt_cm(norm(mass)), s=15)
                 ax.plot(Li6_enrichments, dose_rate[:, i], color=plt_cm(norm(mass)), alpha=0.5)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Contact dose rate (Sv/hr)", fontdict=fontdict)
         #ax.set_title("Contact dose rate at $t = t_{SQ}$")
 
@@ -366,7 +368,7 @@ if __name__ == "__main__":
                 ax.scatter(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), s=15)
                 ax.plot(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), alpha=0.5)
 
-        ax.set_xlabel("Li-6 Enrichment (percent)", fontdict=fontdict)
+        ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Self-protecting time (days)", fontdict=fontdict)
 
         ax.set_yscale("log")

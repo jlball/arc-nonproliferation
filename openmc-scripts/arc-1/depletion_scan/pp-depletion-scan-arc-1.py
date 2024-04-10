@@ -414,75 +414,75 @@ print("Loaded decay heat data in "  + str(round(time.perf_counter() - init_time,
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Contact Dose Rate
-init_time = time.perf_counter()
+# init_time = time.perf_counter()
 
-U_dose_rates = np.empty(len(masses))
-Th_dose_rates = np.empty(len(masses))
+# U_dose_rates = np.empty(len(masses))
+# Th_dose_rates = np.empty(len(masses))
 
-""" Uranium """
-for i, mass in enumerate(masses):
-    os.chdir(base_dir + "/Uranium/" + str(mass))
+# """ Uranium """
+# for i, mass in enumerate(masses):
+#     os.chdir(base_dir + "/Uranium/" + str(mass))
 
-    U_results = Results('depletion_results.h5')
+#     U_results = Results('depletion_results.h5')
 
-    idx = np.abs(U_fissile_masses[i] - anp.sig_quantity).argmin()
+#     idx = np.abs(U_fissile_masses[i] - anp.sig_quantity).argmin()
 
-    if U_fissile_masses[i, idx] < anp.sig_quantity:
-        U_mats_pre_tsq = U_results.export_to_materials(idx)
-        U_mats_post_tsq = U_results.export_to_materials(idx+1)
-    else:
-        U_mats_pre_tsq = U_results.export_to_materials(idx-1)
-        U_mats_post_tsq = U_results.export_to_materials(idx)
+#     if U_fissile_masses[i, idx] < anp.sig_quantity:
+#         U_mats_pre_tsq = U_results.export_to_materials(idx)
+#         U_mats_post_tsq = U_results.export_to_materials(idx+1)
+#     else:
+#         U_mats_pre_tsq = U_results.export_to_materials(idx-1)
+#         U_mats_post_tsq = U_results.export_to_materials(idx)
 
-    # Get materials at time step just before and just after t_SQ
-    mat_channels_pre_tsq = get_material_by_name(U_mats_pre_tsq, "doped flibe channels")
-    mat_blanket_pre_tsq = get_material_by_name(U_mats_pre_tsq, "doped flibe blanket")
+#     # Get materials at time step just before and just after t_SQ
+#     mat_channels_pre_tsq = get_material_by_name(U_mats_pre_tsq, "doped flibe channels")
+#     mat_blanket_pre_tsq = get_material_by_name(U_mats_pre_tsq, "doped flibe blanket")
 
-    mat_channels_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe channels")
-    mat_blanket_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe blanket")
+#     mat_channels_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe channels")
+#     mat_blanket_post_tsq = get_material_by_name(U_mats_post_tsq, "doped flibe blanket")
 
-    dose_pre_tsq =  extract_contact_dose_rate(mat_channels_pre_tsq) + extract_contact_dose_rate(mat_blanket_pre_tsq)
-    dose_post_tsq =  extract_contact_dose_rate(mat_channels_post_tsq) + extract_contact_dose_rate(mat_blanket_post_tsq)
+#     dose_pre_tsq =  extract_contact_dose_rate(mat_channels_pre_tsq) + extract_contact_dose_rate(mat_blanket_pre_tsq)
+#     dose_post_tsq =  extract_contact_dose_rate(mat_channels_post_tsq) + extract_contact_dose_rate(mat_blanket_post_tsq)
 
-    if U_fissile_masses[i, idx] < anp.sig_quantity:
-        U_dose_rates[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx:idx+2], [dose_pre_tsq, dose_post_tsq])
-    else:
-        U_dose_rates[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx-1:idx+1], [dose_pre_tsq, dose_post_tsq])
+#     if U_fissile_masses[i, idx] < anp.sig_quantity:
+#         U_dose_rates[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx:idx+2], [dose_pre_tsq, dose_post_tsq])
+#     else:
+#         U_dose_rates[i] = np.interp(U_time_to_SQ[i], U_time_steps[idx-1:idx+1], [dose_pre_tsq, dose_post_tsq])
 
-    os.chdir('../../..')
+#     os.chdir('../../..')
 
-""" Thorium """
-for i, mass in enumerate(masses):
-    os.chdir(base_dir + "/Thorium/" + str(mass))
+# """ Thorium """
+# for i, mass in enumerate(masses):
+#     os.chdir(base_dir + "/Thorium/" + str(mass))
 
-    Th_results = Results('depletion_results.h5')
-    idx = np.abs(Th_fissile_masses[i] - anp.sig_quantity).argmin()
+#     Th_results = Results('depletion_results.h5')
+#     idx = np.abs(Th_fissile_masses[i] - anp.sig_quantity).argmin()
 
-    if Th_fissile_masses[i, idx] < anp.sig_quantity:
-        Th_mats_pre_tsq = Th_results.export_to_materials(idx)
-        Th_mats_post_tsq = Th_results.export_to_materials(idx+1)
-    else:
-        Th_mats_pre_tsq = Th_results.export_to_materials(idx-1)
-        Th_mats_post_tsq = Th_results.export_to_materials(idx)
+#     if Th_fissile_masses[i, idx] < anp.sig_quantity:
+#         Th_mats_pre_tsq = Th_results.export_to_materials(idx)
+#         Th_mats_post_tsq = Th_results.export_to_materials(idx+1)
+#     else:
+#         Th_mats_pre_tsq = Th_results.export_to_materials(idx-1)
+#         Th_mats_post_tsq = Th_results.export_to_materials(idx)
 
-    # Get materials at time step just before and just after t_SQ
-    mat_channels_pre_tsq = get_material_by_name(Th_mats_pre_tsq, "doped flibe channels")
-    mat_blanket_pre_tsq = get_material_by_name(Th_mats_pre_tsq, "doped flibe blanket")
+#     # Get materials at time step just before and just after t_SQ
+#     mat_channels_pre_tsq = get_material_by_name(Th_mats_pre_tsq, "doped flibe channels")
+#     mat_blanket_pre_tsq = get_material_by_name(Th_mats_pre_tsq, "doped flibe blanket")
 
-    mat_channels_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe channels")
-    mat_blanket_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe blanket")
+#     mat_channels_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe channels")
+#     mat_blanket_post_tsq = get_material_by_name(Th_mats_post_tsq, "doped flibe blanket")
 
-    dose_pre_tsq =  extract_contact_dose_rate(mat_channels_pre_tsq) + extract_contact_dose_rate(mat_blanket_pre_tsq)
-    dose_post_tsq =  extract_contact_dose_rate(mat_channels_post_tsq) + extract_contact_dose_rate(mat_blanket_post_tsq)
+#     dose_pre_tsq =  extract_contact_dose_rate(mat_channels_pre_tsq) + extract_contact_dose_rate(mat_blanket_pre_tsq)
+#     dose_post_tsq =  extract_contact_dose_rate(mat_channels_post_tsq) + extract_contact_dose_rate(mat_blanket_post_tsq)
 
-    if Th_fissile_masses[i, idx] < anp.sig_quantity:
-        Th_dose_rates[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx:idx+2], [dose_pre_tsq, dose_post_tsq])
-    else:
-        Th_dose_rates[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx-1:idx+1], [dose_pre_tsq, dose_post_tsq])
+#     if Th_fissile_masses[i, idx] < anp.sig_quantity:
+#         Th_dose_rates[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx:idx+2], [dose_pre_tsq, dose_post_tsq])
+#     else:
+#         Th_dose_rates[i] = np.interp(Th_time_to_SQ[i], Th_time_steps[idx-1:idx+1], [dose_pre_tsq, dose_post_tsq])
 
-    os.chdir('../../..')
+#     os.chdir('../../..')
 
-print("Loaded contat dose rate data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+# print("Loaded contat dose rate data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
 # ====================================================
 # Plotting
@@ -614,7 +614,7 @@ ax.set_ylim(99.5, 100)
 ax.legend()
 
 #ax.set_title("Isotopic Purity vs. Fertile Inventory", fontdict=fontdict, y=title_y)
-ax.set_ylabel("Isotopic Purity (% fissile isotope)", fontdict=fontdict)
+ax.set_ylabel("Fissile Isotope Fraction (%)", fontdict=fontdict)
 ax.set_xlabel("Fertile Mass (metric tons)", fontdict=fontdict)
 
 fig.savefig("isotopic_purity.png", dpi=dpi)
@@ -857,23 +857,23 @@ fig.savefig("U232_content.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Contact Dose Rate
-fig, ax = plt.subplots()
+# fig, ax = plt.subplots()
 
-ax.spines["top"].set_color("None")
-ax.spines["right"].set_color("None")
+# ax.spines["top"].set_color("None")
+# ax.spines["right"].set_color("None")
 
-ax.scatter(masses, U_dose_rates, color=u_color, marker=u_marker, label="U-238")
-ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker, label="Th-232")
+# ax.scatter(masses, U_dose_rates, color=u_color, marker=u_marker, label="U-238")
+# ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker, label="Th-232")
 
-#ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
-ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
-ax.set_ylabel("Contact Dose Rate (Sv/hr)", fontdict=fontdict)
+# #ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
+# ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
+# ax.set_ylabel("Contact Dose Rate (Sv/hr)", fontdict=fontdict)
 
-ax.legend()
-ax.set_ylim(0, 1.1*np.max(U_dose_rates))
+# ax.legend()
+# ax.set_ylim(0, 1.1*np.max(U_dose_rates))
 
-fig.savefig("contact_dose_rate.png", dpi=dpi)
-fig.savefig("contact_dose_rate.pdf")
+# fig.savefig("contact_dose_rate.png", dpi=dpi)
+# fig.savefig("contact_dose_rate.pdf")
 
 # ====================================================
 # Data Storage
@@ -889,8 +889,7 @@ U_data_dict ={"time_steps":U_time_steps,
               "flux_spectrum":U_flux_spectra,
               "fissile_mass":U_fissile_masses,
               "reaction_spectra":U_reaction_spectra,
-              "decay_heat":U_decay_heats,
-              "contact_dose_rate":U_dose_rates}
+              "decay_heat":U_decay_heats}
 
 Th_data_dict ={"time_steps":Th_time_steps,
               "time_to_sq":Th_time_to_SQ,
@@ -903,7 +902,6 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "fissile_mass":Th_fissile_masses,
               "reaction_spectra":Th_reaction_spectra,
               "decay_heat":Th_decay_heats,
-              "contact_dose_rate":Th_dose_rates,
               "U232_content":U232_contents}
 
 os.chdir("../..")
