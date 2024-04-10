@@ -10,7 +10,7 @@ from arc_nonproliferation.constants import chain_file
 
 cooldow_folder_name = "dose_rate_cooldown"
 
-decay_time_steps = np.logspace(-1, 3, num=50) #days
+decay_time_steps = np.logspace(-1, 2, num=100) #days
 source_rates = np.zeros(len(decay_time_steps))
 
 openmc.config['chain_file'] = chain_file

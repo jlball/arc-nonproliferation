@@ -879,7 +879,7 @@ fig.savefig("U232_content.pdf")
 # Data Storage
 # ====================================================
 
-U_data_dict ={"time_steps":U_time_steps,
+U_data_dict = {"time_steps":U_time_steps,
               "time_to_sq":U_time_to_SQ,
               "fission_power_t_0":U_fission_powers[:, 0],
               "fission_power_t_sq":U_fission_power_at_SQ,

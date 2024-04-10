@@ -66,7 +66,7 @@ if __name__ == "__main__":
                 reaction_spectra[i] = data_dict["reaction_spectra"]
                 decay_heat[i] = data_dict["decay_heat"]
                 # dose_rate[i] = data_dict["dose_rate"]
-                self_protecting_time[i] = data_dict["self_protecting_time"]
+                #self_protecting_time[i] = data_dict["self_protecting_time"]
 
                 if dopant == "Th":
                     U232_content[i] = data_dict["U232_content"]
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
         ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Time to 1 SQ (days)", fontdict=fontdict)
-        ax.set_title("Time to 1 SQ ($t_{SQ}$)", fontdict=fontdict)
+        #ax.set_title("Time to 1 SQ ($t_{SQ}$)", fontdict=fontdict)
         
         fig.savefig(f"{dopant}_time_to_sq.png", dpi=300)
         fig.savefig(f"{dopant}_time_to_sq.svg")
@@ -142,7 +142,7 @@ if __name__ == "__main__":
 
         ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("TBR", fontdict=fontdict)
-        ax.set_title("Tritium Breeding Ratio", fontdict=fontdict)
+        #ax.set_title("Tritium Breeding Ratio", fontdict=fontdict)
 
         ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
 
@@ -201,7 +201,7 @@ if __name__ == "__main__":
 
         ax.set_xlabel(x_axis_label, fontdict=fontdict)
         ax.set_ylabel("Fission Power (MW)", fontdict=fontdict)
-        ax.set_title("Fission Power at $t_{SQ}$", fontdict=fontdict)
+        #ax.set_title("Fission Power at $t_{SQ}$", fontdict=fontdict)
 
         ax.tick_params(axis='both', which='major', labelsize=tick_font_size)
 
@@ -338,43 +338,24 @@ if __name__ == "__main__":
             fig.savefig("Th_U232_content.svg")
 
         # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-        # Contact dose rate
-            
-        fig, ax = plt.subplots()
-        fig.set_size_inches(width_in,height_in)
-        ax.spines["top"].set_color("None")
-        ax.spines["right"].set_color("None")
-
-        for i, mass in enumerate(masses):
-                ax.scatter(Li6_enrichments, dose_rate[:, i], color=plt_cm(norm(mass)), s=15)
-                ax.plot(Li6_enrichments, dose_rate[:, i], color=plt_cm(norm(mass)), alpha=0.5)
-
-        ax.set_xlabel(x_axis_label, fontdict=fontdict)
-        ax.set_ylabel("Contact dose rate (Sv/hr)", fontdict=fontdict)
-        #ax.set_title("Contact dose rate at $t = t_{SQ}$")
-
-        fig.savefig(f"{dopant}_contact_dose_rate.png", dpi=300)
-        fig.savefig(f"{dopant}_contact_dose_rate.svg")
-
-        # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
         # Self protecting time
 
-        fig, ax = plt.subplots()
-        fig.set_size_inches(width_in,height_in)
-        ax.spines["top"].set_color("None")
-        ax.spines["right"].set_color("None")
+        # fig, ax = plt.subplots()
+        # fig.set_size_inches(width_in,height_in)
+        # ax.spines["top"].set_color("None")
+        # ax.spines["right"].set_color("None")
 
-        for i, mass in enumerate(masses):
-                ax.scatter(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), s=15)
-                ax.plot(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), alpha=0.5)
+        # for i, mass in enumerate(masses):
+        #         ax.scatter(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), s=15)
+        #         ax.plot(Li6_enrichments, self_protecting_time[:, i], color=plt_cm(norm(mass)), alpha=0.5)
 
-        ax.set_xlabel(x_axis_label, fontdict=fontdict)
-        ax.set_ylabel("Self-protecting time (days)", fontdict=fontdict)
+        # ax.set_xlabel(x_axis_label, fontdict=fontdict)
+        # ax.set_ylabel("Self-protection time (days)", fontdict=fontdict)
 
-        ax.set_yscale("log")
+        # ax.set_yscale("log")
 
-        fig.savefig(f"{dopant}_self_protecting_time.png", dpi=300)
-        fig.savefig(f"{dopant}_self_protecting_time.svg")
+        # fig.savefig(f"{dopant}_self_protecting_time.png", dpi=300)
+        # fig.savefig(f"{dopant}_self_protecting_time.svg")
 
         # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
         # Exit directory

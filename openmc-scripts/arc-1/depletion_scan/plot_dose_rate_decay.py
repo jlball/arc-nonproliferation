@@ -105,9 +105,10 @@ for dopant in dopants:
         ax.loglog(activities[0]/(3600*24), dose_rate_decay[i], label=f"{mass}", color=plt_cm(norm(mass)))
 
     ax.hlines([1], activities[0][0]/(3600*24), activities[0][-1]/(3600*24), color="red", linestyles="dashed")
+    ax.annotate("NRC self protection threshold", (40, 1), color="red", textcoords="offset points", xytext=(0, 5))
 
-    ax.set_xlabel("Time (days)", fontdict=fontdict)
-    ax.set_ylabel("Dose rate at 1 m (Sv/hr)", fontdict=fontdict)
+    ax.set_xlabel("Time after shutdown (days)", fontdict=fontdict)
+    ax.set_ylabel("Dose rate 1m away (Sv/hr)", fontdict=fontdict)
 
     fig.savefig(f"{dopant}_dose_rate_decay.png", dpi=dpi)
     fig.savefig(f"{dopant}_dose_rate_decay.pdf")
