@@ -66,7 +66,7 @@ if __name__ == "__main__":
                 reaction_spectra[i] = data_dict["reaction_spectra"]
                 decay_heat[i] = data_dict["decay_heat"]
                 # dose_rate[i] = data_dict["dose_rate"]
-                #self_protecting_time[i] = data_dict["self_protecting_time"]
+                self_protecting_time[i] = data_dict["self_protecting_time"]
 
                 if dopant == "Th":
                     U232_content[i] = data_dict["U232_content"]
