@@ -306,6 +306,60 @@ for i, mass in enumerate(masses):
 
 print("Loaded fissile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
 
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Precursor Mass
+init_time = time.perf_counter()
+
+""" Iterate through each mass simulated and get fissile mass at each time step"""
+Np_masses = np.empty((len(masses), len(U_time_steps)))
+U_239_masses = np.empty((len(masses), len(U_time_steps)))
+Pa_masses = np.empty((len(masses), len(Th_time_steps)))
+Th_233_masses = np.empty((len(masses), len(U_time_steps)))
+for i, mass in enumerate(masses):
+
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    Np_masses[i] = get_masses_from_mats('Np239', U_results)
+    U_239_masses[i] = get_masses_from_mats("U239", U_results)
+
+    os.chdir("../../..")
+
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Pa_masses[i] = get_masses_from_mats('Pa233', Th_results)
+    Th_233_masses[i] = get_masses_from_mats('Th233', Th_results)
+
+    os.chdir("../../..")
+
+print("Loaded precursor mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Fertile Mass
+init_time = time.perf_counter()
+
+""" Iterate through each mass simulated and get fissile mass at each time step"""
+U238_masses = np.empty((len(masses), len(U_time_steps)))
+Th232_masses = np.empty((len(masses), len(Th_time_steps)))
+for i, mass in enumerate(masses):
+
+    os.chdir(base_dir + "/Uranium/" + str(mass))
+
+    U_results = Results('depletion_results.h5')
+    U238_masses[i] = get_masses_from_mats('U238', U_results)
+
+    os.chdir("../../..")
+
+    os.chdir(base_dir + "/Thorium/" + str(mass))
+
+    Th_results = Results('depletion_results.h5')
+    Th232_masses[i] = get_masses_from_mats('Th232', Th_results)
+
+    os.chdir("../../..")
+
+print("Loaded fertile mass data in "  + str(round(time.perf_counter() - init_time, 2)) + " seconds.")
+
 # # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Reaction Spectra (energy resolved n,gamma and fission on fertile isotope)
 
@@ -543,6 +597,8 @@ ax.set_xlim(0, masses[-1] + 2)
 ax.set_ylim(10, np.max(Th_time_to_SQ/24) + 100)
 
 ax.set_yscale("log")
+
+ax.minorticks_on()
 
 #ax.set_title("Time to Breed a Significant Quantity of Fissile Material", fontdict=fontdict)
 ax.set_ylabel("Time (days)", fontdict=fontdict)
@@ -813,7 +869,139 @@ for i, mass in enumerate(masses):
 
     fig.savefig(str(mass) + "_metric_tons.png", dpi=dpi)
 
-print("Completed Post Processing")
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Precursor Mass
+fig, ax = plt.subplots()
+Np_mass_t_SQ = []
+U239_mass_t_SQ = []
+Pa_mass_t_SQ = []
+Th233_mass_t_SQ = []
+for i, mass in enumerate(masses):
+    
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    plot_pts = np.linspace(0, U_time_to_SQ[i]/24, num=1000)
+    interp_points = np.interp(plot_pts, U_time_steps, Np_masses[i])
+    Np_mass_t_SQ.append(interp_points[-1])
+
+    ax.plot(plot_pts, interp_points, color="orange")
+    ax.annotate(f"{masses[i]} tons", (U_time_to_SQ[i]/24, interp_points[-1]), xytext=(5, -5), textcoords="offset points")
+    
+    ax.set_xlabel("Time (days)", fontdict=fontdict)
+    ax.set_ylabel("Mass (kg)", fontdict=fontdict)
+    ax.set_title("Np-239 mass vs time", fontdict=fontdict)
+
+fig.savefig("Np_mass.png", dpi=dpi)
+
+# U239
+fig, ax = plt.subplots()
+for i, mass in enumerate(masses):
+    
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    plot_pts = np.linspace(0, U_time_to_SQ[i]/24, num=1000)
+    interp_points = np.interp(plot_pts, U_time_steps, U_239_masses[i])
+    U239_mass_t_SQ.append(interp_points[-1])
+
+    ax.plot(plot_pts, interp_points, color="orange")
+    ax.annotate(f"{masses[i]} tons", (U_time_to_SQ[i]/24, interp_points[-1]), xytext=(5, -5), textcoords="offset points")
+    
+    ax.set_xlabel("Time (days)", fontdict=fontdict)
+    ax.set_ylabel("Mass (kg)", fontdict=fontdict)
+    ax.set_title("U-239 mass vs time", fontdict=fontdict)
+
+fig.savefig("U239_mass.png", dpi=dpi)
+
+# Pa-233
+fig, ax = plt.subplots()
+for i, mass in enumerate(masses):
+    
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    plot_pts = np.linspace(0, Th_time_to_SQ[i]/24, num=1000)
+    interp_points = np.interp(plot_pts, Th_time_steps, Pa_masses[i])
+    Pa_mass_t_SQ.append(interp_points[-1])
+
+    ax.plot(plot_pts, interp_points, color="purple")
+    ax.annotate(f"{masses[i]} tons", (Th_time_to_SQ[i]/24, interp_points[-1]), xytext=(5, -5), textcoords="offset points")
+    
+    ax.set_xlabel("Time (days)", fontdict=fontdict)
+    ax.set_ylabel("Mass (kg)", fontdict=fontdict)
+    ax.set_title("Pa-233 mass vs time", fontdict=fontdict)
+
+fig.savefig("Pa_mass.png", dpi=dpi)
+
+# Th233
+fig, ax = plt.subplots()
+for i, mass in enumerate(masses):
+    
+    ax.spines["top"].set_color("None")
+    ax.spines["right"].set_color("None")
+
+    plot_pts = np.linspace(0, Th_time_to_SQ[i]/24, num=1000)
+    interp_points = np.interp(plot_pts, Th_time_steps, Th_233_masses[i])
+    Th233_mass_t_SQ.append(interp_points[-1])
+
+    ax.plot(plot_pts, interp_points, color="orange")
+    ax.annotate(f"{masses[i]} tons", (Th_time_to_SQ[i]/24, interp_points[-1]), xytext=(5, -5), textcoords="offset points")
+    
+    ax.set_xlabel("Time (days)", fontdict=fontdict)
+    ax.set_ylabel("Mass (kg)", fontdict=fontdict)
+    ax.set_title("U-239 mass vs time", fontdict=fontdict)
+
+fig.savefig("Th233_mass.png", dpi=dpi)
+
+# +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
+# Precursor Mass linearity at t_SQ
+fit_pts = np.linspace(0, 1.1*masses[-1], num=2)
+# Np-239
+fig, ax = plt.subplots()
+
+ax.scatter(masses, Np_mass_t_SQ, color="orange")
+res = linregress(masses, y=Np_mass_t_SQ)
+ax.plot(fit_pts, res.slope*fit_pts + res.intercept, color="orange", alpha=0.5)
+ax.set_title(f"R Value: {res.rvalue}")
+
+ax.set_xlabel("Fertile Mass (metric tons)")
+ax.set_ylabel("Np-239 Mass at $t_{SQ}$ (kg)")
+fig.savefig("np_mass_tsq.png", dpi=300)
+
+# U-239
+fig, ax = plt.subplots()
+
+ax.scatter(masses, U239_mass_t_SQ, color="orange")
+res = linregress(masses, y=U239_mass_t_SQ)
+ax.plot(fit_pts, res.slope*fit_pts + res.intercept, color="orange", alpha=0.5)
+ax.set_title(f"R Value: {res.rvalue}")
+
+ax.set_xlabel("Fertile Mass (metric tons)")
+ax.set_ylabel("U-239 Mass at $t_{SQ}$ (kg)")
+fig.savefig("U239_mass_tsq.png", dpi=300)
+
+# Pa-233
+fig, ax = plt.subplots()
+ax.scatter(masses, Pa_mass_t_SQ, color="purple")
+res = linregress(masses, y=Pa_mass_t_SQ)
+ax.plot(fit_pts, res.slope*fit_pts + res.intercept, color="purple", alpha=0.5)
+ax.set_title(f"R Value: {res.rvalue}")
+
+ax.set_xlabel("Fertile Mass (metric tons)")
+ax.set_ylabel("Pa-233 Mass at $t_{SQ}$ (kg)")
+fig.savefig("pa_mass_tsq.png", dpi=300)
+
+# Th-233
+fig, ax = plt.subplots()
+ax.scatter(masses, Th233_mass_t_SQ, color="purple")
+res = linregress(masses, y=Th233_mass_t_SQ)
+ax.plot(fit_pts, res.slope*fit_pts + res.intercept, color="purple", alpha=0.5)
+ax.set_title(f"R Value: {res.rvalue}")
+
+ax.set_xlabel("Fertile Mass (metric tons)")
+ax.set_ylabel("Th-233 Mass at $t_{SQ}$ (kg)")
+fig.savefig("Th233_mass_tsq.png", dpi=300)
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
 # Decay Heat
@@ -856,24 +1044,14 @@ fig.savefig("U232_content.png", dpi=dpi)
 fig.savefig("U232_content.pdf")
 
 # +~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+~+
-# Contact Dose Rate
-# fig, ax = plt.subplots()
+# Burnup Fraction
 
-# ax.spines["top"].set_color("None")
-# ax.spines["right"].set_color("None")
+for i, mass in enumerate(masses):
+    U_burnup = 1 - (np.interp(U_time_to_SQ[i], U_time_steps, U238_masses[i]))/(Th232_masses[i][0])
+    print(f"U Burnup for {mass} metric tons: {U_burnup}")
 
-# ax.scatter(masses, U_dose_rates, color=u_color, marker=u_marker, label="U-238")
-# ax.scatter(masses, Th_dose_rates, color=th_color, marker=th_marker, label="Th-232")
-
-# #ax.set_title("Contact Dose Rate vs. Fertile Mass at $t = t_{SQ}$", fontdict=fontdict)
-# ax.set_xlabel("Fertile Mass (Metric Tons)", fontdict=fontdict)
-# ax.set_ylabel("Contact Dose Rate (Sv/hr)", fontdict=fontdict)
-
-# ax.legend()
-# ax.set_ylim(0, 1.1*np.max(U_dose_rates))
-
-# fig.savefig("contact_dose_rate.png", dpi=dpi)
-# fig.savefig("contact_dose_rate.pdf")
+    Th_burnup = 1 - (np.interp(Th_time_to_SQ[i], Th_time_steps, Th232_masses[i]))/(Th232_masses[i][0])
+    print(f"Th Burnup for {mass} metric tons: {Th_burnup}")
 
 # ====================================================
 # Data Storage
@@ -888,6 +1066,7 @@ U_data_dict = {"time_steps":U_time_steps,
               "tbr_t_SQ":U_TBR[:, 1, 0],
               "flux_spectrum":U_flux_spectra,
               "fissile_mass":U_fissile_masses,
+              "precursor_mass":Np_masses,
               "reaction_spectra":U_reaction_spectra,
               "decay_heat":U_decay_heats}
 
@@ -900,6 +1079,7 @@ Th_data_dict ={"time_steps":Th_time_steps,
               "tbr_t_SQ":Th_TBR[:, 1, 0],
               "flux_spectrum":Th_flux_spectra,
               "fissile_mass":Th_fissile_masses,
+              "precursor_mass":Pa_masses,
               "reaction_spectra":Th_reaction_spectra,
               "decay_heat":Th_decay_heats,
               "U232_content":U232_contents}
